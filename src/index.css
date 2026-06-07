@@ -317,8 +317,8 @@
 
   /* Flou sombre uniforme sur toute l'image */
   .hero-slide-img--dark {
-    filter: blur(14px) brightness(0.55);
-    transform: scale(1.1);
+    filter: blur(6px) brightness(0.6);
+    transform: scale(1.04);
   }
 
   .hero-slide-overlay {
@@ -362,8 +362,8 @@
       transform: scale(1.03) !important;
     }
     .hero-slide-img--dark {
-      filter: blur(4px) brightness(0.7) !important;
-      transform: scale(1.05) !important;
+      filter: blur(2px) brightness(0.72) !important;
+      transform: scale(1.02) !important;
     }
     .hero-slide-dot--active::after {
       animation: none !important;

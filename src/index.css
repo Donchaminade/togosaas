@@ -1,29 +1,383 @@
 @import "tailwindcss";
 
+/* Active le dark mode pilote par la classe .dark sur <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-togo-green: #006a4e;
-  --color-togo-red: #d21034;
-  --color-togo-yellow: #ffce00;
   --color-togo-green-dark: #00503b;
+  --color-togo-green-light: #0a8a68;
+  --color-togo-red: #d21034;
   --color-togo-red-dark: #b00c25;
-}
+  --color-togo-yellow: #ffce00;
+  --color-togo-yellow-dark: #e0b400;
 
-@layer utilities {
-  .animate-spin-slow {
-    animation: spin 8s linear infinite;
-  }
-  .animate-fade-in {
-    animation: fadeIn 0.3s ease-out forwards;
-  }
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --animate-spin-slow: spin 8s linear infinite;
+  --animate-fade-in: fadeIn 0.4s ease-out forwards;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-blob: blob 14s ease-in-out infinite;
+  --animate-wave: wave 12s linear infinite;
+  --animate-shimmer: shimmer 2.5s linear infinite;
+  --animate-rise: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-page-in: pageIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.94); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+
+@keyframes blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -40px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+
+@keyframes wave {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 7rem;
   }
-  to {
+  @media (min-width: 640px) {
+    html {
+      scroll-padding-top: 8rem;
+    }
+  }
+  body {
+    @apply bg-slate-50 text-slate-800 antialiased transition-colors duration-300;
+  }
+  .dark body {
+    @apply bg-slate-950 text-slate-200;
+  }
+}
+
+@layer utilities {
+  /* Delais d'animation pour orchestrer les apparitions. */
+  .delay-100 { animation-delay: 0.1s; }
+  .delay-200 { animation-delay: 0.2s; }
+  .delay-300 { animation-delay: 0.3s; }
+  .delay-500 { animation-delay: 0.5s; }
+
+  .animate-rise-init { opacity: 0; }
+
+  /* ---- Scroll & motion reveal — apparitions douces au scroll ---- */
+  .motion-reveal {
+    --motion-duration: 1050ms;
+    --motion-delay: 0ms;
+    --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform, filter;
+    transition:
+      opacity var(--motion-duration) var(--motion-ease) var(--motion-delay),
+      transform var(--motion-duration) var(--motion-ease) var(--motion-delay),
+      filter var(--motion-duration) var(--motion-ease) var(--motion-delay);
+  }
+
+  .motion-fade-up    { opacity: 0; transform: translateY(24px); }
+  .motion-fade-down  { opacity: 0; transform: translateY(-20px); }
+  .motion-fade-in    { opacity: 0; }
+  .motion-zoom-in    { opacity: 0; transform: scale(0.94); }
+  .motion-zoom-out   { opacity: 0; transform: scale(1.05); }
+  .motion-slide-left { opacity: 0; transform: translateX(-28px); }
+  .motion-slide-right{ opacity: 0; transform: translateX(28px); }
+  .motion-blur-in    { opacity: 0; transform: scale(0.97); filter: blur(8px); }
+  .motion-gentle-up  { opacity: 0; transform: translateY(20px) scale(0.985); }
+  .motion-gentle-in  { opacity: 0; transform: scale(0.975); }
+
+  .motion-visible,
+  .motion-visible.motion-fade-up,
+  .motion-visible.motion-fade-down,
+  .motion-visible.motion-fade-in,
+  .motion-visible.motion-zoom-in,
+  .motion-visible.motion-zoom-out,
+  .motion-visible.motion-slide-left,
+  .motion-visible.motion-slide-right,
+  .motion-visible.motion-blur-in,
+  .motion-visible.motion-gentle-up,
+  .motion-visible.motion-gentle-in {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
+    filter: none;
+  }
+
+  /* Entrée immédiate (pagination, montage) */
+  .motion-enter {
+    --motion-duration: 550ms;
+    --motion-delay: 0ms;
+    animation: none;
+    opacity: 0;
+  }
+  .motion-enter-active {
+    animation: motionEnter var(--motion-duration) cubic-bezier(0.16, 1, 0.3, 1) var(--motion-delay) forwards;
+  }
+  .motion-enter.motion-zoom-in    { transform: scale(0.9); }
+  .motion-enter.motion-zoom-out   { transform: scale(1.06); }
+  .motion-enter.motion-fade-up    { transform: translateY(24px); }
+  .motion-enter.motion-slide-left { transform: translateX(-24px); }
+
+  @keyframes motionEnter {
+    to { opacity: 1; transform: none; filter: none; }
+  }
+
+  .motion-hover-lift {
+    transition: transform 0.35s var(--ease-out-expo), box-shadow 0.35s var(--ease-out-expo), border-color 0.25s ease;
+  }
+  .motion-hover-lift:hover {
+    transform: translateY(-6px) scale(1.02);
+  }
+  .motion-hover-zoom {
+    transition: transform 0.4s var(--ease-out-expo);
+  }
+  .motion-hover-zoom:hover {
+    transform: scale(1.04);
+  }
+
+  .motion-banner-zoom {
+    animation: bannerZoom 18s ease-in-out infinite alternate;
+  }
+  @keyframes bannerZoom {
+    from { transform: scale(1); }
+    to { transform: scale(1.07); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .motion-reveal,
+    .motion-enter,
+    .motion-enter-active {
+      opacity: 1 !important;
+      transform: none !important;
+      filter: none !important;
+      transition: none !important;
+      animation: none !important;
+    }
+    .motion-hover-lift:hover,
+    .motion-hover-zoom:hover {
+      transform: none;
+    }
+    .motion-banner-zoom {
+      animation: none !important;
+    }
+  }
+
+  /* Texte en degrade aux couleurs du Togo. */
+  .text-gradient-togo {
+    background: linear-gradient(120deg, var(--color-togo-green), var(--color-togo-yellow-dark), var(--color-togo-red));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Fond anime "shimmer" pour squelettes de chargement. */
+  .skeleton {
+    background: linear-gradient(90deg, rgba(148,163,184,0.12) 25%, rgba(148,163,184,0.24) 37%, rgba(148,163,184,0.12) 63%);
+    background-size: 200% 100%;
+    animation: var(--animate-shimmer);
+  }
+
+  /* Motif de points subtil. */
+  .bg-dots {
+    background-image: radial-gradient(currentColor 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  .glass {
+    backdrop-filter: blur(12px);
+  }
+
+  /* ---- Écran de démarrage ---- */
+  .splash-screen--enter .splash-logo {
+    animation: splashLogoIn 1s var(--ease-out-expo) forwards;
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  .splash-screen--enter .splash-title {
+    animation: splashTitleIn 0.9s var(--ease-out-expo) 0.25s forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  .splash-screen--enter .splash-subtitle {
+    animation: splashTitleIn 0.8s var(--ease-out-expo) 0.55s forwards;
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  .splash-screen--enter .splash-footer {
+    animation: splashFooterIn 0.7s var(--ease-out-expo) 0.85s forwards;
+    opacity: 0;
+    transform: translateX(-50%) scaleX(0);
+  }
+  .splash-screen--enter .splash-glow {
+    animation: splashGlowPulse 2.5s ease-in-out infinite;
+  }
+
+  .splash-screen--exit {
+    animation: splashFadeOut 0.7s var(--ease-out-expo) forwards;
+  }
+
+  @keyframes splashLogoIn {
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes splashTitleIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes splashFooterIn {
+    to { opacity: 1; transform: translateX(-50%) scaleX(1); }
+  }
+  @keyframes splashGlowPulse {
+    0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+  }
+  @keyframes splashFadeOut {
+    to { opacity: 0; visibility: hidden; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .splash-screen--enter .splash-logo,
+    .splash-screen--enter .splash-title,
+    .splash-screen--enter .splash-subtitle,
+    .splash-screen--enter .splash-footer {
+      opacity: 1 !important;
+      transform: none !important;
+      animation: none !important;
+    }
+    .splash-screen--exit {
+      animation: splashFadeOut 0.15s ease forwards !important;
+    }
+  }
+
+  /* Hero diaporama — fondu enchaîné style lecteur PC + zoom lent */
+  .hero-slide-layer {
+    opacity: 0;
+    transition: opacity var(--hero-slide-fade, 2.2s) ease-in-out;
+    will-change: opacity;
+    pointer-events: none;
+  }
+
+  .hero-slide-layer--instant {
+    transition: none !important;
+    opacity: 1;
+  }
+
+  .hero-slide-layer--active {
+    opacity: 1;
+    z-index: 2;
+  }
+
+  .hero-slide-layer--leaving {
+    opacity: 0;
+    z-index: 1;
+  }
+
+  .hero-slide-media {
+    overflow: hidden;
+    transform: scale(1);
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  /* Zoom lent pendant l'affichage — continue pendant le fondu de sortie */
+  .hero-slide-layer--playing .hero-slide-media {
+    animation: heroSlideshowKenBurns var(--hero-slide-hold, 6s) ease-in-out forwards;
+  }
+
+  @keyframes heroSlideshowKenBurns {
+    from { transform: scale(1); }
+    to   { transform: scale(1.07); }
+  }
+
+  .hero-slide-img {
+    backface-visibility: hidden;
+  }
+
+  /* Flou sombre uniforme sur toute l'image */
+  .hero-slide-img--dark {
+    filter: blur(14px) brightness(0.55);
+    transform: scale(1.1);
+  }
+
+  .hero-slide-overlay {
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.72) 0%,
+      rgba(0, 0, 0, 0.62) 45%,
+      rgba(0, 0, 0, 0.68) 100%
+    );
+  }
+
+  /* Barre de progression sur le point actif */
+  .hero-slide-dot {
+    position: relative;
+    overflow: hidden;
+    transition: width 0.5s ease, background-color 0.5s ease;
+  }
+
+  .hero-slide-dot--active::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform-origin: left center;
+    background: rgba(255, 255, 255, 0.35);
+    animation: heroDotProgress var(--hero-slide-hold, 6s) linear forwards;
+  }
+
+  @keyframes heroDotProgress {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-slide-layer,
+    .hero-slide-layer--active,
+    .hero-slide-layer--leaving {
+      transition-duration: 0.01ms !important;
+    }
+    .hero-slide-layer--playing .hero-slide-media {
+      animation: none !important;
+      transform: scale(1.03) !important;
+    }
+    .hero-slide-img--dark {
+      filter: blur(4px) brightness(0.7) !important;
+      transform: scale(1.05) !important;
+    }
+    .hero-slide-dot--active::after {
+      animation: none !important;
+      transform: scaleX(1);
+    }
+  }
+
+  /* Espace sous la navbar flottante (top-4 + hauteur barre + marge) */
+  .pt-below-nav {
+    padding-top: 7rem;
+  }
+  @media (min-width: 640px) {
+    .pt-below-nav {
+      padding-top: 8rem;
+    }
   }
 }

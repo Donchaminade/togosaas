@@ -1,0 +1,4 @@
+# Les fichiers uploades sont servis via public/index.php (/uploads/*).
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>

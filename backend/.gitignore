@@ -1,0 +1,13 @@
+.env
+.env.local
+.env.*.local
+*.log
+
+/storage/uploads/*
+!/storage/uploads/.gitkeep
+/storage/support/*
+!/storage/support/.gitkeep
+/storage/reports/*
+!/storage/reports/.gitkeep
+
+/vendor/

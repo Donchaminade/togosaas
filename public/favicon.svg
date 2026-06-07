@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="14" fill="#006A4E"/>
+  <g transform="translate(16, 6) scale(0.5)">
+    <line x1="32" y1="34" x2="32" y2="13" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+    <line x1="32" y1="34" x2="50.2" y2="23.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+    <line x1="32" y1="34" x2="50.2" y2="44.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+    <line x1="32" y1="34" x2="32" y2="55" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+    <line x1="32" y1="34" x2="13.8" y2="44.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+    <line x1="32" y1="34" x2="13.8" y2="23.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+    <circle cx="32" cy="34" r="9" fill="#FFCE00"/>
+    <circle cx="32" cy="13" r="5.5" fill="#D21034"/>
+    <circle cx="50.2" cy="23.5" r="5.5" fill="#FFFFFF"/>
+    <circle cx="50.2" cy="44.5" r="5.5" fill="#D21034"/>
+    <circle cx="32" cy="55" r="5.5" fill="#FFFFFF"/>
+    <circle cx="13.8" cy="44.5" r="5.5" fill="#D21034"/>
+    <circle cx="13.8" cy="23.5" r="5.5" fill="#FFFFFF"/>
+  </g>
+  <text x="32" y="54" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="900" letter-spacing="1" fill="#FFFFFF">T·C·H</text>
+</svg>

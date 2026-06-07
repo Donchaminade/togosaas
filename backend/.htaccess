@@ -1,0 +1,5 @@
+# Securite : le document root doit etre public/ uniquement.
+# Si ce dossier est expose par erreur, tout acces HTTP est bloque.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>

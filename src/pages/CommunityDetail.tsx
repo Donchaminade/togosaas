@@ -106,38 +106,40 @@ export default function CommunityDetail() {
           </Link>
         </div>
 
-        <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="-mt-14 flex flex-col gap-4 sm:-mt-16 sm:flex-row sm:items-end sm:gap-6">
-            <div className="h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-white ring-4 ring-white shadow-xl dark:bg-slate-800 dark:ring-slate-950 sm:h-32 sm:w-32">
-              {community.logoUrl ? (
-                <img src={mediaUrl(community.logoUrl)} alt={community.name} className="h-full w-full object-cover" />
-              ) : (
-                <span className="grid h-full w-full place-items-center bg-gradient-to-br from-togo-green/15 to-togo-yellow/15 text-3xl font-black text-togo-green">
-                  {community.name.charAt(0)}
-                </span>
-              )}
-            </div>
-            <div className="min-w-0 flex-1 pb-2">
-              <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">
-                {community.name}
-              </h1>
-              {community.shortDescription && (
-                <p className="mt-1 max-w-2xl text-sm text-slate-600 sm:text-base dark:text-slate-300">
-                  {community.shortDescription}
-                </p>
-              )}
-              <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
-                <span className="flex items-center gap-1.5">
-                  <MapPin className="h-4 w-4 text-togo-red" /> {formatLocation(community)}
-                </span>
-                {community.memberCount != null && community.memberCount > 0 && (
-                  <span className="flex items-center gap-1.5">
-                    <Users2 className="h-4 w-4 text-togo-green" /> {community.memberCount.toLocaleString('fr-FR')} membres
+        <div className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+          <div className="relative mx-auto max-w-6xl px-4 pb-6 sm:px-6 lg:px-8">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+              <div className="-mt-14 h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-white ring-4 ring-white shadow-xl dark:bg-slate-800 dark:ring-slate-950 sm:-mt-16 sm:h-32 sm:w-32">
+                {community.logoUrl ? (
+                  <img src={mediaUrl(community.logoUrl)} alt={community.name} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="grid h-full w-full place-items-center bg-gradient-to-br from-togo-green/15 to-togo-yellow/15 text-3xl font-black text-togo-green">
+                    {community.name.charAt(0)}
                   </span>
                 )}
               </div>
-              <div className="mt-4">
-                <CommunityEngagementBar community={community} />
+              <div className="min-w-0 flex-1 sm:pt-3">
+                <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+                  {community.name}
+                </h1>
+                {community.shortDescription && (
+                  <p className="mt-1 max-w-2xl text-sm text-slate-600 sm:text-base dark:text-slate-300">
+                    {community.shortDescription}
+                  </p>
+                )}
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
+                  <span className="flex items-center gap-1.5">
+                    <MapPin className="h-4 w-4 text-togo-red" /> {formatLocation(community)}
+                  </span>
+                  {community.memberCount != null && community.memberCount > 0 && (
+                    <span className="flex items-center gap-1.5">
+                      <Users2 className="h-4 w-4 text-togo-green" /> {community.memberCount.toLocaleString('fr-FR')} membres
+                    </span>
+                  )}
+                </div>
+                <div className="mt-4">
+                  <CommunityEngagementBar community={community} />
+                </div>
               </div>
             </div>
           </div>

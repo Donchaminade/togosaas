@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Users } from 'lucide-react';
 import ShareCommunityButton from './ui/ShareCommunityButton';
+import CommunityEngagementBar from './community/CommunityEngagementBar';
 import { formatLocation } from '../lib/location';
 import { communityPublicPath } from '../lib/communityUrl';
 import { mediaUrl } from '../lib/media';
@@ -52,6 +53,10 @@ export default function CommunityCard({ community }: CommunityCardProps) {
         <p className="line-clamp-3 px-5 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
           {community.description}
         </p>
+
+        <div className="mt-3 px-5">
+          <CommunityEngagementBar compact />
+        </div>
 
         <div className="mt-4 flex flex-wrap gap-1.5 px-5 pb-5 pt-1">
           {community.tags.slice(0, 4).map((tag) => (

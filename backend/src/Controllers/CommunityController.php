@@ -8,6 +8,7 @@ use TCH\Auth;
 use TCH\CommunityAccessHelper;
 use TCH\CommunityHelper;
 use TCH\Database;
+use TCH\EngagementHelper;
 use TCH\EventHelper;
 use TCH\Request;
 use TCH\Response;
@@ -39,7 +40,17 @@ final class CommunityController
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
 
-        $rows = array_map(fn($r) => CommunityHelper::serialize($r, 'list'), $stmt->fetchAll());
+        $raw = $stmt->fetchAll();
+        $ids = array_map(static fn($r) => (int) $r['id'], $raw);
+        $statsMap = EngagementHelper::statsForCommunityIds($ids);
+        $rows = array_map(static function ($r) use ($statsMap) {
+            $c = CommunityHelper::serialize($r, 'list');
+            return array_merge($c, $statsMap[(int) $r['id']] ?? [
+                'likesCount' => 0,
+                'ratingAvg' => null,
+                'reviewsCount' => 0,
+            ]);
+        }, $raw);
         Response::success(['communities' => $rows]);
     }
 

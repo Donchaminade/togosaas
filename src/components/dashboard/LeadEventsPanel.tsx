@@ -36,17 +36,14 @@ export default function LeadEventsPanel({ communities }: Props) {
     })();
   }, [communities]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center py-16">
-        <Spinner className="h-8 w-8 text-togo-green" />
-      </div>
-    );
-  }
-
-  const now = Date.now();
-  const upcoming = events.filter((e) => new Date(e.startsAt).getTime() >= now - 3600000);
-  const past = events.filter((e) => new Date(e.startsAt).getTime() < now - 3600000);
+  const upcoming = useMemo(() => {
+    const t = Date.now();
+    return events.filter((e) => new Date(e.startsAt).getTime() >= t - 3600000);
+  }, [events]);
+  const past = useMemo(() => {
+    const t = Date.now();
+    return events.filter((e) => new Date(e.startsAt).getTime() < t - 3600000);
+  }, [events]);
 
   const filteredUpcoming = useMemo(
     () =>
@@ -71,6 +68,14 @@ export default function LeadEventsPanel({ communities }: Props) {
       ]).slice(0, 20),
     [past, search],
   );
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-16">
+        <Spinner className="h-8 w-8 text-togo-green" />
+      </div>
+    );
+  }
 
   if (events.length === 0) {
     return (

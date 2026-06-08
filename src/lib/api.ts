@@ -4,6 +4,7 @@ import type {
   AdminUserDetail,
   Community,
   CommunityEvent,
+  CommunityEngagement,
   CommunityReport,
   ContactMessage,
   LeadSummary,
@@ -181,6 +182,23 @@ export const api = {
   getCommunity: (idOrSlug: string | number, auth = false) =>
     request<{ community: Community }>(`/communities/${encodeURIComponent(String(idOrSlug))}`, { auth }),
 
+  getCommunityEngagement: (idOrSlug: string | number, visitorId: string) =>
+    request<{ engagement: CommunityEngagement }>(
+      `/communities/${encodeURIComponent(String(idOrSlug))}/engagement?visitorId=${encodeURIComponent(visitorId)}`,
+    ),
+
+  toggleCommunityLike: (idOrSlug: string | number, visitorId: string) =>
+    request<{ engagement: Pick<CommunityEngagement, 'likesCount' | 'liked'> }>(
+      `/communities/${encodeURIComponent(String(idOrSlug))}/like`,
+      { method: 'POST', body: { visitorId } },
+    ),
+
+  rateCommunity: (idOrSlug: string | number, visitorId: string, rating: number) =>
+    request<{ engagement: Pick<CommunityEngagement, 'ratingAvg' | 'reviewsCount' | 'userRating'> }>(
+      `/communities/${encodeURIComponent(String(idOrSlug))}/review`,
+      { method: 'POST', body: { visitorId, rating } },
+    ),
+
   // Contact
   sendContact: (data: { name: string; email: string; subject?: string; message: string }) =>
     request<null>('/contact', { method: 'POST', body: data }),
@@ -250,9 +268,14 @@ export const api = {
       auth: true,
     }),
 
-  getCommunityEvents: (communityId: number, upcomingOnly = true) =>
+  getCommunityEvents: (communityRef: string | number, upcomingOnly = false) =>
     request<{ events: CommunityEvent[] }>(
-      `/communities/${communityId}/events${upcomingOnly ? '' : '?upcoming=0'}`
+      `/communities/${encodeURIComponent(String(communityRef))}/events${upcomingOnly ? '?upcoming=1' : ''}`,
+    ),
+
+  getCommunityEvent: (communityRef: string | number, eventId: number) =>
+    request<{ event: CommunityEvent }>(
+      `/communities/${encodeURIComponent(String(communityRef))}/events/${eventId}`,
     ),
 
   leadSupportMessages: () =>

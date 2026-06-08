@@ -54,8 +54,16 @@ export default function CommunityCard({ community }: CommunityCardProps) {
           {community.description}
         </p>
 
-        <div className="mt-3 px-5">
-          <CommunityEngagementBar compact />
+        <div className="mt-3 px-5" onClick={(e) => e.stopPropagation()}>
+          <CommunityEngagementBar
+            community={community}
+            compact
+            initial={{
+              likesCount: community.likesCount,
+              ratingAvg: community.ratingAvg,
+              reviewsCount: community.reviewsCount,
+            }}
+          />
         </div>
 
         <div className="mt-4 flex flex-wrap gap-1.5 px-5 pb-5 pt-1">

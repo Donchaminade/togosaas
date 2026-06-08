@@ -6,9 +6,10 @@ import type { CommunityEvent } from '../types';
 interface Props {
   events: CommunityEvent[];
   showPast?: boolean;
+  embedded?: boolean;
 }
 
-export default function CommunityEventsCalendar({ events, showPast = true }: Props) {
+export default function CommunityEventsCalendar({ events, showPast = true, embedded = false }: Props) {
   const now = Date.now();
 
   const { upcoming, past } = useMemo(() => {
@@ -26,37 +27,51 @@ export default function CommunityEventsCalendar({ events, showPast = true }: Pro
 
   if (events.length === 0) return null;
 
-  return (
-    <ScrollReveal variant="fade-up" delay={80}>
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+  const inner = (
+    <>
+      {!embedded && (
         <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
           <Calendar className="h-4 w-4 text-togo-green dark:text-togo-yellow" />
           Calendrier événementiel
         </h3>
+      )}
 
-        {upcoming.length > 0 && (
-          <div className="mt-5 space-y-3">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-togo-green dark:text-togo-yellow">
-              À venir
-            </p>
-            {upcoming.map((e) => (
-              <EventCard key={e.id} event={e} />
-            ))}
-          </div>
-        )}
+      {upcoming.length > 0 && (
+        <div className={`space-y-3 ${embedded ? '' : 'mt-5'}`}>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-togo-green dark:text-togo-yellow">
+            À venir
+          </p>
+          {upcoming.map((e) => (
+            <EventCard key={e.id} event={e} />
+          ))}
+        </div>
+      )}
 
-        {showPast && past.length > 0 && (
-          <div className={`space-y-3 ${upcoming.length > 0 ? 'mt-8' : 'mt-5'}`}>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Passés</p>
-            {past.map((e) => (
-              <EventCard key={e.id} event={e} past />
-            ))}
-          </div>
-        )}
+      {showPast && past.length > 0 && (
+        <div className={`space-y-3 ${upcoming.length > 0 ? 'mt-8' : embedded ? '' : 'mt-5'}`}>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Passés</p>
+          {past.map((e) => (
+            <EventCard key={e.id} event={e} past />
+          ))}
+        </div>
+      )}
 
-        {upcoming.length === 0 && past.length === 0 && (
-          <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Aucun événement pour le moment.</p>
-        )}
+      {upcoming.length === 0 && past.length === 0 && (
+        <p className={`text-sm text-slate-500 dark:text-slate-400 ${embedded ? '' : 'mt-4'}`}>
+          Aucun événement pour le moment.
+        </p>
+      )}
+    </>
+  );
+
+  if (embedded) {
+    return inner;
+  }
+
+  return (
+    <ScrollReveal variant="fade-up" delay={80}>
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+        {inner}
       </div>
     </ScrollReveal>
   );

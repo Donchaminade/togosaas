@@ -26,12 +26,25 @@ export interface CommunityEvent {
   communityId: number;
   title: string;
   description?: string | null;
+  posterUrl?: string | null;
   startsAt: string;
   endsAt?: string | null;
   location?: string | null;
   eventUrl?: string | null;
+  status?: 'upcoming' | 'past';
+  communityName?: string | null;
+  communitySlug?: string | null;
+  organizerName?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
+}
+
+export interface CommunityEngagement {
+  likesCount: number;
+  ratingAvg: number | null;
+  reviewsCount: number;
+  liked?: boolean;
+  userRating?: number | null;
 }
 
 export interface Community {
@@ -72,6 +85,9 @@ export interface Community {
   ownerEmail?: string | null;
   membershipRole?: MembershipRole | null;
   events?: CommunityEvent[];
+  likesCount?: number;
+  ratingAvg?: number | null;
+  reviewsCount?: number;
 }
 
 export interface CountryData {

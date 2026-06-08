@@ -11,6 +11,7 @@ import Home from './pages/Home';
 import About from './pages/About';
 import Communities from './pages/Communities';
 import CommunityDetail from './pages/CommunityDetail';
+import CommunityEventDetail from './pages/CommunityEventDetail';
 import ReportCommunity from './pages/ReportCommunity';
 import ReportTrack from './pages/ReportTrack';
 import Contact from './pages/Contact';
@@ -43,6 +44,7 @@ export default function App() {
                 <Route path="/a-propos" element={<About />} />
                 <Route path="/communautes" element={<Communities />} />
                 <Route path="/communautes/:id" element={<CommunityDetail />} />
+                <Route path="/communautes/:id/evenements/:eventId" element={<CommunityEventDetail />} />
                 <Route path="/communautes/:id/signaler" element={<ReportCommunity />} />
                 <Route path="/signaler" element={<ReportCommunity />} />
                 <Route path="/signaler/suivi" element={<ReportTrack />} />

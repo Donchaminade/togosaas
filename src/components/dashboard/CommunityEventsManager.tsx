@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Calendar, Plus, X } from 'lucide-react';
+import ImageUpload from '../ui/ImageUpload';
 import { ManageEventsTable } from './EventsTable';
 import Spinner from '../ui/Spinner';
 import SearchBar from '../ui/SearchBar';
@@ -19,6 +20,7 @@ interface Props {
 const emptyForm = (): Partial<CommunityEvent> => ({
   title: '',
   description: '',
+  posterUrl: '',
   startsAt: '',
   endsAt: '',
   location: '',
@@ -77,6 +79,7 @@ export default function CommunityEventsManager({ community, onClose, inline = fa
     setForm({
       title: e.title,
       description: e.description ?? '',
+      posterUrl: e.posterUrl ?? '',
       startsAt: toInputDatetime(e.startsAt),
       endsAt: toInputDatetime(e.endsAt),
       location: e.location ?? '',
@@ -93,6 +96,7 @@ export default function CommunityEventsManager({ community, onClose, inline = fa
     const payload = {
       title: form.title.trim(),
       description: form.description?.trim() || null,
+      posterUrl: form.posterUrl?.trim() || null,
       startsAt: new Date(form.startsAt).toISOString(),
       endsAt: form.endsAt ? new Date(form.endsAt).toISOString() : null,
       location: form.location?.trim() || null,
@@ -198,6 +202,13 @@ export default function CommunityEventsManager({ community, onClose, inline = fa
                 {editing ? 'Modifier l\'événement' : 'Nouvel événement'}
               </p>
               <Field label="Titre *" value={form.title ?? ''} onChange={(v) => setForm((f) => ({ ...f, title: v }))} required />
+              <ImageUpload
+                label="Affiche / poster"
+                hint="Image carrée ou paysage — affichée en grille et en liste sur la fiche publique."
+                value={form.posterUrl ?? null}
+                onChange={(url) => setForm((f) => ({ ...f, posterUrl: url ?? '' }))}
+                aspect="banner"
+              />
               <label className="block">
                 <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-400">Description</span>
                 <textarea

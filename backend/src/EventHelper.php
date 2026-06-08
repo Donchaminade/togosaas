@@ -22,15 +22,19 @@ final class EventHelper
 
     public static function serialize(array $row): array
     {
+        $startsAt = self::formatDateTime($row['starts_at']);
+
         return [
             'id' => (int) $row['id'],
             'communityId' => (int) $row['community_id'],
             'title' => $row['title'],
             'description' => $row['description'] ?? null,
-            'startsAt' => self::formatDateTime($row['starts_at']),
+            'posterUrl' => $row['poster_url'] ?? null,
+            'startsAt' => $startsAt,
             'endsAt' => isset($row['ends_at']) ? self::formatDateTime($row['ends_at']) : null,
             'location' => $row['location'] ?? null,
             'eventUrl' => $row['event_url'] ?? null,
+            'status' => self::statusFromStartsAt($startsAt),
             'createdAt' => $row['created_at'] ?? null,
             'updatedAt' => $row['updated_at'] ?? null,
         ];
@@ -45,7 +49,20 @@ final class EventHelper
             'ends_at' => self::nullableDateTime($request->input('endsAt')),
             'location' => self::nullableString($request->input('location')),
             'event_url' => self::nullableString($request->input('eventUrl')),
+            'poster_url' => self::nullableString($request->input('posterUrl')),
         ];
+    }
+
+    public static function statusFromStartsAt(?string $startsAtIso): string
+    {
+        if ($startsAtIso === null || $startsAtIso === '') {
+            return 'upcoming';
+        }
+        $ts = strtotime($startsAtIso);
+        if ($ts === false) {
+            return 'upcoming';
+        }
+        return $ts < time() ? 'past' : 'upcoming';
     }
 
     public static function find(int $id): ?array

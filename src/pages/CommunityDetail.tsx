@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import CommunityEngagementBar from '../components/community/CommunityEngagementBar';
 import CommunityShareSidebar from '../components/community/CommunityShareSidebar';
-import CommunityEventsCalendar from '../components/CommunityEventsCalendar';
+import CommunityEventsExplorer from '../components/community/CommunityEventsExplorer';
 import ScrollReveal from '../components/motion/ScrollReveal';
 import { PageLoader } from '../components/ui/Spinner';
 import { api } from '../lib/api';
@@ -47,6 +47,10 @@ export default function CommunityDetail() {
 
   useEffect(() => {
     if (!slugOrId) return;
+    const tabParam = new URLSearchParams(window.location.search).get('tab');
+    if (tabParam === 'events' || tabParam === 'about' || tabParam === 'organizers') {
+      setTab(tabParam);
+    }
     api
       .getCommunity(slugOrId)
       .then((res) => {
@@ -133,7 +137,7 @@ export default function CommunityDetail() {
                 )}
               </div>
               <div className="mt-4">
-                <CommunityEngagementBar />
+                <CommunityEngagementBar community={community} />
               </div>
             </div>
           </div>
@@ -282,11 +286,11 @@ export default function CommunityDetail() {
           {tab === 'events' && (
             <PanelCard
               icon={Calendar}
-              title="Calendrier événementiel"
-              subtitle="Les rendez-vous et activités de la communauté"
+              title="Événements du Chapitre"
+              subtitle="Les rendez-vous et activités de l'année"
             >
               {events.length > 0 ? (
-                <CommunityEventsCalendar events={events} />
+                <CommunityEventsExplorer community={community} events={events} />
               ) : (
                 <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
                   Aucun événement publié pour le moment.

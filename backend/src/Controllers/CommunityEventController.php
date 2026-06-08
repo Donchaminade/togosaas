@@ -15,17 +15,39 @@ final class CommunityEventController
     /** Liste publique des evenements d'une communaute approuvee. */
     public function indexPublic(Request $request): void
     {
-        $communityId = (int) $request->param('id');
-        $community = $this->findApprovedCommunity($communityId);
-
+        $community = $this->findApprovedCommunity((string) $request->param('id'));
         if (!$community) {
             Response::error('Communaute introuvable.', 404);
         }
 
-        $upcomingOnly = $request->query('upcoming', '1') !== '0';
+        $communityId = (int) $community['id'];
+        $upcomingOnly = $request->query('upcoming', '0') === '1';
         Response::success([
             'events' => EventHelper::listForCommunity($communityId, $upcomingOnly),
         ]);
+    }
+
+    /** Detail public d'un evenement. */
+    public function showPublic(Request $request): void
+    {
+        $community = $this->findApprovedCommunity((string) $request->param('id'));
+        if (!$community) {
+            Response::error('Communaute introuvable.', 404);
+        }
+
+        $communityId = (int) $community['id'];
+        $eventId = (int) $request->param('eventId');
+        $event = $this->findOwnedEvent($communityId, $eventId);
+        if (!$event) {
+            Response::error('Evenement introuvable.', 404);
+        }
+
+        $serialized = EventHelper::serialize($event);
+        $serialized['communityName'] = $community['name'];
+        $serialized['communitySlug'] = $community['slug'] ?? null;
+        $serialized['organizerName'] = $community['leader_name'] ?? $community['name'];
+
+        Response::success(['event' => $serialized]);
     }
 
     /** Liste complete pour le lead proprietaire. */
@@ -107,15 +129,30 @@ final class CommunityEventController
             'startsAt' => 'required',
             'location' => 'max:255',
             'eventUrl' => 'max:500',
+            'posterUrl' => 'max:500',
         ])->abortIfFails();
     }
 
-    private function findApprovedCommunity(int $id): ?array
+    private function findApprovedCommunity(string $identifier): ?array
     {
-        $stmt = Database::connection()->prepare(
-            "SELECT id FROM communities WHERE id = :id AND status = 'approved' LIMIT 1"
-        );
-        $stmt->execute(['id' => $id]);
+        $identifier = trim($identifier);
+        if ($identifier === '') {
+            return null;
+        }
+
+        $db = Database::connection();
+        if (ctype_digit($identifier)) {
+            $stmt = $db->prepare(
+                "SELECT id, name, slug, leader_name FROM communities WHERE id = :id AND status = 'approved' LIMIT 1"
+            );
+            $stmt->execute(['id' => (int) $identifier]);
+        } else {
+            $stmt = $db->prepare(
+                "SELECT id, name, slug, leader_name FROM communities WHERE slug = :slug AND status = 'approved' LIMIT 1"
+            );
+            $stmt->execute(['slug' => $identifier]);
+        }
+
         return $stmt->fetch() ?: null;
     }
 

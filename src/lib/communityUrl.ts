@@ -22,6 +22,10 @@ export function communityPublicPath(community: CommunityLinkTarget): string {
   return `/communautes/${slug}`;
 }
 
+export function communityEventPath(community: CommunityLinkTarget, eventId: number): string {
+  return `${communityPublicPath(community)}/evenements/${eventId}`;
+}
+
 export function communityPublicUrl(community: CommunityLinkTarget): string {
   const path = communityPublicPath(community);
   if (typeof window !== 'undefined') {

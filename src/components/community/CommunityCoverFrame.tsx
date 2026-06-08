@@ -20,7 +20,7 @@ export default function CommunityCoverFrame({
   return (
     <div
       className={`relative flex aspect-[16/10] items-center justify-center overflow-hidden ${
-        isDefault ? 'bg-slate-950' : 'bg-slate-50'
+        isDefault ? 'bg-slate-950' : 'bg-slate-50 dark:bg-slate-800'
       } ${className}`}
     >
       <img

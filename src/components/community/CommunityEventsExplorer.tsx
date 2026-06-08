@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import CommunityEventsCalendar from '../CommunityEventsCalendar';
 import EventListCard from './EventListCard';
+import EventPosterFrame, { EventPosterPlaceholder } from './EventPosterFrame';
 import { communityEventPath } from '../../lib/communityUrl';
 import type { Community, CommunityEvent } from '../../types';
 
@@ -71,22 +72,17 @@ export default function CommunityEventsExplorer({ community, events }: Props) {
               <Link
                 key={event.id}
                 to={communityEventPath(community, event.id)}
-                className="group aspect-square overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 transition-all hover:border-sky-400 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800"
+                className="group flex aspect-square flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 transition-all hover:border-sky-400 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800"
               >
                 {event.posterUrl ? (
-                  <img
-                    src={mediaUrl(event.posterUrl)}
-                    alt={event.title}
-                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                    loading="lazy"
+                  <EventPosterFrame
+                    posterUrl={event.posterUrl}
+                    title={event.title}
+                    variant="compact"
+                    className="h-full min-h-0 flex-1"
                   />
                 ) : (
-                  <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-sky-50 to-slate-100 p-3 text-center dark:from-sky-950/40 dark:to-slate-900">
-                    <Calendar className="h-8 w-8 text-sky-400" />
-                    <span className="line-clamp-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
-                      {event.title}
-                    </span>
-                  </div>
+                  <EventPosterPlaceholder title={event.title} className="h-full flex-1" />
                 )}
               </Link>
             ))}

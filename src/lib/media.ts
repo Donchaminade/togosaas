@@ -7,11 +7,29 @@ export function mediaUrl(path?: string | null): string {
     return path;
   }
   /* Assets servis par le frontend Vite (public/) */
-  if (path.startsWith('/diapo/') || path.startsWith('/logos') || path.startsWith('/navlogo')) {
+  if (
+    path.startsWith('/diapo/') ||
+    path.startsWith('/logo') ||
+    path.startsWith('/navlogo') ||
+    path.startsWith('/og-')
+  ) {
     return path;
   }
   const base = API_BASE_URL.replace(/\/$/, '');
   return `${base}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
+/** Affiche / logo par défaut des communautés sans visuel uploadé (public/). */
+export const DEFAULT_COMMUNITY_COVER = '/logofondnoir.png';
+
+/** Bannière ou logo communauté, sinon visuel TCH par défaut. */
+export function communityCoverUrl(community: {
+  bannerUrl?: string | null;
+  logoUrl?: string | null;
+}): string {
+  const path = community.bannerUrl?.trim() || community.logoUrl?.trim();
+  if (!path) return DEFAULT_COMMUNITY_COVER;
+  return mediaUrl(path);
 }
 
 const IMAGE_EXT = /\.(jpe?g|png|gif|webp)$/i;

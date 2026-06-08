@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Calendar, ChevronRight, Clock, MapPin, Pencil, Trash2, Video } from 'lucide-react';
-import { mediaUrl } from '../../lib/media';
+import EventPosterFrame from './EventPosterFrame';
 import type { CommunityEvent } from '../../types';
 
 export interface EventListCardProps {
@@ -26,19 +26,8 @@ export default function EventListCard({
 
   const inner = (
     <>
-      <div className="relative aspect-[16/10] overflow-hidden bg-slate-100 dark:bg-slate-800">
-        {event.posterUrl ? (
-          <img
-            src={mediaUrl(event.posterUrl)}
-            alt=""
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-            loading="lazy"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center bg-gradient-to-br from-sky-600 to-sky-800 p-6">
-            <p className="text-center text-lg font-black leading-tight text-white">{event.title}</p>
-          </div>
-        )}
+      <div className="relative overflow-hidden">
+        <EventPosterFrame posterUrl={event.posterUrl} title={event.title} variant="compact" />
         {isPast && (
           <span className={`absolute top-3 inline-flex items-center gap-1 rounded-full bg-rose-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow ${isManage ? 'left-3' : 'right-3'}`}>
             <Video className="h-3 w-3" />

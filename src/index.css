@@ -385,13 +385,22 @@
     }
   }
 
-  /* Espace sous la navbar flottante (top-4 + hauteur barre + marge) */
+  /* Espace sous la navbar flottante (top-3 + hauteur barre + marge) */
   .pt-below-nav {
     padding-top: 7rem;
   }
   @media (min-width: 640px) {
     .pt-below-nav {
       padding-top: 8rem;
+    }
+  }
+
+  .top-below-nav {
+    top: 6.5rem;
+  }
+  @media (min-width: 640px) {
+    .top-below-nav {
+      top: 7.5rem;
     }
   }
 }

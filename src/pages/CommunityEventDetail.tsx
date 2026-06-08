@@ -10,6 +10,7 @@ import {
   Video,
 } from 'lucide-react';
 import EventShareSidebar from '../components/community/EventShareSidebar';
+import EventPosterFrame from '../components/community/EventPosterFrame';
 import { PageLoader } from '../components/ui/Spinner';
 import { api } from '../lib/api';
 import { communityEventUrl, communityPublicPath } from '../lib/communityUrl';
@@ -70,12 +71,16 @@ export default function CommunityEventDetail() {
   );
 
   if (loading) {
-    return <PageLoader label="Chargement de l'événement..." />;
+    return (
+      <div className="pt-below-nav">
+        <PageLoader label="Chargement de l'événement..." />
+      </div>
+    );
   }
 
   if (error || !event) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
+      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 pt-below-nav text-center">
         <p className="text-lg font-bold text-slate-700 dark:text-slate-200">Événement introuvable</p>
         {communityRef && (
           <Link
@@ -99,8 +104,8 @@ export default function CommunityEventDetail() {
   const logoUrl = community?.logoUrl ? mediaUrl(community.logoUrl) : null;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="min-h-screen bg-slate-50 pt-below-nav dark:bg-slate-950">
+      <div className="mx-auto max-w-6xl px-4 pb-12 pt-6 sm:px-6 sm:pb-16 sm:pt-8 lg:px-8">
         <Link
           to={`${communityPath}?tab=events`}
           className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition-colors hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400"
@@ -109,9 +114,9 @@ export default function CommunityEventDetail() {
           Retour aux événements
         </Link>
 
-        <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-12">
           {/* Colonne principale */}
-          <div className="min-w-0 space-y-6">
+          <div className="min-w-0 space-y-8">
             <div className="flex flex-wrap gap-2">
               <Badge
                 tone={isPast ? 'neutral' : 'success'}
@@ -160,17 +165,7 @@ export default function CommunityEventDetail() {
             </div>
 
             <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              {event.posterUrl ? (
-                <img
-                  src={mediaUrl(event.posterUrl)}
-                  alt=""
-                  className="aspect-video w-full object-cover"
-                />
-              ) : (
-                <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-sky-600 via-sky-700 to-slate-900 p-8">
-                  <p className="max-w-lg text-center text-xl font-black text-white sm:text-2xl">{event.title}</p>
-                </div>
-              )}
+              <EventPosterFrame posterUrl={event.posterUrl} title={event.title} variant="hero" />
             </div>
 
             {event.description && (
@@ -196,7 +191,7 @@ export default function CommunityEventDetail() {
           </div>
 
           {/* Sidebar */}
-          <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+          <aside className="space-y-5 lg:sticky lg:top-below-nav lg:self-start">
             <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div className="bg-sky-600 p-5 text-white dark:bg-sky-700">
                 <div className="flex items-start justify-between gap-3">

@@ -22,7 +22,6 @@ import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
 import { buildLeadNav, leadSectionFromPath, LEAD_SECTION_TITLES } from '../../lib/leadNav';
 import { filterBySearch } from '../../lib/search';
-import { StaggerReveal } from '../../components/motion/ScrollReveal';
 import type { Community } from '../../types';
 
 export default function LeadDashboard() {
@@ -109,21 +108,19 @@ export default function LeadDashboard() {
       ) : (
         <>
           {active === 'overview' && (
-            <div className="space-y-8">
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="min-w-0 space-y-8">
+              <div className="grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 {[
                   { icon: Users2, label: 'Communautés', value: stats.total, color: 'text-togo-green bg-togo-green/10' },
                   { icon: CheckCircle2, label: 'Approuvées', value: stats.approved, color: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-500/15' },
                   { icon: Clock, label: 'En attente', value: stats.pending, color: 'text-amber-600 bg-amber-100 dark:bg-amber-500/15' },
                   { icon: MessageCircle, label: 'Messages admin', value: supportUnread, color: 'text-sky-600 bg-sky-100 dark:bg-sky-500/15' },
-                ].map((card, i) => (
-                  <StaggerReveal key={card.label} index={i} variant="gentle-up">
-                    <StatCard icon={card.icon} label={card.label} value={card.value} color={card.color} />
-                  </StaggerReveal>
+                ].map((card) => (
+                  <StatCard key={card.label} icon={card.icon} label={card.label} value={card.value} color={card.color} />
                 ))}
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {[
                   { to: '/espace-lead/communautes/nouvelle', label: 'Nouvelle communauté', desc: 'Soumettre une fiche', accent: true },
                   { to: '/espace-lead/co-leads', label: 'Gérer les co-leads', desc: `${stats.coLeadsTotal} membre(s)` },
@@ -131,10 +128,8 @@ export default function LeadDashboard() {
                   { to: '/espace-lead/evenements', label: 'Calendrier', desc: 'Tous vos événements' },
                   { to: '/espace-lead/profil', label: 'Mon profil', desc: 'Nom, téléphone' },
                   { to: '/espace-lead/communautes', label: 'Mes communautés', desc: `${stats.total} fiche(s)` },
-                ].map((link, i) => (
-                  <StaggerReveal key={link.to} index={i} variant="fade-up" stagger={60}>
-                    <QuickLink to={link.to} label={link.label} desc={link.desc} accent={link.accent} />
-                  </StaggerReveal>
+                ].map((link) => (
+                  <QuickLink key={link.to} to={link.to} label={link.label} desc={link.desc} accent={link.accent} />
                 ))}
               </div>
 
@@ -250,9 +245,9 @@ function CommunitiesList({
 
 function StatCard({ icon: Icon, label, value, color }: { icon: any; label: string; value: number; color: string }) {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-      <span className={`grid h-12 w-12 place-items-center rounded-2xl ${color}`}>
-        <Icon className="h-6 w-6" />
+    <div className="min-w-0 rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+      <span className={`grid h-11 w-11 place-items-center rounded-2xl sm:h-12 sm:w-12 ${color}`}>
+        <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
       </span>
       <p className="mt-4 text-3xl font-black text-slate-900 dark:text-white">{value}</p>
       <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">{label}</p>
@@ -264,14 +259,14 @@ function QuickLink({ to, label, desc, accent }: { to: string; label: string; des
   return (
     <Link
       to={to}
-      className={`rounded-2xl border p-5 transition-all hover:shadow-md ${
+      className={`block min-w-0 w-full rounded-2xl border p-4 transition-all hover:shadow-md sm:p-5 ${
         accent
           ? 'border-togo-green/30 bg-togo-green/5 hover:border-togo-green dark:border-togo-yellow/30 dark:bg-togo-yellow/5'
           : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900'
       }`}
     >
       <p className="font-bold text-slate-900 dark:text-white">{label}</p>
-      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{desc}</p>
+      <p className="mt-1 break-words text-xs text-slate-500 dark:text-slate-400">{desc}</p>
     </Link>
   );
 }

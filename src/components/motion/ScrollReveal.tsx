@@ -92,7 +92,7 @@ export default function ScrollReveal({
   return (
     <div
       ref={ref}
-      className={`motion-reveal ${VARIANT_CLASS[variant]} ${visible ? 'motion-visible' : ''} ${className}`}
+      className={`motion-reveal min-w-0 max-w-full ${VARIANT_CLASS[variant]} ${visible ? 'motion-visible' : ''} ${className}`}
       style={
         {
           '--motion-delay': `${delay}ms`,

@@ -27,14 +27,15 @@ export default function Modal({ title, onClose, children, maxWidth = 'lg' }: Mod
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-slate-900/60 p-4 backdrop-blur-sm sm:p-6"
+      className="fixed inset-0 z-[200] overflow-y-auto bg-slate-900/60 p-4 py-8 backdrop-blur-sm sm:px-6 sm:py-10"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
     >
+      {/* items-start : le titre reste visible (items-center masquait le haut sur petits écrans) */}
       <div
-        className={`my-auto flex w-full ${maxWidthClass} max-h-[min(90dvh,calc(100dvh-2rem))] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950`}
+        className={`mx-auto flex w-full ${maxWidthClass} max-h-[calc(100dvh-4rem)] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950 sm:max-h-[calc(100dvh-5rem)]`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-800">
@@ -51,7 +52,7 @@ export default function Modal({ title, onClose, children, maxWidth = 'lg' }: Mod
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
       </div>
     </div>,
     document.body,

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Save, X } from 'lucide-react';
+import { Save } from 'lucide-react';
+import Modal from '../ui/Modal';
 import Spinner from '../ui/Spinner';
 
 interface Props {
@@ -33,60 +34,44 @@ export default function LeadCreateForm({ onClose, onSubmit }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div
-        className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-800">
-          <h2 className="text-lg font-black text-slate-900 dark:text-white">Ajouter un lead</h2>
+    <Modal title="Ajouter un lead" onClose={onClose}>
+      <form onSubmit={handleSubmit} className="space-y-5 p-6">
+        <Field label="Nom complet" value={name} onChange={setName} required />
+        <Field label="Email" type="email" value={email} onChange={setEmail} required />
+        <Field
+          label="Mot de passe"
+          type="password"
+          value={password}
+          onChange={setPassword}
+          required
+          placeholder="Minimum 6 caractères"
+          minLength={6}
+        />
+        <Field label="Téléphone" value={phone} onChange={setPhone} placeholder="+228 90 00 00 00" />
+
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Le lead pourra se connecter avec cet email et ce mot de passe pour gérer ses communautés.
+        </p>
+
+        <div className="flex gap-3 pt-2">
           <button
             type="button"
             onClick={onClose}
-            className="grid h-9 w-9 place-items-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
-            <X className="h-5 w-5" />
+            Annuler
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-togo-green px-4 py-3 text-sm font-bold text-white transition-all hover:bg-togo-green-dark disabled:opacity-60"
+          >
+            {saving ? <Spinner className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+            Créer le lead
           </button>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-5 p-6">
-          <Field label="Nom complet" value={name} onChange={setName} required />
-          <Field label="Email" type="email" value={email} onChange={setEmail} required />
-          <Field
-            label="Mot de passe"
-            type="password"
-            value={password}
-            onChange={setPassword}
-            required
-            placeholder="Minimum 6 caractères"
-            minLength={6}
-          />
-          <Field label="Téléphone" value={phone} onChange={setPhone} placeholder="+228 90 00 00 00" />
-
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Le lead pourra se connecter avec cet email et ce mot de passe pour gérer ses communautés.
-          </p>
-
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-togo-green px-4 py-3 text-sm font-bold text-white transition-all hover:bg-togo-green-dark disabled:opacity-60"
-            >
-              {saving ? <Spinner className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-              Créer le lead
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 }
 

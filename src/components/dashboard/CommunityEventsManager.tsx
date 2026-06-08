@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Calendar, Plus, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import ImageUpload from '../ui/ImageUpload';
-import { ManageEventsTable } from './EventsTable';
+import EventsCardGrid from './EventsCardGrid';
 import Spinner from '../ui/Spinner';
 import SearchBar from '../ui/SearchBar';
 import SearchEmptyState from '../ui/SearchEmptyState';
@@ -15,6 +15,7 @@ interface Props {
   community: Community;
   onClose?: () => void;
   inline?: boolean;
+  onEventsChange?: () => void;
 }
 
 const emptyForm = (): Partial<CommunityEvent> => ({
@@ -35,7 +36,7 @@ function toInputDatetime(iso?: string | null): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export default function CommunityEventsManager({ community, onClose, inline = false }: Props) {
+export default function CommunityEventsManager({ community, onClose, inline = false, onEventsChange }: Props) {
   const { notify } = useToast();
   const { confirmDelete } = useConfirm();
   const [events, setEvents] = useState<CommunityEvent[]>([]);
@@ -114,6 +115,7 @@ export default function CommunityEventsManager({ community, onClose, inline = fa
       setFormOpen(false);
       setEditing(null);
       await load();
+      onEventsChange?.();
     } catch (err) {
       if (err instanceof ApiError) notify(err.message, 'error');
     } finally {
@@ -129,6 +131,7 @@ export default function CommunityEventsManager({ community, onClose, inline = fa
       await api.deleteCommunityEvent(community.id, e.id);
       notify('Événement supprimé.', 'success');
       await load();
+      onEventsChange?.();
     } catch {
       notify('Suppression impossible.', 'error');
     }
@@ -136,11 +139,15 @@ export default function CommunityEventsManager({ community, onClose, inline = fa
 
   const content = (
     <>
-      <div className={`flex items-center justify-between ${inline ? 'mb-5' : 'border-b border-slate-200 px-6 py-4 dark:border-slate-800'}`}>
+      <div className={`${inline && !formOpen ? '' : `flex items-center justify-between ${inline ? 'mb-5' : 'border-b border-slate-200 px-6 py-4 dark:border-slate-800'}`}`}>
+        {(!inline || formOpen) && (
         <div>
-          <h2 className="text-lg font-black text-slate-900 dark:text-white">Événements de l&apos;année</h2>
+          <h2 className="text-lg font-black text-slate-900 dark:text-white">
+            {inline ? 'Événements de l&apos;année' : 'Calendrier événementiel'}
+          </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400">{community.name}</p>
         </div>
+        )}
         {!inline && onClose && (
           <button
             type="button"
@@ -155,24 +162,9 @@ export default function CommunityEventsManager({ community, onClose, inline = fa
       <div className={inline ? '' : 'flex-1 overflow-y-auto p-6'}>
           {!formOpen ? (
             <>
-              <button
-                type="button"
-                onClick={openCreate}
-                className="mb-5 flex w-full items-center justify-center gap-2 rounded-xl bg-togo-green px-4 py-3 text-sm font-bold text-white shadow-md shadow-togo-green/20 transition-all hover:bg-togo-green-dark"
-              >
-                <Plus className="h-4 w-4" /> Ajouter un événement
-              </button>
-
               {loading ? (
                 <div className="flex justify-center py-12">
                   <Spinner className="h-8 w-8 text-togo-green" />
-                </div>
-              ) : events.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-200 py-12 text-center dark:border-slate-700">
-                  <Calendar className="mx-auto h-10 w-10 text-slate-300" />
-                  <p className="mt-3 text-sm font-medium text-slate-500 dark:text-slate-400">
-                    Aucun événement planifié. Ajoutez meetups, ateliers ou conférences.
-                  </p>
                 </div>
               ) : (
                 <>
@@ -188,10 +180,19 @@ export default function CommunityEventsManager({ community, onClose, inline = fa
                       />
                     </div>
                   )}
-                  {filteredEvents.length === 0 ? (
+                  {filteredEvents.length === 0 && search.trim() ? (
                     <SearchEmptyState query={search.trim()} />
                   ) : (
-                    <ManageEventsTable events={filteredEvents} onEdit={openEdit} onDelete={handleDelete} />
+                    <EventsCardGrid
+                      title="Événements"
+                      count={filteredEvents.length}
+                      events={filteredEvents}
+                      organizerName={community.name}
+                      onAdd={openCreate}
+                      onEdit={openEdit}
+                      onDelete={handleDelete}
+                      emptyMessage="Aucun événement planifié. Ajoutez meetups, ateliers ou conférences."
+                    />
                   )}
                 </>
               )}

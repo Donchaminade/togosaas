@@ -32,7 +32,9 @@ import { externalUrl, websiteLabel } from '../../lib/externalUrl';
 import { communityPublicPath } from '../../lib/communityUrl';
 import { formatLocation } from '../../lib/location';
 import type { CoLead, Community } from '../../types';
-import CommunityEventsCalendar from '../../components/CommunityEventsCalendar';
+import EventsCardGrid from '../../components/dashboard/EventsCardGrid';
+import CommunityEventsManager from '../../components/dashboard/CommunityEventsManager';
+import { communityEventPath } from '../../lib/communityUrl';
 
 export default function AdminCommunityDetail() {
   const { id } = useParams<{ id: string }>();
@@ -41,6 +43,7 @@ export default function AdminCommunityDetail() {
   const { confirmDelete } = useConfirm();
   const [community, setCommunity] = useState<Community | null>(null);
   const [loading, setLoading] = useState(true);
+  const [eventsManagerOpen, setEventsManagerOpen] = useState(false);
 
   const load = async () => {
     if (!id) return;
@@ -226,11 +229,19 @@ export default function AdminCommunityDetail() {
               </div>
             </Block>
           )}
-          {events.length > 0 && (
-            <Block icon={Calendar} title="Calendrier événementiel">
-              <CommunityEventsCalendar events={events} />
-            </Block>
-          )}
+          <Block icon={Calendar} title="Événements">
+            <EventsCardGrid
+              title="Événements de l'année"
+              count={events.length}
+              events={[...events].sort(
+                (a, b) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime(),
+              )}
+              organizerName={community.name}
+              getEventLink={(event) => communityEventPath(community, event.id)}
+              onAdd={() => setEventsManagerOpen(true)}
+              emptyMessage="Aucun événement pour cette communauté."
+            />
+          </Block>
         </div>
 
         {/* Sidebar admin */}
@@ -329,6 +340,14 @@ export default function AdminCommunityDetail() {
           </p>
         </aside>
       </div>
+
+      {eventsManagerOpen && community && (
+        <CommunityEventsManager
+          community={community}
+          onClose={() => setEventsManagerOpen(false)}
+          onEventsChange={load}
+        />
+      )}
     </DashboardLayout>
   );
 }

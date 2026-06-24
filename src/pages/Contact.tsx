@@ -54,20 +54,37 @@ export default function Contact() {
             <div className="lg:col-span-2">
               <div className="space-y-4">
                 {[
-                  { icon: Mail, label: 'Email', value: 'contact@tch.tg' },
-                  { icon: Phone, label: 'Téléphone', value: '+228 90 00 00 00' },
+                  {
+                    icon: Mail,
+                    label: 'Email',
+                    value: 'chaminade.dondah.adjolou@gmail.com',
+                    href: 'mailto:chaminade.dondah.adjolou@gmail.com',
+                  },
+                  {
+                    icon: Phone,
+                    label: 'Téléphone',
+                    value: '+22899181626',
+                    href: 'tel:+22899181626',
+                  },
                   { icon: MapPin, label: 'Localisation', value: 'Lomé, Togo' },
                 ].map((c, i) => (
                   <StaggerReveal key={c.label} index={i} variant="gentle-up" stagger={85}>
-                  <div
-                    className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-5 dark:border-slate-800 dark:bg-slate-900"
-                  >
-                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-togo-green/10 text-togo-green">
+                  <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-white to-togo-surface-strong/70 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-togo-green/10 text-togo-green dark:bg-togo-yellow/15 dark:text-togo-yellow">
                       <c.icon className="h-5 w-5" />
                     </span>
                     <div>
                       <p className="text-xs font-bold uppercase tracking-wide text-slate-400">{c.label}</p>
-                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{c.value}</p>
+                      {c.href ? (
+                        <a
+                          href={c.href}
+                          className="break-all text-sm font-semibold text-slate-800 transition-colors hover:text-togo-green dark:text-slate-100 dark:hover:text-togo-yellow"
+                        >
+                          {c.value}
+                        </a>
+                      ) : (
+                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{c.value}</p>
+                      )}
                     </div>
                   </div>
                   </StaggerReveal>
@@ -134,7 +151,7 @@ export default function Contact() {
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-togo-green px-6 py-4 text-base font-bold text-white shadow-lg shadow-togo-green/25 transition-all hover:bg-togo-green-dark disabled:opacity-60"
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-togo-green px-6 py-4 text-base font-bold text-white shadow-lg shadow-togo-green/25 transition-all hover:bg-togo-green-dark disabled:opacity-60 dark:bg-togo-yellow dark:text-slate-900 dark:shadow-togo-yellow/20 dark:hover:bg-togo-yellow/90"
               >
                 {loading ? <Spinner /> : <Send className="h-5 w-5" />}
                 {loading ? 'Envoi...' : 'Envoyer le message'}

@@ -23,7 +23,7 @@ export function buildLeadNav(stats: LeadNavStats = {}): DashboardNavItem[] {
     { id: 'overview', label: "Vue d'ensemble", icon: LayoutGrid, section: 'Principal', href: '/espace-lead' },
     {
       id: 'communautes',
-      label: 'Mes communautés',
+      label: 'Mes solutions SaaS',
       icon: Users2,
       badge: stats.communitiesTotal || undefined,
       href: '/espace-lead/communautes',
@@ -59,7 +59,7 @@ export function buildLeadNav(stats: LeadNavStats = {}): DashboardNavItem[] {
     },
     {
       id: 'nouvelle',
-      label: 'Nouvelle communauté',
+      label: 'Nouvelle solution SaaS',
       icon: Plus,
       href: '/espace-lead/communautes/nouvelle',
     },
@@ -80,7 +80,7 @@ export function leadSectionFromPath(pathname: string): string {
 
 export const LEAD_SECTION_TITLES: Record<string, { title: string; subtitle: string }> = {
   overview: { title: 'Mon espace lead', subtitle: 'Tableau de bord' },
-  communautes: { title: 'Mes communautés', subtitle: 'Créer et gérer vos fiches' },
+  communautes: { title: 'Mes solutions SaaS', subtitle: 'Créer et gérer vos fiches' },
   'co-leads': { title: 'Gestion des co-leads', subtitle: 'Accès et équipe' },
   evenements: { title: 'Calendrier événementiel', subtitle: 'Tous vos événements' },
   messages: { title: 'Messages admin', subtitle: 'Échangez avec l\'équipe Togosaas' },

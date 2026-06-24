@@ -123,8 +123,9 @@ export default function About() {
           className="absolute inset-0 h-full w-full scale-105 object-cover blur-[2px]"
           loading="eager"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,106,78,0.25)_0%,transparent_55%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/72 via-black/60 to-black/84" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,106,78,0.22)_0%,transparent_55%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_75%_20%,rgba(255,206,0,0.12)_0%,transparent_35%)]" />
 
         <div className="relative z-10 mx-auto max-w-4xl px-4 pt-below-nav text-center sm:px-6">
           <span className="inline-block rounded-full bg-togo-red px-5 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white shadow-lg shadow-togo-red/30">
@@ -145,7 +146,7 @@ export default function About() {
       </section>
 
       {/* Qu'est-ce que Togosaas ? */}
-      <section className="bg-white py-20 dark:bg-slate-950 lg:py-28">
+      <section className="bg-togo-surface py-20 dark:bg-slate-950 lg:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <ScrollReveal variant="fade-up">
@@ -216,7 +217,7 @@ export default function About() {
       </section>
 
       {/* Ce que Togosaas vous apporte */}
-      <section className="border-t border-slate-100 bg-slate-50 py-20 dark:border-slate-800 dark:bg-slate-900 lg:py-28">
+      <section className="border-t border-slate-100 bg-togo-surface-strong py-20 dark:border-slate-800 dark:bg-slate-900 lg:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <ScrollReveal variant="fade-up">
             <div className="mx-auto max-w-3xl text-center">

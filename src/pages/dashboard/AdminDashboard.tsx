@@ -194,7 +194,7 @@ export default function AdminDashboard() {
           {active === 'overview' && stats && (
             <div className="space-y-8">
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                <StatCard icon={Users2} label="Communautés" value={stats.communities.total} color="text-togo-green bg-togo-green/10" />
+                <StatCard icon={Users2} label="Solutions SaaS" value={stats.communities.total} color="text-togo-green bg-togo-green/10" />
                 <StatCard icon={Clock} label="En attente" value={stats.communities.pending} color="text-amber-600 bg-amber-100 dark:bg-amber-500/15" />
                 <StatCard icon={Users} label="Leads inscrits" value={stats.leads} color="text-sky-600 bg-sky-100 dark:bg-sky-500/15" />
                 <StatCard icon={Mail} label="Messages non lus" value={stats.messages.unread} color="text-togo-red bg-rose-100 dark:bg-rose-500/15" />
@@ -203,7 +203,7 @@ export default function AdminDashboard() {
 
               <div className="grid gap-5 lg:grid-cols-3">
                 <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900 lg:col-span-2">
-                  <h3 className="text-sm font-bold uppercase tracking-wide text-slate-400">Répartition des communautés</h3>
+                  <h3 className="text-sm font-bold uppercase tracking-wide text-slate-400">Répartition des solutions SaaS</h3>
                   <div className="mt-5 space-y-4">
                     <Bar label="Approuvées" value={stats.communities.approved} total={stats.communities.total} className="bg-emerald-500" />
                     <Bar label="En attente" value={stats.communities.pending} total={stats.communities.total} className="bg-amber-500" />
@@ -216,7 +216,7 @@ export default function AdminDashboard() {
                     onClick={() => { navigate('/admin?tab=communities'); setFilter('pending'); }}
                     className="mt-4 flex w-full items-center justify-between rounded-2xl bg-amber-50 px-4 py-3 text-left transition-colors hover:bg-amber-100 dark:bg-amber-500/10"
                   >
-                    <span className="text-sm font-semibold text-amber-700 dark:text-amber-400">Communautés en attente</span>
+                    <span className="text-sm font-semibold text-amber-700 dark:text-amber-400">Solutions SaaS en attente</span>
                     <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-bold text-white">{stats.communities.pending}</span>
                   </button>
                   <button

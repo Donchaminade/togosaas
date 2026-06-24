@@ -88,7 +88,7 @@ export default function AdminLeadDetail() {
   return (
     <DashboardLayout
       title={lead.name}
-      subtitle="Profil lead & communautés associées"
+      subtitle="Profil lead & solutions SaaS associées"
       nav={nav}
       active="leads"
       onNavigate={(tab) => navigate(tab === 'overview' ? '/admin' : `/admin?tab=${tab}`)}
@@ -105,7 +105,7 @@ export default function AdminLeadDetail() {
             onClick={() => navigate(`/admin/communautes/nouvelle?lead=${lead.id}`)}
             className="inline-flex items-center gap-2 rounded-xl border border-togo-green/40 px-4 py-2.5 text-sm font-semibold text-togo-green transition-colors hover:bg-togo-green/10 dark:text-togo-yellow dark:hover:bg-togo-yellow/10"
           >
-            <Plus className="h-4 w-4" /> Ajouter une communauté
+            <Plus className="h-4 w-4" /> Ajouter une solution SaaS
           </button>
           <a
             href={`mailto:${lead.email}`}

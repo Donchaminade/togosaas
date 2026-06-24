@@ -41,15 +41,15 @@ export default function Navbar() {
   };
 
   const shellClass = heroNav
-    ? 'border-white/15 bg-black/45 shadow-xl shadow-black/30 backdrop-blur-md'
+    ? 'border-white/15 bg-slate-950/45 shadow-xl shadow-black/30 backdrop-blur-xl ring-1 ring-white/5'
     : scrolled
-      ? 'border-slate-200/80 bg-white/95 shadow-xl shadow-slate-900/10 glass dark:border-slate-700/60 dark:bg-slate-950/95 dark:shadow-black/40'
-      : 'border-slate-200/60 bg-white/90 shadow-lg shadow-slate-900/5 glass dark:border-slate-700/50 dark:bg-slate-950/90 dark:shadow-black/30';
+      ? 'border-slate-200/80 bg-white/90 shadow-xl shadow-slate-900/10 glass ring-1 ring-black/5 dark:border-slate-700/60 dark:bg-slate-950/90 dark:shadow-black/40 dark:ring-white/5'
+      : 'border-slate-200/60 bg-white/80 shadow-lg shadow-slate-900/5 glass ring-1 ring-black/5 dark:border-slate-700/50 dark:bg-slate-950/85 dark:shadow-black/30 dark:ring-white/5';
 
   const linkClass = (isActive: boolean) => {
     if (heroNav) {
       return `whitespace-nowrap rounded-lg px-2.5 py-2 text-xs font-bold uppercase tracking-wide transition-colors xl:px-3 xl:text-sm ${
-        isActive ? 'text-togo-yellow' : 'text-white/90 hover:text-white'
+        isActive ? 'text-togo-yellow' : 'text-white/85 hover:text-white'
       }`;
     }
     return `whitespace-nowrap rounded-lg px-2.5 py-2 text-xs font-bold uppercase tracking-wide transition-colors xl:px-3 xl:text-sm ${
@@ -162,7 +162,7 @@ export default function Navbar() {
                 : 'border-slate-200 text-slate-700 dark:border-slate-700 dark:text-slate-200'
             }`}
             aria-label="Menu"
-            aria-expanded={open}
+            aria-expanded={open ? 'true' : 'false'}
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>

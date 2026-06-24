@@ -41,7 +41,7 @@ export default function AdminUserEditForm({ initial, onClose, onSubmit, isSelf }
       <form onSubmit={handleSubmit} className="space-y-5 p-6">
         <Field label="Nom complet" value={name} onChange={setName} required />
         <Field label="Email" type="email" value={email} onChange={setEmail} required />
-        <Field label="Téléphone" value={phone} onChange={setPhone} placeholder="+228 90 00 00 00" />
+        <Field label="Téléphone" value={phone} onChange={setPhone} placeholder="+22899181626" />
 
         <label className="block">
           <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-400">Rôle</span>

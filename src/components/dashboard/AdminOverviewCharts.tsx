@@ -43,8 +43,8 @@ export default function AdminOverviewCharts({ communities }: Props) {
       <ChartPanel
         icon={MapPin}
         title="Villes les plus actives"
-        subtitle="Nombre de communautés recensées par ville"
-        empty="Aucune communauté avec ville renseignée."
+        subtitle="Nombre de solutions SaaS recensées par ville"
+        empty="Aucune solution SaaS avec ville renseignée."
         items={topCities}
         max={maxCity}
         barClassName="bg-sky-500"

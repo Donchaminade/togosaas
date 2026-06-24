@@ -45,7 +45,7 @@ export default function ReportCommunity() {
     api
       .listCommunities()
       .then((res) => setCommunities(res.data.communities))
-      .catch(() => notify('Impossible de charger les communautés.', 'error'))
+      .catch(() => notify('Impossible de charger les solutions SaaS.', 'error'))
       .finally(() => setLoadingCommunity(false));
   }, [slugOrId, notify]);
 

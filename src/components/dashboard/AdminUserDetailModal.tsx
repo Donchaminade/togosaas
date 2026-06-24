@@ -115,7 +115,7 @@ export default function AdminUserDetailModal({ userId, onClose }: Props) {
                   </DetailRow>
                 )}
                 {user.role === 'lead' && (
-                  <DetailRow icon={Users2} label="Communautés">
+                <DetailRow icon={Users2} label="Solutions SaaS">
                     {user.communitiesCount}
                   </DetailRow>
                 )}
@@ -125,10 +125,10 @@ export default function AdminUserDetailModal({ userId, onClose }: Props) {
                 <div>
                   <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
                     Ce lead ne peut pas être supprimé tant qu&apos;il est responsable de {communities.length}{' '}
-                    communauté{communities.length > 1 ? 's' : ''}. Supprimez ces communautés ou réassignez le rôle de
+                    solution SaaS{communities.length > 1 ? 's' : ''}. Supprimez ces solutions SaaS ou réassignez le rôle de
                     responsable à un co-lead.
                   </div>
-                  <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">Communautés</h3>
+                  <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">Solutions SaaS</h3>
                   <div className="space-y-2">
                     {communities.map((c) => (
                       <Link

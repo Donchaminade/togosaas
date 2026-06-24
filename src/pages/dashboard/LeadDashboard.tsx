@@ -45,7 +45,7 @@ export default function LeadDashboard() {
       setCommunities(commRes.data.communities);
       setSupportUnread(unreadRes.data.unread);
     } catch {
-      notify('Impossible de charger vos communautés.', 'error');
+      notify('Impossible de charger vos solutions SaaS.', 'error');
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ export default function LeadDashboard() {
 
   const sectionMeta = LEAD_SECTION_TITLES[active] ?? LEAD_SECTION_TITLES.overview;
   const subtitle = active === 'overview'
-    ? `Bonjour ${user?.name?.split(' ')[0] ?? ''}, gérez vos communautés`
+    ? `Bonjour ${user?.name?.split(' ')[0] ?? ''}, gérez vos solutions SaaS`
     : sectionMeta.subtitle;
 
   const handleDelete = async (c: Community) => {
@@ -86,7 +86,7 @@ export default function LeadDashboard() {
     if (!ok) return;
     try {
       await api.deleteCommunity(c.id);
-      notify('Communauté supprimée.', 'success');
+      notify('Solution SaaS supprimée.', 'success');
       await load();
     } catch {
       notify('Suppression impossible.', 'error');
@@ -111,7 +111,7 @@ export default function LeadDashboard() {
             <div className="min-w-0 space-y-8">
               <div className="grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 {[
-                  { icon: Users2, label: 'Communautés', value: stats.total, color: 'text-togo-green bg-togo-green/10' },
+                  { icon: Users2, label: 'Solutions SaaS', value: stats.total, color: 'text-togo-green bg-togo-green/10' },
                   { icon: CheckCircle2, label: 'Approuvées', value: stats.approved, color: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-500/15' },
                   { icon: Clock, label: 'En attente', value: stats.pending, color: 'text-amber-600 bg-amber-100 dark:bg-amber-500/15' },
                   { icon: MessageCircle, label: 'Messages admin', value: supportUnread, color: 'text-sky-600 bg-sky-100 dark:bg-sky-500/15' },
@@ -122,12 +122,12 @@ export default function LeadDashboard() {
 
               <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {[
-                  { to: '/espace-lead/communautes/nouvelle', label: 'Nouvelle communauté', desc: 'Soumettre une fiche', accent: true },
+                  { to: '/espace-lead/communautes/nouvelle', label: 'Nouvelle solution SaaS', desc: 'Soumettre une fiche', accent: true },
                   { to: '/espace-lead/co-leads', label: 'Gérer les co-leads', desc: `${stats.coLeadsTotal} membre(s)` },
                   { to: '/espace-lead/messages', label: 'Contacter l\'admin', desc: supportUnread ? `${supportUnread} non lu(s)` : 'Support Togosaas' },
                   { to: '/espace-lead/evenements', label: 'Calendrier', desc: 'Tous vos événements' },
                   { to: '/espace-lead/profil', label: 'Mon profil', desc: 'Nom, téléphone' },
-                  { to: '/espace-lead/communautes', label: 'Mes communautés', desc: `${stats.total} fiche(s)` },
+                  { to: '/espace-lead/communautes', label: 'Mes solutions SaaS', desc: `${stats.total} fiche(s)` },
                 ].map((link) => (
                   <QuickLink key={link.to} to={link.to} label={link.label} desc={link.desc} accent={link.accent} />
                 ))}
@@ -136,7 +136,7 @@ export default function LeadDashboard() {
               {stats.pending > 0 && (
                 <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 dark:border-amber-500/30 dark:bg-amber-500/10">
                   <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">
-                    {stats.pending} communauté{stats.pending > 1 ? 's' : ''} en attente de validation.
+                    {stats.pending} solution SaaS{stats.pending > 1 ? 's' : ''} en attente de validation.
                   </p>
                   <Link to="/espace-lead/messages" className="mt-1 inline-block text-xs font-bold text-amber-700 underline dark:text-amber-300">
                     Contacter l&apos;admin pour suivre →
@@ -193,7 +193,7 @@ function CommunitiesList({
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-          Mes communautés ({stats.total})
+          Mes solutions SaaS ({stats.total})
         </h2>
         {stats.owned === 0 && (
           <Link
@@ -222,16 +222,16 @@ function CommunitiesList({
         <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300 py-20 text-center dark:border-slate-700">
           <Users2 className="h-12 w-12 text-slate-300" />
           <h3 className="mt-4 text-lg font-bold text-slate-700 dark:text-slate-200">
-            Aucune communauté pour le moment
+            Aucune solution SaaS pour le moment
           </h3>
           <p className="mt-2 max-w-sm text-sm text-slate-500 dark:text-slate-400">
-            Créez votre première communauté ou demandez au lead de vous ajouter comme co-lead.
+            Créez votre première solution SaaS ou demandez au lead de vous ajouter comme co-lead.
           </p>
           <Link
             to="/espace-lead/communautes/nouvelle"
             className="mt-6 inline-flex items-center gap-2 rounded-xl bg-togo-green px-5 py-3 text-sm font-bold text-white"
           >
-            <Plus className="h-4 w-4" /> Créer ma communauté
+            <Plus className="h-4 w-4" /> Créer ma solution SaaS
           </Link>
         </div>
       ) : filtered.length === 0 ? (

@@ -125,7 +125,7 @@ export default function HeroSlideshow({ stats }: HeroSlideshowProps) {
             } ${isLeaving ? 'hero-slide-layer--leaving' : ''} ${
               isPlaying ? 'hero-slide-layer--playing' : ''
             } ${isActive && !introDone ? 'hero-slide-layer--instant' : ''}`}
-            aria-hidden={!isActive}
+            aria-hidden={isActive ? 'false' : 'true'}
           >
             <div className="hero-slide-media absolute inset-0">
               <img
@@ -193,15 +193,15 @@ export default function HeroSlideshow({ stats }: HeroSlideshowProps) {
         <div className="mx-auto mt-4 w-full max-w-xl shrink-0 space-y-3 sm:mt-6 sm:max-w-2xl sm:space-y-4">
           <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
             {[
-              { value: stats.communities > 0 ? String(stats.communities) : '—', label: 'Solutions', short: 'SaaS' },
+              { value: stats.communities > 0 ? String(stats.communities) : '—', label: 'Solutions SaaS', short: 'SaaS' },
               { value: stats.cities > 0 ? String(stats.cities) : '—', label: 'Villes', short: 'Villes' },
               { value: stats.tags > 0 ? String(stats.tags) : '—', label: 'Catégories', short: 'Cat.' },
             ].map((s) => (
               <div
                 key={s.label}
-                className="relative rounded-xl border border-white/15 bg-black/30 px-2 py-3 text-center backdrop-blur-md sm:rounded-2xl sm:px-3 sm:py-3.5"
+                className="relative rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center backdrop-blur-md ring-1 ring-white/5 sm:rounded-2xl sm:px-3 sm:py-3.5"
               >
-                {s.label === 'Solutions' && stats.communities > 0 && (
+                {s.label === 'Solutions SaaS' && stats.communities > 0 && (
                   <span className="absolute -right-1 -top-1 rounded-full bg-togo-yellow px-1.5 py-0.5 text-[7px] font-black uppercase text-slate-900 shadow sm:text-[7px]">
                     Live
                   </span>

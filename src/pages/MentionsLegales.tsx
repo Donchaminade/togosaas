@@ -15,7 +15,24 @@ const SECTIONS = [
           <li>
             <strong>Chaminade Dondah Adjolou</strong> — fondateur et concepteur du projet
           </li>
-          <li>Contact : <a href="mailto:contact@tch.tg" className="font-semibold text-togo-green hover:underline dark:text-togo-yellow">contact@tch.tg</a></li>
+          <li>
+            Contact :{' '}
+            <a
+              href="mailto:chaminade.dondah.adjolou@gmail.com"
+              className="font-semibold text-togo-green hover:underline dark:text-togo-yellow"
+            >
+              chaminade.dondah.adjolou@gmail.com
+            </a>
+          </li>
+          <li>
+            Téléphone :{' '}
+            <a
+              href="tel:+22899181626"
+              className="font-semibold text-togo-green hover:underline dark:text-togo-yellow"
+            >
+              +22899181626
+            </a>
+          </li>
           <li>Localisation : Lomé, Togo</li>
         </ul>
       </>
@@ -90,8 +107,11 @@ const SECTIONS = [
         <p className="mt-3">
           Conformément à la réglementation applicable, vous pouvez demander l&apos;accès, la
           rectification ou la suppression de vos données en écrivant à{' '}
-          <a href="mailto:contact@tch.tg" className="font-semibold text-togo-green hover:underline dark:text-togo-yellow">
-            contact@tch.tg
+          <a
+            href="mailto:chaminade.dondah.adjolou@gmail.com"
+            className="font-semibold text-togo-green hover:underline dark:text-togo-yellow"
+          >
+            chaminade.dondah.adjolou@gmail.com
           </a>.
         </p>
       </>
@@ -107,7 +127,7 @@ const SECTIONS = [
         <Link to="/contact" className="font-semibold text-togo-green hover:underline dark:text-togo-yellow">
           formulaire de contact
         </Link>{' '}
-        ou par email à contact@tch.tg.
+        ou par email à chaminade.dondah.adjolou@gmail.com.
       </p>
     ),
   },
@@ -157,6 +177,7 @@ export default function MentionsLegales() {
     <>
       <section className="relative overflow-hidden bg-gradient-to-b from-emerald-50 to-white pb-20 pt-below-nav dark:from-slate-900 dark:to-slate-950">
         <div className="pointer-events-none absolute -left-16 top-8 h-64 w-64 rounded-full bg-togo-green/10 blur-3xl" />
+        <div className="pointer-events-none absolute right-0 top-24 h-56 w-56 rounded-full bg-togo-yellow/10 blur-3xl" />
         <div className="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
           <ScrollReveal variant="gentle-up">
           <span className="inline-flex items-center gap-2 rounded-full border border-togo-green/25 bg-white/80 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-togo-green dark:border-togo-yellow/25 dark:bg-slate-900/60 dark:text-togo-yellow">

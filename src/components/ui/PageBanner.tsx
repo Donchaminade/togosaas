@@ -18,12 +18,17 @@ export default function PageBanner({ image, title, subtitle }: PageBannerProps) 
         loading="eager"
         decoding="async"
       />
-      <div className="absolute inset-0 bg-black/55" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(0,106,78,0.2)_0%,transparent_55%)]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/45 via-slate-950/60 to-slate-950/80 dark:from-black/55 dark:via-slate-950/65 dark:to-slate-950/90" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(0,106,78,0.24)_0%,transparent_52%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_85%_18%,rgba(255,206,0,0.18)_0%,transparent_34%)]" />
+      <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-togo-green via-togo-yellow to-togo-red" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <ScrollReveal variant="gentle-up" duration={1000} className="max-w-2xl py-6 sm:py-10">
-          <h1 className="text-2xl font-black leading-tight tracking-tight text-white sm:text-4xl md:text-5xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white/90 backdrop-blur-md">
+            Marketplace SaaS
+          </div>
+          <h1 className="mt-6 text-2xl font-black leading-tight tracking-tight text-white sm:text-4xl md:text-5xl">
             {title}
           </h1>
           {subtitle && (

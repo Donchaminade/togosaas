@@ -47,7 +47,7 @@ export default function AdminCreateForm({ onClose, onSubmit }: Props) {
           placeholder="Minimum 6 caractères"
           minLength={6}
         />
-        <Field label="Téléphone" value={phone} onChange={setPhone} placeholder="+228 90 00 00 00" />
+        <Field label="Téléphone" value={phone} onChange={setPhone} placeholder="+22899181626" />
 
         <p className="text-xs text-slate-500 dark:text-slate-400">
           L&apos;administrateur pourra se connecter avec cet email et accéder à tout l&apos;espace admin Togosaas.

@@ -17,7 +17,7 @@ import type { AdminUserSummary, UserRole } from '../../types';
 type RoleFilter = '' | UserRole;
 
 const LEAD_DELETE_BLOCKED =
-  'Ce lead est responsable d\'au moins une communauté. Supprimez ces communautés ou réassignez le rôle de responsable à un co-lead avant de supprimer le compte.';
+  'Ce lead est responsable d\'au moins une solution SaaS. Supprimez ces solutions SaaS ou réassignez le rôle de responsable à un co-lead avant de supprimer le compte.';
 
 function canDeleteUser(user: AdminUserSummary, currentUserId?: number): boolean {
   if (currentUserId === user.id) return false;

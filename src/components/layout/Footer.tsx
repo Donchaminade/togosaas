@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Github, Linkedin, Mail, Twitter } from 'lucide-react';
+import { Github, Linkedin, Mail, Phone, Twitter } from 'lucide-react';
 import Logo from '../ui/Logo';
 
 export default function Footer() {
@@ -19,18 +19,36 @@ export default function Footer() {
               Togosaas recense, valorise et connecte les solutions SaaS du Togo —
               gratuites et payantes, made in Togo.
             </p>
+            <div className="mt-5 flex flex-wrap gap-3 text-sm">
+              <a
+                href="mailto:chaminade.dondah.adjolou@gmail.com"
+                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-slate-300 transition-colors hover:border-togo-yellow/40 hover:bg-togo-yellow/10 hover:text-white"
+              >
+                <Mail className="h-4 w-4" />
+                chaminade.dondah.adjolou@gmail.com
+              </a>
+              <a
+                href="tel:+22899181626"
+                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-slate-300 transition-colors hover:border-togo-green/40 hover:bg-togo-green/15 hover:text-white"
+              >
+                <Phone className="h-4 w-4" />
+                +22899181626
+              </a>
+            </div>
             <div className="mt-5 flex items-center gap-3">
               {[
-                { icon: Github, href: 'https://github.com' },
-                { icon: Linkedin, href: 'https://linkedin.com' },
-                { icon: Twitter, href: 'https://twitter.com' },
-                { icon: Mail, href: 'mailto:contact@tch.tg' },
-              ].map(({ icon: Icon, href }, i) => (
+                { icon: Github, href: 'https://github.com', label: 'GitHub' },
+                { icon: Linkedin, href: 'https://linkedin.com', label: 'LinkedIn' },
+                { icon: Twitter, href: 'https://twitter.com', label: 'Twitter' },
+                { icon: Mail, href: 'mailto:chaminade.dondah.adjolou@gmail.com', label: 'Email' },
+              ].map(({ icon: Icon, href, label }, i) => (
                 <a
                   key={i}
                   href={href}
                   target="_blank"
                   rel="noreferrer"
+                  aria-label={label}
+                  title={label}
                   className="grid h-10 w-10 place-items-center rounded-xl bg-white/5 text-slate-300 transition-all hover:bg-togo-green hover:text-white"
                 >
                   <Icon className="h-4 w-4" />

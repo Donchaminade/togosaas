@@ -49,8 +49,8 @@ export default function Register() {
 
   return (
     <AuthShell
-      title="Exposer ma communauté"
-      subtitle="Créez votre espace lead pour gérer vos communautés."
+      title="Exposer ma solution SaaS"
+      subtitle="Créez votre espace lead pour gérer vos solutions SaaS."
     >
       <form onSubmit={handleSubmit} className="space-y-5">
         <Field label="Nom complet" value={form.name} onChange={update('name')} error={errors.name?.[0]} required placeholder="Ex: Koffi Mensah" />

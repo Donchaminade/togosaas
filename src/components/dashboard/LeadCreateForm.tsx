@@ -47,10 +47,10 @@ export default function LeadCreateForm({ onClose, onSubmit }: Props) {
           placeholder="Minimum 6 caractères"
           minLength={6}
         />
-        <Field label="Téléphone" value={phone} onChange={setPhone} placeholder="+228 90 00 00 00" />
+        <Field label="Téléphone" value={phone} onChange={setPhone} placeholder="+22899181626" />
 
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          Le lead pourra se connecter avec cet email et ce mot de passe pour gérer ses communautés.
+          Le lead pourra se connecter avec cet email et ce mot de passe pour gérer ses solutions SaaS.
         </p>
 
         <div className="flex gap-3 pt-2">

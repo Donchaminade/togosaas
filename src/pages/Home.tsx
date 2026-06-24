@@ -82,7 +82,7 @@ export default function Home() {
       <HeroSlideshow stats={stats} />
 
       {/* ===================== FEATURES ===================== */}
-      <section className="bg-white py-20 dark:bg-slate-950">
+      <section className="bg-togo-surface py-20 dark:bg-slate-950">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <ScrollReveal variant="fade-up">
@@ -115,7 +115,7 @@ export default function Home() {
       </section>
 
       {/* ===================== ÉTAPES ===================== */}
-      <section className="relative overflow-hidden bg-slate-50 py-20 dark:bg-slate-900">
+      <section className="relative overflow-hidden bg-togo-surface-strong py-20 dark:bg-slate-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <ScrollReveal variant="fade-up" className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl dark:text-white">
@@ -144,13 +144,13 @@ export default function Home() {
 
       {/* ===================== APERÇU SOLUTIONS ===================== */}
       {preview.length > 0 && (
-        <section className="bg-white py-20 dark:bg-slate-950">
+        <section className="bg-togo-surface py-20 dark:bg-slate-950">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <ScrollReveal variant="fade-up">
             <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
               <div>
                 <h2 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl dark:text-white">
-                  Solutions à la une
+                  Solutions SaaS à la une
                 </h2>
                 <p className="mt-3 text-slate-600 dark:text-slate-300">
                   Un aperçu des solutions SaaS déjà référencées sur la plateforme.

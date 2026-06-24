@@ -21,7 +21,7 @@ export function buildAdminNav(stats: AdminNavStats = {}): DashboardNavItem[] {
     { id: 'overview', label: "Vue d'ensemble", icon: LayoutDashboard, href: '/admin', section: 'Principal' },
     {
       id: 'communities',
-      label: 'Communautés',
+      label: 'Solutions SaaS',
       icon: ShieldCheck,
       badge: stats.pendingCommunities || undefined,
       href: '/admin?tab=communities',
@@ -69,8 +69,8 @@ export function adminTabFromSearch(search: string): string {
 
 export const ADMIN_TAB_TITLES: Record<string, { title: string; subtitle: string }> = {
   overview: { title: 'Administration', subtitle: 'Pilotage de la plateforme Togosaas' },
-  communities: { title: 'Communautés', subtitle: 'Modération et gestion des fiches' },
-  leads: { title: 'Leads', subtitle: 'Comptes responsables de communautés' },
+  communities: { title: 'Solutions SaaS', subtitle: 'Modération et gestion des fiches' },
+  leads: { title: 'Leads', subtitle: 'Comptes responsables de solutions SaaS' },
   users: { title: 'Utilisateurs', subtitle: 'Administrateurs et gestion des rôles' },
   messages: { title: 'Messages contact', subtitle: 'Formulaire public' },
   support: { title: 'Chat leads', subtitle: 'Conversations et messages groupés aux leads' },

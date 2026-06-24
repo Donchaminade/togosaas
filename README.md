@@ -13,7 +13,7 @@ Annuaire public · Espace lead · Modération admin · Signalements anonymes
 <!-- Open source -->
 [![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-brightgreen?style=for-the-badge)](#licence--contact)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](./LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet?style=for-the-badge)](#)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet?style=for-the-badge)](./CONTRIBUTING.md)
 
 <!-- Frontend -->
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev)
@@ -419,7 +419,7 @@ Projet **open source** porté par **Chaminade Dondah Adjolou**.
 
 Distribué sous licence **MIT** — voir le fichier [`LICENSE`](./LICENSE). Vous êtes libre d'utiliser, modifier et redistribuer ce projet, y compris à des fins commerciales, en conservant l'avis de copyright.
 
-Les contributions sont les bienvenues : ouvrez une *issue* ou une *pull request*.
+Les contributions sont les bienvenues : consultez le guide [`CONTRIBUTING.md`](./CONTRIBUTING.md) avant d'ouvrir une *issue* ou une *pull request*.
 
 Contact : `contact@tch.tg`
 

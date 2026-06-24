@@ -69,21 +69,21 @@ export default function Contact() {
                   { icon: MapPin, label: 'Localisation', value: 'Lomé, Togo' },
                 ].map((c, i) => (
                   <StaggerReveal key={c.label} index={i} variant="gentle-up" stagger={85}>
-                  <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-white to-togo-surface-strong/70 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-white to-togo-surface-strong/70 p-5 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
                     <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-togo-green/10 text-togo-green dark:bg-togo-yellow/15 dark:text-togo-yellow">
                       <c.icon className="h-5 w-5" />
                     </span>
                     <div>
-                      <p className="text-xs font-bold uppercase tracking-wide text-slate-400">{c.label}</p>
+                      <p className="text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-400">{c.label}</p>
                       {c.href ? (
                         <a
                           href={c.href}
-                          className="break-all text-sm font-semibold text-slate-800 transition-colors hover:text-togo-green dark:text-slate-100 dark:hover:text-togo-yellow"
+                          className="break-all text-sm font-semibold text-slate-800 transition-colors hover:text-togo-green dark:text-white dark:hover:text-togo-yellow"
                         >
                           {c.value}
                         </a>
                       ) : (
-                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{c.value}</p>
+                        <p className="text-sm font-semibold text-slate-800 dark:text-white">{c.value}</p>
                       )}
                     </div>
                   </div>

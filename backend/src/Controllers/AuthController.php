@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace TCH\Controllers;
 
 use TCH\Auth;
+use TCH\AutomationEngine;
 use TCH\Database;
 use TCH\Jwt;
+use TCH\RateLimiter;
 use TCH\Request;
 use TCH\Response;
 use TCH\Validator;
@@ -15,6 +17,8 @@ final class AuthController
 {
     public function register(Request $request): void
     {
+        RateLimiter::enforce('register', 5, 3600); // 5 inscriptions / heure / IP
+
         Validator::make($request->all())->validate([
             'name' => 'required|min:2|max:120',
             'email' => 'required|email|max:160',
@@ -46,11 +50,22 @@ final class AuthController
         ]);
 
         $id = (int) $db->lastInsertId();
+        $name = trim((string) $request->input('name'));
+
+        AutomationEngine::fire('lead_register', [
+            'email' => $email,
+            'name' => $name,
+            'nom' => $name,
+            'user_id' => $id,
+        ]);
+
         $this->respondWithToken($id, 'Compte cree avec succes. Bienvenue !', 201);
     }
 
     public function login(Request $request): void
     {
+        RateLimiter::enforce('login', 8, 300); // 8 tentatives / 5 min / IP
+
         Validator::make($request->all())->validate([
             'email' => 'required|email',
             'password' => 'required',

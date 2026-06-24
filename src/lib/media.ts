@@ -20,7 +20,7 @@ export function mediaUrl(path?: string | null): string {
 }
 
 /** Affiche / logo par défaut des communautés sans visuel uploadé (public/). */
-export const DEFAULT_COMMUNITY_COVER = '/logofondnoir.png';
+export const DEFAULT_COMMUNITY_COVER = '/community-cover-default.png';
 
 /** Bannière ou logo communauté, sinon visuel Togosaas par défaut. */
 export function communityCoverUrl(community: {

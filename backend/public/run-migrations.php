@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 /**
  * Runner de migrations via HTTP (Hostinger sans SSH).
- * Protege par MIGRATE_TOKEN dans .env — supprimez ce fichier apres usage.
  *
- *   GET /run-migrations.php?token=VOTRE_TOKEN
+ * SECURITE :
+ *   - Necessite un MIGRATE_TOKEN DEDIE et long dans .env (aucun repli sur JWT_SECRET).
+ *   - A SUPPRIMER du serveur immediatement apres la migration.
+ *   - Le token transitant en query string, regenerez-le apres usage.
+ *
+ *   GET /run-migrations.php?token=VOTRE_MIGRATE_TOKEN
  */
 
 require_once dirname(__DIR__) . '/src/bootstrap.php';
@@ -18,9 +22,19 @@ use TCH\Response;
 header('Content-Type: application/json; charset=utf-8');
 
 $token = (string) ($_GET['token'] ?? '');
-$expected = (string) env('MIGRATE_TOKEN', env('JWT_SECRET', ''));
+$expected = (string) env('MIGRATE_TOKEN', '');
 
-if ($expected === '' || !hash_equals($expected, $token)) {
+// Token dedie obligatoire : on refuse tout repli implicite et les tokens trop courts.
+if ($expected === '' || strlen($expected) < 16) {
+    http_response_code(403);
+    echo json_encode([
+        'success' => false,
+        'message' => 'MIGRATE_TOKEN absent ou trop court dans .env (min. 16 caracteres).',
+    ]);
+    exit;
+}
+
+if (!hash_equals($expected, $token)) {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'Token invalide.']);
     exit;

@@ -62,15 +62,16 @@ export default function AdminReportsPanel() {
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4 text-sm leading-relaxed text-slate-700 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-slate-200">
-        Les signalements proviennent de <strong>membres ou témoins anonymes</strong>. Traitez-les, enregistrez
-        — ils apparaissent dans le tableau ci-dessous. Cliquez sur l&apos;œil pour rouvrir les détails.
+        Les signalements proviennent de <strong>visiteurs anonymes</strong> ayant constaté un dysfonctionnement
+        sur une solution. Traitez-les, enregistrez — ils apparaissent dans le tableau ci-dessous. Cliquez sur
+        l&apos;œil pour rouvrir les détails.
       </div>
 
       <div className="flex flex-wrap gap-2">
         {[
           { id: '', label: 'Tous' },
           { id: 'pending', label: 'En attente' },
-          { id: 'investigating', label: 'En enquête' },
+          { id: 'investigating', label: 'En analyse' },
           { id: 'resolved', label: 'Traités' },
           { id: 'dismissed', label: 'Classés' },
         ].map((f) => (
@@ -93,7 +94,7 @@ export default function AdminReportsPanel() {
         <SearchBar
           value={search}
           onChange={setSearch}
-          placeholder="Rechercher par communauté, catégorie, statut…"
+          placeholder="Rechercher par solution, type de problème, statut…"
           size="sm"
           resultCount={filteredReports.length}
           totalCount={reports.length}
@@ -112,8 +113,8 @@ export default function AdminReportsPanel() {
         <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
           <div className="hidden grid-cols-12 gap-3 border-b border-slate-100 px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:border-slate-800 sm:grid">
             <span className="col-span-1">#</span>
-            <span className="col-span-3">Communauté</span>
-            <span className="col-span-2">Catégorie</span>
+            <span className="col-span-3">Solution</span>
+            <span className="col-span-2">Type de problème</span>
             <span className="col-span-2">Statut</span>
             <span className="col-span-2">Date</span>
             <span className="col-span-2 text-right">Actions</span>

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace TCH\Controllers;
 
 use TCH\Auth;
+use TCH\AutomationEngine;
 use TCH\CommunityAccessHelper;
 use TCH\CommunityHelper;
 use TCH\Database;
+use TCH\EngagementHelper;
 use TCH\Request;
 use TCH\Response;
 use TCH\Validator;
@@ -129,6 +131,19 @@ final class AdminController
         $stmt->execute($params);
 
         $rows = array_map([$this, 'serializeForAdmin'], $stmt->fetchAll());
+
+        // Enrichit chaque solution avec sa note moyenne et son nombre d'avis.
+        $ids = array_values(array_filter(array_map(static fn ($r) => $r['id'] ?? null, $rows)));
+        if ($ids !== []) {
+            $statsMap = EngagementHelper::statsForCommunityIds($ids);
+            foreach ($rows as &$row) {
+                $stats = $statsMap[$row['id'] ?? 0] ?? null;
+                $row['ratingAvg'] = $stats['ratingAvg'] ?? null;
+                $row['reviewsCount'] = $stats['reviewsCount'] ?? 0;
+            }
+            unset($row);
+        }
+
         Response::success(['communities' => $rows]);
     }
 
@@ -154,6 +169,26 @@ final class AdminController
             ->execute(['status' => $status, 'id' => $id]);
 
         $labels = ['approved' => 'approuvee', 'rejected' => 'rejetee', 'pending' => 'remise en attente'];
+
+        if ($status === 'approved' || $status === 'rejected') {
+            $info = $db->prepare(
+                'SELECT c.name, c.leader_name, c.leader_email, u.name AS owner_name, u.email AS owner_email
+                 FROM communities c LEFT JOIN users u ON u.id = c.user_id WHERE c.id = :id LIMIT 1'
+            );
+            $info->execute(['id' => $id]);
+            $row = $info->fetch() ?: [];
+            $email = (string) ($row['owner_email'] ?? $row['leader_email'] ?? '');
+            $name = (string) ($row['owner_name'] ?? $row['leader_name'] ?? '');
+
+            AutomationEngine::fire($status === 'approved' ? 'community_approved' : 'community_rejected', [
+                'email' => $email,
+                'name' => $name,
+                'nom' => $name,
+                'solution' => (string) ($row['name'] ?? ''),
+                'statut' => $labels[$status],
+            ]);
+        }
+
         Response::success(['id' => $id, 'status' => $status], 'Communaute ' . $labels[$status] . '.');
     }
 

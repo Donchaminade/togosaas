@@ -418,4 +418,11 @@
       top: 7.5rem;
     }
   }
+
+  /* Placeholder de l'éditeur d'email (contenteditable vide) */
+  .email-editor:empty::before {
+    content: attr(data-placeholder);
+    color: rgb(148 163 184);
+    pointer-events: none;
+  }
 }

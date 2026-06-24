@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TCH\Controllers;
 
 use TCH\Auth;
+use TCH\AutomationEngine;
 use TCH\CommunityAccessHelper;
 use TCH\CommunityHelper;
 use TCH\Database;
@@ -153,6 +154,15 @@ final class CommunityController
 
         $row = $this->find($newId);
         $row['membership_role'] = 'owner';
+
+        AutomationEngine::fire('community_submitted', [
+            'email' => (string) ($user['email'] ?? ''),
+            'name' => (string) ($user['name'] ?? ''),
+            'nom' => (string) ($user['name'] ?? ''),
+            'user_id' => (int) $user['id'],
+            'solution' => (string) ($row['name'] ?? ''),
+        ]);
+
         Response::success(
             ['community' => CommunityHelper::serialize($row, 'private')],
             'Communaute soumise. Elle sera visible apres validation par un administrateur.',

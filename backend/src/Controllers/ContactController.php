@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TCH\Controllers;
 
 use TCH\Database;
+use TCH\RateLimiter;
 use TCH\Request;
 use TCH\Response;
 use TCH\Validator;
@@ -13,6 +14,8 @@ final class ContactController
 {
     public function store(Request $request): void
     {
+        RateLimiter::enforce('contact', 5, 600); // 5 messages / 10 min / IP
+
         Validator::make($request->all())->validate([
             'name' => 'required|min:2|max:120',
             'email' => 'required|email|max:160',

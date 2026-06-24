@@ -1,6 +1,7 @@
 import {
   LayoutDashboard,
   Mail,
+  MailPlus,
   MessageCircle,
   PenLine,
   ShieldAlert,
@@ -8,6 +9,7 @@ import {
   UserCircle,
   UserCog,
   Users,
+  Workflow,
 } from 'lucide-react';
 import type { DashboardNavItem } from '../components/dashboard/DashboardLayout';
 
@@ -60,6 +62,8 @@ export function buildAdminNav(stats: AdminNavStats = {}, options: AdminNavOption
       section: 'Communication',
     },
     { id: 'support', label: 'Chat leads', icon: MessageCircle, href: '/admin?tab=support' },
+    { id: 'emailing', label: 'Emailing', icon: MailPlus, href: '/admin?tab=emailing' },
+    { id: 'automations', label: 'Automatisations', icon: Workflow, href: '/admin?tab=automations' },
     {
       id: 'reports',
       label: 'Signalements',
@@ -93,7 +97,7 @@ export function buildAdminNav(stats: AdminNavStats = {}, options: AdminNavOption
 
 export function adminTabFromSearch(search: string, isSuperAdmin = false): string {
   const tab = new URLSearchParams(search).get('tab');
-  const valid = ['overview', 'communities', 'leads', 'messages', 'support', 'reports', 'profile'];
+  const valid = ['overview', 'communities', 'leads', 'messages', 'support', 'emailing', 'automations', 'reports', 'profile'];
   if (isSuperAdmin) {
     valid.push(...SUPER_ADMIN_TABS);
   }
@@ -107,7 +111,9 @@ export const ADMIN_TAB_TITLES: Record<string, { title: string; subtitle: string 
   users: { title: 'Utilisateurs', subtitle: 'Staff (admins & sous-admins) et gestion des rôles' },
   messages: { title: 'Messages contact', subtitle: 'Formulaire public' },
   support: { title: 'Chat leads', subtitle: 'Conversations et messages groupés aux leads' },
-  reports: { title: 'Signalements', subtitle: 'Abus signalés anonymement par des membres depuis l\'accueil' },
+  emailing: { title: 'Emailing', subtitle: 'Rédigez et envoyez des emails aux leads avec pièces jointes' },
+  automations: { title: 'Automatisations', subtitle: 'Modèles de message, déclencheurs et envois automatiques' },
+  reports: { title: 'Signalements', subtitle: 'Dysfonctionnements de solutions signalés anonymement par les visiteurs' },
   author: { title: 'Page À propos', subtitle: 'Profil fondateur & auteur' },
   profile: { title: 'Mon profil', subtitle: 'Vos informations de compte et mot de passe' },
 };

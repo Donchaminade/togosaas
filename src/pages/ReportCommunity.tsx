@@ -59,7 +59,7 @@ export default function ReportCommunity() {
         setCommunityId(c.id ?? 0);
         setCommunityLabel(c.name);
       })
-      .catch(() => notify('Communauté introuvable.', 'error'))
+      .catch(() => notify('Solution introuvable.', 'error'))
       .finally(() => setLoadingCommunity(false));
   }, [slugOrId, notify]);
 
@@ -132,10 +132,10 @@ export default function ReportCommunity() {
               <Shield className="h-7 w-7" />
             </span>
             <div>
-              <h1 className="text-2xl font-black text-slate-900 dark:text-white">Signaler un abus</h1>
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white">Signaler un dysfonctionnement</h1>
               <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                Vous êtes <strong>membre</strong> ou témoin d&apos;une situation problématique au sein
-                d&apos;une communauté référencée sur Togosaas ? Signalez-la ici, en toute confidentialité.
+                Vous avez constaté un <strong>problème</strong> ou un <strong>dysfonctionnement</strong> sur
+                une solution SaaS référencée sur Togosaas ? Signalez-le ici, en toute confidentialité.
                 Votre identité n&apos;est <strong>jamais</strong> enregistrée — aucun compte requis.
                 L&apos;équipe Togosaas examine chaque signalement de manière indépendante.
               </p>
@@ -163,7 +163,7 @@ export default function ReportCommunity() {
             <CheckCircle2 className="mx-auto h-14 w-14 text-togo-green dark:text-togo-yellow" />
             <h2 className="mt-4 text-xl font-black text-slate-900 dark:text-white">Signalement reçu</h2>
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-              Merci pour votre vigilance. Notre équipe va examiner votre signalement en toute confidentialité.
+              Merci pour votre signalement. Notre équipe va examiner ce dysfonctionnement en toute confidentialité.
             </p>
             <p className="mt-6 text-xs font-bold uppercase tracking-wider text-slate-400">Votre code de suivi anonyme</p>
             <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
@@ -200,14 +200,14 @@ export default function ReportCommunity() {
         ) : (
           <form onSubmit={handleSubmit} className="mt-8 space-y-6">
             {!slugOrId && (
-              <Field label="Communauté concernée" required>
+              <Field label="Solution concernée" required>
                 <SearchableSelect
                   options={communityOptions}
                   value={communityId || ''}
                   onChange={(v) => setCommunityId(Number(v))}
-                  placeholder="Sélectionnez une communauté…"
+                  placeholder="Sélectionnez une solution…"
                   searchPlaceholder="Rechercher par nom, ville, tag…"
-                  emptyMessage="Aucune communauté trouvée."
+                  emptyMessage="Aucune solution trouvée."
                   required
                 />
               </Field>
@@ -215,12 +215,12 @@ export default function ReportCommunity() {
 
             {slugOrId && communityLabel && (
               <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
-                <p className="text-xs font-bold uppercase text-slate-400">Communauté signalée</p>
+                <p className="text-xs font-bold uppercase text-slate-400">Solution concernée</p>
                 <p className="mt-1 font-bold text-slate-900 dark:text-white">{communityLabel}</p>
               </div>
             )}
 
-            <Field label="Qui souhaitez-vous signaler ?" required hint="Précisez si l'abus concerne la communauté dans son ensemble ou son responsable.">
+            <Field label="Que concerne le problème ?" required hint="Précisez si le dysfonctionnement concerne la solution elle-même ou son éditeur / responsable.">
               <div className="space-y-2">
                 {(Object.keys(REPORT_TARGET_LABELS) as ReportTargetType[]).map((key) => (
                   <label
@@ -247,21 +247,21 @@ export default function ReportCommunity() {
               </div>
             </Field>
 
-            <Field label="Motif du signalement" required>
+            <Field label="Type de problème" required>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 required
                 className={inputClass}
               >
-                <option value="">Choisissez une catégorie…</option>
+                <option value="">Choisissez un type de problème…</option>
                 {REPORT_CATEGORIES.map((c) => (
                   <option key={c.id} value={c.id}>{c.label}</option>
                 ))}
               </select>
             </Field>
 
-            <Field label="Description détaillée" required hint="Minimum 30 caractères. Soyez factuel : dates, contexte, comportements observés.">
+            <Field label="Description détaillée" required hint="Minimum 30 caractères. Soyez précis : étapes pour reproduire, message d'erreur, date et heure, navigateur ou appareil utilisé.">
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -269,7 +269,7 @@ export default function ReportCommunity() {
                 minLength={30}
                 rows={6}
                 className={`${inputClass} resize-y`}
-                placeholder="Décrivez les faits de manière objective…"
+                placeholder="Décrivez le dysfonctionnement de manière précise…"
               />
               <p className="mt-1 text-right text-xs text-slate-400">{description.length} / 5000</p>
             </Field>
@@ -280,7 +280,7 @@ export default function ReportCommunity() {
             </div>
 
             <div className="rounded-2xl border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-xs leading-relaxed text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
-              En envoyant ce signalement, vous confirmez agir de bonne foi. Les signalements abusifs peuvent entraîner des mesures. Aucune donnée personnelle n&apos;est collectée.
+              En envoyant ce signalement, vous confirmez agir de bonne foi. Les signalements infondés ou répétés peuvent entraîner des mesures. Aucune donnée personnelle n&apos;est collectée.
             </div>
 
             <button
@@ -305,7 +305,7 @@ export default function ReportCommunity() {
 }
 
 const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-togo-green focus:ring-2 focus:ring-togo-green/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-togo-yellow dark:focus:ring-togo-yellow/20';
+  'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-togo-green focus:ring-2 focus:ring-togo-green/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-togo-yellow dark:focus:ring-togo-yellow/20 [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-800 dark:[&>option]:text-white';
 
 function Field({
   label,

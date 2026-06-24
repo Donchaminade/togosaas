@@ -193,7 +193,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
               onChange={set('country')}
               required={!isCoLead}
               disabled={isCoLead}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-togo-green disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-togo-green disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-800 dark:[&>option]:text-white"
             >
               {COUNTRIES.map((c) => (
                 <option key={c.code} value={c.name}>{c.name}</option>
@@ -207,7 +207,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
               value={form.city ?? ''}
               onChange={set('city')}
               disabled={isCoLead}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-togo-green disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-togo-green disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-800 dark:[&>option]:text-white"
             >
               <option value="">— Choisir une ville —</option>
               {TOGO_CITIES.map((city) => (
@@ -282,7 +282,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
                 <select
                   value={form.currency ?? 'XOF'}
                   onChange={set('currency')}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-togo-green dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-togo-green dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-800 dark:[&>option]:text-white"
                 >
                   <option value="XOF">XOF (FCFA)</option>
                   <option value="EUR">EUR</option>
@@ -294,7 +294,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
                 <select
                   value={form.billingPeriod ?? ''}
                   onChange={set('billingPeriod')}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-togo-green dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-togo-green dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-800 dark:[&>option]:text-white"
                 >
                   <option value="">— Choisir —</option>
                   <option value="monthly">Mensuel</option>

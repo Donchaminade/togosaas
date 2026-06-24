@@ -6,10 +6,12 @@ use TCH\Auth;
 use TCH\Controllers\AdminController;
 use TCH\Controllers\AuthController;
 use TCH\Controllers\AuthorController;
+use TCH\Controllers\AutomationController;
 use TCH\Controllers\CommunityController;
 use TCH\Controllers\CommunityEventController;
 use TCH\Controllers\EngagementController;
 use TCH\Controllers\ContactController;
+use TCH\Controllers\EmailCampaignController;
 use TCH\Controllers\MetaController;
 use TCH\Controllers\ReportController;
 use TCH\Controllers\SupportController;
@@ -153,6 +155,31 @@ $router->get('/admin/support/messages/{messageId}/attachments/{index}', [$suppor
 $router->patch('/admin/support/messages/{messageId}', [$support, 'adminUpdateMessage']);
 $router->delete('/admin/support/messages/{messageId}', [$support, 'adminDeleteMessage']);
 $router->post('/admin/support/broadcast', [$support, 'adminBroadcast']);
+// Campagnes email vers les leads
+$emailCampaigns = new EmailCampaignController();
+$router->get('/admin/email/config', [$emailCampaigns, 'config']);
+$router->get('/admin/email/recipients', [$emailCampaigns, 'recipients']);
+$router->post('/admin/email/attachments', [$emailCampaigns, 'uploadAttachment']);
+$router->get('/admin/email/campaigns', [$emailCampaigns, 'index']);
+$router->post('/admin/email/campaigns', [$emailCampaigns, 'store']);
+$router->get('/admin/email/campaigns/{id}', [$emailCampaigns, 'show']);
+$router->post('/admin/email/campaigns/{id}/retry', [$emailCampaigns, 'retry']);
+
+// Automatisations (modeles, declencheurs, journal)
+$automations = new AutomationController();
+$router->get('/admin/automations/meta', [$automations, 'meta']);
+$router->post('/admin/automations/test', [$automations, 'test']);
+$router->get('/admin/automation-templates', [$automations, 'templatesIndex']);
+$router->post('/admin/automation-templates', [$automations, 'templateStore']);
+$router->put('/admin/automation-templates/{id}', [$automations, 'templateUpdate']);
+$router->delete('/admin/automation-templates/{id}', [$automations, 'templateDestroy']);
+$router->get('/admin/automation-logs', [$automations, 'logs']);
+$router->get('/admin/automations', [$automations, 'index']);
+$router->post('/admin/automations', [$automations, 'store']);
+$router->put('/admin/automations/{id}', [$automations, 'update']);
+$router->patch('/admin/automations/{id}/toggle', [$automations, 'toggle']);
+$router->post('/admin/automations/{id}/run', [$automations, 'run']);
+$router->delete('/admin/automations/{id}', [$automations, 'destroy']);
 $router->get('/admin/author', [$author, 'adminShow']);
 $router->put('/admin/author', [$author, 'adminUpdate']);
 $router->get('/admin/reports', [$reports, 'adminIndex']);

@@ -7,17 +7,29 @@ namespace TCH;
 final class ReportHelper
 {
     public const CATEGORIES = [
-        'inappropriate' => 'Comportement inapproprié',
+        'bug' => 'Dysfonctionnement technique / bug',
+        'unavailable' => 'Service indisponible ou hors ligne',
+        'outdated' => 'Informations erronées ou obsolètes',
+        'broken_link' => 'Lien / accès non fonctionnel',
+        'inappropriate' => 'Contenu inapproprié',
+        'other' => 'Autre problème',
+    ];
+
+    /**
+     * Anciennes catégories de signalement (orientées "abus").
+     * Conservées UNIQUEMENT pour l'affichage des signalements historiques
+     * deja enregistres en base. Elles ne sont plus proposees a la creation.
+     */
+    public const LEGACY_CATEGORIES = [
         'misinformation' => 'Informations fausses ou trompeuses',
         'harassment' => 'Harcèlement ou discrimination',
         'fraud' => 'Fraude ou arnaque',
         'illegal' => 'Contenu illégal',
-        'other' => 'Autre',
     ];
 
     public const STATUS_LABELS = [
         'pending' => 'En attente',
-        'investigating' => 'En cours d\'enquête',
+        'investigating' => 'En cours d\'analyse',
         'resolved' => 'Traité',
         'dismissed' => 'Classé sans suite',
     ];
@@ -46,7 +58,7 @@ final class ReportHelper
             'communityName' => $row['community_name'] ?? null,
             'targetType' => $row['target_type'],
             'category' => $row['category'],
-            'categoryLabel' => self::CATEGORIES[$row['category']] ?? $row['category'],
+            'categoryLabel' => self::CATEGORIES[$row['category']] ?? self::LEGACY_CATEGORIES[$row['category']] ?? $row['category'],
             'description' => $row['description'],
             'evidenceCount' => count($evidence),
             'status' => $row['status'],

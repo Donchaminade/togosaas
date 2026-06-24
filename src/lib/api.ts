@@ -19,6 +19,18 @@ import type {
   ReportEvidenceFile,
   ReportTargetType,
   ReportTrackInfo,
+  EmailAttachment,
+  EmailCampaign,
+  EmailCampaignRecipient,
+  EmailRecipientOption,
+  EmailConfig,
+  MessageTemplate,
+  Automation,
+  AutomationTriggerMeta,
+  AutomationLog,
+  AutomationTrigger,
+  AutomationAudience,
+  AutomationSchedule,
 } from '../types';
 
 import { API_BASE_URL } from './apiBase';
@@ -462,4 +474,123 @@ export const api = {
 
   adminReportEvidenceUrl: (reportId: number, index: number) =>
     `${API_BASE_URL}/admin/reports/${reportId}/evidence/${index}`,
+
+  // Campagnes email
+  adminEmailConfig: () => request<EmailConfig>('/admin/email/config', { auth: true }),
+
+  adminEmailRecipients: () =>
+    request<{ recipients: EmailRecipientOption[]; total: number }>('/admin/email/recipients', {
+      auth: true,
+    }),
+
+  adminUploadEmailAttachment: (file: File) =>
+    uploadRequest<{ attachment: EmailAttachment }>('/admin/email/attachments', file),
+
+  adminEmailCampaigns: () =>
+    request<{ campaigns: EmailCampaign[] }>('/admin/email/campaigns', { auth: true }),
+
+  adminGetEmailCampaign: (id: number) =>
+    request<{ campaign: EmailCampaign; recipients: EmailCampaignRecipient[] }>(
+      `/admin/email/campaigns/${id}`,
+      { auth: true },
+    ),
+
+  adminCreateEmailCampaign: (data: {
+    subject: string;
+    bodyHtml: string;
+    attachments?: EmailAttachment[];
+    all?: boolean;
+    userIds?: number[];
+  }) =>
+    request<{ campaign: EmailCampaign }>('/admin/email/campaigns', {
+      method: 'POST',
+      body: data,
+      auth: true,
+    }),
+
+  adminRetryEmailCampaign: (id: number) =>
+    request<{ campaign: EmailCampaign }>(`/admin/email/campaigns/${id}/retry`, {
+      method: 'POST',
+      auth: true,
+    }),
+
+  // Automatisations
+  adminAutomationMeta: () =>
+    request<{ triggers: AutomationTriggerMeta[]; smtpConfigured: boolean }>('/admin/automations/meta', {
+      auth: true,
+    }),
+
+  adminMessageTemplates: () =>
+    request<{ templates: MessageTemplate[] }>('/admin/automation-templates', { auth: true }),
+
+  adminCreateMessageTemplate: (data: {
+    name: string;
+    subject: string;
+    bodyHtml: string;
+    description?: string | null;
+  }) =>
+    request<{ template: MessageTemplate }>('/admin/automation-templates', {
+      method: 'POST',
+      body: data,
+      auth: true,
+    }),
+
+  adminUpdateMessageTemplate: (
+    id: number,
+    data: { name: string; subject: string; bodyHtml: string; description?: string | null },
+  ) =>
+    request<{ template: MessageTemplate }>(`/admin/automation-templates/${id}`, {
+      method: 'PUT',
+      body: data,
+      auth: true,
+    }),
+
+  adminDeleteMessageTemplate: (id: number) =>
+    request<null>(`/admin/automation-templates/${id}`, { method: 'DELETE', auth: true }),
+
+  adminAutomations: () => request<{ automations: Automation[] }>('/admin/automations', { auth: true }),
+
+  adminCreateAutomation: (data: {
+    name: string;
+    triggerEvent: AutomationTrigger;
+    templateId: number;
+    isActive?: boolean;
+    audience?: AutomationAudience;
+    userIds?: number[];
+    schedule?: AutomationSchedule;
+  }) => request<{ automation: Automation }>('/admin/automations', { method: 'POST', body: data, auth: true }),
+
+  adminUpdateAutomation: (
+    id: number,
+    data: {
+      name: string;
+      triggerEvent: AutomationTrigger;
+      templateId: number;
+      isActive?: boolean;
+      audience?: AutomationAudience;
+      userIds?: number[];
+      schedule?: AutomationSchedule;
+    },
+  ) => request<{ automation: Automation }>(`/admin/automations/${id}`, { method: 'PUT', body: data, auth: true }),
+
+  adminToggleAutomation: (id: number, isActive: boolean) =>
+    request<{ automation: Automation }>(`/admin/automations/${id}/toggle`, {
+      method: 'PATCH',
+      body: { isActive },
+      auth: true,
+    }),
+
+  adminRunAutomation: (id: number) =>
+    request<{ stats: { queued: number; sent: number; failed: number; skipped: number } }>(
+      `/admin/automations/${id}/run`,
+      { method: 'POST', auth: true },
+    ),
+
+  adminDeleteAutomation: (id: number) =>
+    request<null>(`/admin/automations/${id}`, { method: 'DELETE', auth: true }),
+
+  adminAutomationLogs: () => request<{ logs: AutomationLog[] }>('/admin/automation-logs', { auth: true }),
+
+  adminTestTemplate: (templateId: number) =>
+    request<null>('/admin/automations/test', { method: 'POST', body: { templateId }, auth: true }),
 };

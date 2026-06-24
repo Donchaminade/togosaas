@@ -9,3 +9,4 @@ coverage/
 !.env.production
 !.env.production.example
 .private/db-exports/*.sql
+backend/storage/ratelimit/

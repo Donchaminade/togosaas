@@ -120,6 +120,8 @@ Pour l'équipe Togosaas :
 | **Gestion des leads** | Liste, création manuelle, édition, fiche détaillée |
 | **Messages contact** | Lecture et marquage des messages reçus via le formulaire public |
 | **Chat support** | Réponses individuelles + **message groupé** à tous les leads ou à une sélection |
+| **Emailing** | Rédaction d'emails (éditeur riche, images, pièces jointes) et envoi **SMTP** à tous les leads ou une sélection, avec historique et suivi par destinataire |
+| **Automatisations** | Modèles de message réutilisables (variables dynamiques `{{nom}}`, `{{solution}}`…), déclencheurs **événementiels** (inscription, soumission/validation de solution, statut de signalement), **planifiés** (cron) ou **manuels**, activables/désactivables, avec journal d'exécution |
 | **Signalements** | Liste, statuts (`en attente` → `en enquête` → `traité` / `classé`), preuves, notes internes |
 | **Page À propos** | Édition du profil fondateur (photo, bio, réseaux) — *super-admin* |
 | **Gestion du staff** | Créer des **admins** (accès complet) ou des **sous-admins** (droits limités), promouvoir/rétrograder, supprimer — *super-admin* |
@@ -165,17 +167,22 @@ Le produit est **fonctionnel de bout en bout** : annuaire, inscription lead, mod
 
 | Priorité | Action |
 |----------|--------|
-| **Critique** | Changer `JWT_SECRET`, `ADMIN_PASSWORD` et tous les mots de passe par défaut |
+| **Critique** | Changer `JWT_SECRET`, `ADMIN_PASSWORD` et tous les mots de passe par défaut (voir `backend/.env.production.example`) |
 | **Critique** | Mettre `APP_DEBUG=false` dans `backend/.env` |
 | **Critique** | Rebuild frontend avec la bonne `VITE_API_URL` (URL publique de l'API) |
-| **Critique** | Configurer `FRONTEND_URL` (CORS) sur l'URL du site |
+| **Critique** | Configurer `FRONTEND_URL` (+ `FRONTEND_URLS` pour plusieurs origines : Vercel + domaine custom) |
+| **Critique** | Définir un `MIGRATE_TOKEN` dédié, puis **supprimer `public/run-migrations.php`** après migration |
 | **Critique** | Retirer ou masquer les identifiants démo affichés sur `/connexion` |
-| **Haute** | HTTPS sur frontend **et** API |
-| **Haute** | Permissions d'écriture sur `backend/storage/uploads` et `backend/storage/reports` |
+| **Haute** | HTTPS sur frontend **et** API (redirection forcée déjà dans `.htaccess` + HSTS) |
+| **Haute** | Permissions d'écriture sur `backend/storage/uploads`, `backend/storage/reports` et `backend/storage/ratelimit` |
 | **Haute** | Sauvegardes MySQL automatiques |
+| **Haute** | Lancer les migrations sur la base de prod (rôle `subadmin` — 019, emailing — 020, automatisations — 021) |
+| **Haute** | Configurer le SMTP (`MAIL_*`) avec une boîte dédiée + **SPF/DKIM** sur le domaine pour l'emailing et les automatisations |
+| **Haute** | Programmer un **cron** (toutes les 5 min) sur `backend/database/automations-worker.php` pour les déclencheurs planifiés |
+| **Haute** | Permissions d'écriture sur `backend/storage/email` (pièces jointes des campagnes) |
 | **Moyenne** | Nom de domaine + config SPA (fallback `index.html` pour React Router) |
 | **Moyenne** | ~~Politique de confidentialité / mentions légales~~ → page `/mentions-legales` disponible |
-| **Moyenne** | Rate limiting (contact, login, signalements) — anti-spam |
+| **Moyenne** | ~~Rate limiting (contact, login, signalements)~~ → en place (`RateLimiter`, par IP) |
 | **Basse** | Emails transactionnels (validation communauté, reset mot de passe) |
 | **Basse** | CDN ou stockage objet pour les uploads (au-delà du disque local) |
 
@@ -266,7 +273,7 @@ togo-communities-hub/
 ### Frontend (statique)
 
 ```bash
-VITE_API_URL=https://api.votredomaine.tg npm run build
+VITE_API_URL=https://togosaas.grosbit.com npm run build
 ```
 
 Déployez le contenu de `dist/` sur un hébergeur statique ou nginx/Apache.
@@ -405,6 +412,8 @@ Le seed crée aussi **6 communautés fictives** (GDG Lomé, WTM, Cybersec, etc.)
 | 010 | `create_community_reports_table` | Signalements anonymes |
 | … | *(migrations intermédiaires : likes, avis, slugs, pièces jointes, tarifs SaaS…)* | |
 | 019 | `add_subadmin_role` | Ajoute le rôle **`subadmin`** à l'ENUM `users.role` |
+| 020 | `create_email_campaigns` | Tables `email_campaigns` + `email_campaign_recipients` (emailing leads) |
+| 021 | `create_automations` | Tables `message_templates`, `automations` + `automation_logs` (module d'automatisation) |
 
 ```bash
 php database/migrate.php          # Appliquer
@@ -415,7 +424,7 @@ php database/migrate.php --fresh  # Reset complet (destructif)
 
 ## Personnalisation
 
-- **Logos** : `public/logosansfond.png`, `public/navlogo.png`
+- **Logos** : `public/togosaas-logo.png` (logo texte), `public/togosaas-icon.png` (icône claire), `public/togosaas-icon-dark.png` (icône sombre)
 - **Couleurs** : variables CSS `--color-togo-*` dans `src/index.css`
 - **Villes & tags** : `src/data/togoData.ts`
 - **Profil fondateur** : éditable depuis `/admin?tab=author`

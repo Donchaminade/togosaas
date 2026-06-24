@@ -14,24 +14,54 @@ final class Security
         header('X-Content-Type-Options: nosniff');
         header('X-Frame-Options: DENY');
         header('Referrer-Policy: strict-origin-when-cross-origin');
-        header('X-XSS-Protection: 1; mode=block');
         header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
+
+        // HSTS : seulement utile/sain en HTTPS (evite de pieger le HTTP local).
+        if (self::isHttps()) {
+            header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+        }
     }
 
-    /** Origine autorisee depuis FRONTEND_URL (jamais de wildcard). */
-    public static function allowedOrigin(): ?string
+    /** Detecte une requete HTTPS (y compris derriere le proxy Hostinger). */
+    private static function isHttps(): bool
     {
-        $url = rtrim(trim((string) env('FRONTEND_URL', '')), '/');
+        if (($_SERVER['HTTPS'] ?? '') !== '' && strtolower((string) $_SERVER['HTTPS']) !== 'off') {
+            return true;
+        }
+        if (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https') {
+            return true;
+        }
+        return ((int) ($_SERVER['SERVER_PORT'] ?? 0)) === 443;
+    }
 
-        return $url !== '' && $url !== '*' ? $url : null;
+    /**
+     * Liste des origines autorisees pour le CORS (jamais de wildcard).
+     * Accepte FRONTEND_URL (origine unique) et FRONTEND_URLS (liste separee par des virgules),
+     * ce qui permet par ex. un frontend Vercel + un domaine custom.
+     *
+     * @return string[]
+     */
+    public static function allowedOrigins(): array
+    {
+        $raw = trim((string) env('FRONTEND_URL', '')) . ',' . trim((string) env('FRONTEND_URLS', ''));
+
+        $origins = [];
+        foreach (explode(',', $raw) as $url) {
+            $url = rtrim(trim($url), '/');
+            if ($url !== '' && $url !== '*') {
+                $origins[$url] = true; // dedoublonnage
+            }
+        }
+
+        return array_keys($origins);
     }
 
     public static function applyCors(): void
     {
-        $allowed = self::allowedOrigin();
-        $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+        $allowed = self::allowedOrigins();
+        $origin = rtrim((string) ($_SERVER['HTTP_ORIGIN'] ?? ''), '/');
 
-        if ($allowed !== null && $origin !== '' && rtrim($origin, '/') === $allowed) {
+        if ($origin !== '' && in_array($origin, $allowed, true)) {
             header('Access-Control-Allow-Origin: ' . $origin);
             header('Access-Control-Allow-Credentials: true');
             header('Vary: Origin');
@@ -39,6 +69,7 @@ final class Security
 
         header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
         header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override');
+        header('Access-Control-Max-Age: 86400');
     }
 
     public static function registerErrorHandlers(): void

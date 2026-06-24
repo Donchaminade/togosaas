@@ -17,7 +17,7 @@ export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
   const siteUrl =
     env.VITE_SITE_URL ||
-    (mode === 'production' ? 'https://togo-communities-hub.vercel.app' : 'http://localhost:3000');
+    (mode === 'production' ? 'https://togosaas.vercel.app' : 'http://localhost:3000');
 
   return {
     plugins: [react(), tailwindcss(), injectSiteUrl(siteUrl)],

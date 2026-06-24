@@ -4,6 +4,11 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # Force HTTPS (y compris derriere le proxy Hostinger). A activer une fois le SSL en place.
+    RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
     # Bloquer l'acces direct aux dossiers sensibles.
     RewriteRule ^(database|config|src|storage)(/|$) - [F,L]
 

@@ -338,7 +338,7 @@ export default function CommunityDetail() {
                   className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 py-3 text-xs font-semibold text-slate-400 transition-colors hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 dark:border-slate-700 dark:hover:border-rose-500/40 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
                 >
                   <Flag className="h-3.5 w-3.5" />
-                  Signaler un abus (anonyme)
+                  Signaler un dysfonctionnement (anonyme)
                 </Link>
               </aside>
             </div>

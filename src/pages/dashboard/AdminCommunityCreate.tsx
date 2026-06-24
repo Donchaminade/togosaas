@@ -145,7 +145,7 @@ export default function AdminCommunityCreate() {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as CommunityStatus)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-togo-green dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-togo-green dark:border-slate-700 dark:bg-slate-950 dark:text-white [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-800 dark:[&>option]:text-white"
             >
               <option value="approved">Approuvée</option>
               <option value="pending">En attente</option>

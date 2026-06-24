@@ -338,7 +338,7 @@ export default function ReportTrack() {
                   Pas encore signalé ?
                 </h3>
                 <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                  Si vous êtes témoin ou victime d&apos;un abus au sein d&apos;une communauté
+                  Si vous avez constaté un dysfonctionnement ou un problème sur une solution SaaS
                   référencée sur Togosaas, déposez un signalement anonyme. Vous recevrez un code de
                   suivi à conserver précieusement.
                 </p>
@@ -347,7 +347,7 @@ export default function ReportTrack() {
                   className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-rose-600/25 transition-all hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600"
                 >
                   <Shield className="h-4 w-4" />
-                  Signaler un abus
+                  Signaler un dysfonctionnement
                 </Link>
               </div>
 

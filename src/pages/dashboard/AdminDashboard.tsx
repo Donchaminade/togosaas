@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
+  ArrowRight,
   CheckCircle2,
   Clock,
   Eye,
@@ -22,6 +23,8 @@ import AdminAuthorForm from '../../components/dashboard/AdminAuthorForm';
 import AdminReportsPanel from '../../components/dashboard/AdminReportsPanel';
 import AdminUsersPanel from '../../components/dashboard/AdminUsersPanel';
 import AdminProfilePanel from '../../components/dashboard/AdminProfilePanel';
+import AdminEmailingPanel from '../../components/dashboard/AdminEmailingPanel';
+import AdminAutomationPanel from '../../components/dashboard/AdminAutomationPanel';
 import LeadCreateForm from '../../components/dashboard/LeadCreateForm';
 import LeadEditForm from '../../components/dashboard/LeadEditForm';
 import { PageLoader } from '../../components/ui/Spinner';
@@ -30,6 +33,7 @@ import SearchEmptyState from '../../components/ui/SearchEmptyState';
 import { useToast } from '../../components/ui/Toast';
 import { buildAdminNav, adminTabFromSearch, ADMIN_TAB_TITLES } from '../../lib/adminNav';
 import { StaggerReveal } from '../../components/motion/ScrollReveal';
+import { useCountUp, useMounted } from '../../hooks/useCountUp';
 import { useAuth } from '../../context/AuthContext';
 import { api, ApiError } from '../../lib/api';
 import { formatLocation } from '../../lib/location';
@@ -200,46 +204,56 @@ export default function AdminDashboard() {
           {active === 'overview' && stats && (
             <div className="space-y-8">
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                <StatCard icon={Users2} label="Solutions SaaS" value={stats.communities.total} color="text-togo-green bg-togo-green/10" />
-                <StatCard icon={Clock} label="En attente" value={stats.communities.pending} color="text-amber-600 bg-amber-100 dark:bg-amber-500/15" />
-                <StatCard icon={Users} label="Leads inscrits" value={stats.leads} color="text-sky-600 bg-sky-100 dark:bg-sky-500/15" />
-                <StatCard icon={Mail} label="Messages non lus" value={stats.messages.unread} color="text-togo-red bg-rose-100 dark:bg-rose-500/15" />
-                <StatCard icon={Flag} label="Signalements" value={stats.reports?.total ?? 0} color="text-violet-600 bg-violet-100 dark:bg-violet-500/15" />
+                <StatCard index={0} icon={Users2} label="Solutions SaaS" value={stats.communities.total} accent={STAT_ACCENTS.green} />
+                <StatCard index={1} icon={Clock} label="En attente" value={stats.communities.pending} accent={STAT_ACCENTS.amber} />
+                <StatCard index={2} icon={Users} label="Leads inscrits" value={stats.leads} accent={STAT_ACCENTS.sky} />
+                <StatCard index={3} icon={Mail} label="Messages non lus" value={stats.messages.unread} accent={STAT_ACCENTS.red} />
+                <StatCard index={4} icon={Flag} label="Signalements" value={stats.reports?.total ?? 0} accent={STAT_ACCENTS.violet} />
               </div>
 
               <div className="grid gap-5 lg:grid-cols-3">
-                <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900 lg:col-span-2">
-                  <h3 className="text-sm font-bold uppercase tracking-wide text-slate-400">Répartition des solutions SaaS</h3>
-                  <div className="mt-5 space-y-4">
-                    <Bar label="Approuvées" value={stats.communities.approved} total={stats.communities.total} className="bg-emerald-500" />
-                    <Bar label="En attente" value={stats.communities.pending} total={stats.communities.total} className="bg-amber-500" />
-                    <Bar label="Rejetées" value={stats.communities.rejected} total={stats.communities.total} className="bg-rose-500" />
+                <StaggerReveal index={0} variant="gentle-up" stagger={130} maxDelay={260} className="lg:col-span-2">
+                  <div className="h-full overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-white to-slate-50/60 p-6 dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/40">
+                    <h3 className="text-sm font-bold uppercase tracking-wide text-slate-400">Répartition des solutions SaaS</h3>
+                    <div className="mt-6">
+                      <DistributionDonut
+                        approved={stats.communities.approved}
+                        pending={stats.communities.pending}
+                        rejected={stats.communities.rejected}
+                        total={stats.communities.total}
+                      />
+                    </div>
                   </div>
-                </div>
-                <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-                  <h3 className="text-sm font-bold uppercase tracking-wide text-slate-400">À traiter</h3>
-                  <button
-                    onClick={() => { navigate('/admin?tab=communities'); setFilter('pending'); }}
-                    className="mt-4 flex w-full items-center justify-between rounded-2xl bg-amber-50 px-4 py-3 text-left transition-colors hover:bg-amber-100 dark:bg-amber-500/10"
-                  >
-                    <span className="text-sm font-semibold text-amber-700 dark:text-amber-400">Solutions SaaS en attente</span>
-                    <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-bold text-white">{stats.communities.pending}</span>
-                  </button>
-                  <button
-                    onClick={() => navigate('/admin?tab=messages')}
-                    className="mt-3 flex w-full items-center justify-between rounded-2xl bg-rose-50 px-4 py-3 text-left transition-colors hover:bg-rose-100 dark:bg-rose-500/10"
-                  >
-                    <span className="text-sm font-semibold text-rose-700 dark:text-rose-400">Messages non lus</span>
-                    <span className="rounded-full bg-togo-red px-2.5 py-0.5 text-xs font-bold text-white">{stats.messages.unread}</span>
-                  </button>
-                  <button
-                    onClick={() => navigate('/admin?tab=reports')}
-                    className="mt-3 flex w-full items-center justify-between rounded-2xl bg-violet-50 px-4 py-3 text-left transition-colors hover:bg-violet-100 dark:bg-violet-500/10"
-                  >
-                    <span className="text-sm font-semibold text-violet-700 dark:text-violet-400">Signalements en attente</span>
-                    <span className="rounded-full bg-violet-600 px-2.5 py-0.5 text-xs font-bold text-white">{stats.reports?.pending ?? 0}</span>
-                  </button>
-                </div>
+                </StaggerReveal>
+
+                <StaggerReveal index={1} variant="gentle-up" stagger={130} maxDelay={260}>
+                  <div className="h-full rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+                    <h3 className="text-sm font-bold uppercase tracking-wide text-slate-400">À traiter</h3>
+                    <div className="mt-4 space-y-3">
+                      <TaskRow
+                        icon={Clock}
+                        label="Solutions SaaS en attente"
+                        value={stats.communities.pending}
+                        tone={TASK_TONES.amber}
+                        onClick={() => { navigate('/admin?tab=communities'); setFilter('pending'); }}
+                      />
+                      <TaskRow
+                        icon={Mail}
+                        label="Messages non lus"
+                        value={stats.messages.unread}
+                        tone={TASK_TONES.rose}
+                        onClick={() => navigate('/admin?tab=messages')}
+                      />
+                      <TaskRow
+                        icon={Flag}
+                        label="Signalements en attente"
+                        value={stats.reports?.pending ?? 0}
+                        tone={TASK_TONES.violet}
+                        onClick={() => navigate('/admin?tab=reports')}
+                      />
+                    </div>
+                  </div>
+                </StaggerReveal>
               </div>
 
               <AdminOverviewCharts communities={communities} />
@@ -536,6 +550,10 @@ export default function AdminDashboard() {
 
           {active === 'support' && <AdminSupportPanel />}
 
+          {active === 'emailing' && <AdminEmailingPanel />}
+
+          {active === 'automations' && <AdminAutomationPanel />}
+
           {active === 'reports' && <AdminReportsPanel />}
 
           {active === 'author' && isSuperAdmin && (
@@ -571,30 +589,160 @@ export default function AdminDashboard() {
   );
 }
 
-function StatCard({ icon: Icon, label, value, color }: { icon: any; label: string; value: number; color: string }) {
+type StatAccent = { icon: string; glow: string; shadow: string };
+
+const STAT_ACCENTS: Record<'green' | 'amber' | 'sky' | 'red' | 'violet', StatAccent> = {
+  green: { icon: 'from-togo-green to-togo-green-light', glow: 'from-togo-green to-emerald-400', shadow: 'shadow-togo-green/30' },
+  amber: { icon: 'from-amber-400 to-amber-500', glow: 'from-amber-300 to-amber-500', shadow: 'shadow-amber-500/30' },
+  sky: { icon: 'from-sky-400 to-sky-500', glow: 'from-sky-300 to-sky-500', shadow: 'shadow-sky-500/30' },
+  red: { icon: 'from-togo-red to-rose-500', glow: 'from-togo-red to-rose-400', shadow: 'shadow-togo-red/30' },
+  violet: { icon: 'from-violet-400 to-violet-500', glow: 'from-violet-300 to-violet-500', shadow: 'shadow-violet-500/30' },
+};
+
+function StatCard({ icon: Icon, label, value, accent, index }: { icon: any; label: string; value: number; accent: StatAccent; index: number }) {
+  const display = useCountUp(value);
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-      <span className={`grid h-12 w-12 place-items-center rounded-2xl ${color}`}>
-        <Icon className="h-6 w-6" />
-      </span>
-      <p className="mt-4 text-3xl font-black text-slate-900 dark:text-white">{value}</p>
-      <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">{label}</p>
+    <StaggerReveal index={index} variant="gentle-up" stagger={70} maxDelay={420}>
+      <div className="group relative h-full overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-slate-200/70 motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:border-slate-800 dark:bg-slate-900 dark:hover:shadow-black/40">
+        <div
+          aria-hidden="true"
+          className={`pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-gradient-to-br ${accent.glow} opacity-20 blur-2xl transition-opacity duration-300 group-hover:opacity-45`}
+        />
+        <span className={`relative inline-grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br text-white shadow-lg ${accent.icon} ${accent.shadow}`}>
+          <Icon className="h-6 w-6" />
+        </span>
+        <p className="relative mt-4 text-3xl font-black tabular-nums text-slate-900 dark:text-white">{display.toLocaleString('fr-FR')}</p>
+        <p className="relative text-sm font-semibold text-slate-500 dark:text-slate-400">{label}</p>
+      </div>
+    </StaggerReveal>
+  );
+}
+
+const DONUT_SEGMENTS = [
+  { key: 'approved', label: 'Approuvées', color: 'var(--color-togo-green)' },
+  { key: 'pending', label: 'En attente', color: 'var(--color-togo-yellow)' },
+  { key: 'rejected', label: 'Rejetées', color: 'var(--color-togo-red)' },
+] as const;
+
+function DistributionDonut({ approved, pending, rejected, total }: { approved: number; pending: number; rejected: number; total: number }) {
+  const mounted = useMounted();
+  const displayTotal = useCountUp(total);
+  const radius = 52;
+  const circumference = 2 * Math.PI * radius;
+
+  const values: Record<string, number> = { approved, pending, rejected };
+  let cumulative = 0;
+
+  return (
+    <div className="flex flex-col items-center gap-7 sm:flex-row sm:gap-9">
+      <div className="relative h-44 w-44 shrink-0">
+        <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90" role="img" aria-label={`Répartition : ${approved} approuvées, ${pending} en attente, ${rejected} rejetées`}>
+          <circle cx="60" cy="60" r={radius} fill="none" strokeWidth="13" className="stroke-slate-100 dark:stroke-slate-800" />
+          {DONUT_SEGMENTS.map((seg) => {
+            const value = values[seg.key];
+            const frac = total > 0 ? value / total : 0;
+            const dashOffset = -cumulative * circumference;
+            cumulative += frac;
+            const len = mounted ? frac * circumference : 0;
+            return (
+              <circle
+                key={seg.key}
+                cx="60"
+                cy="60"
+                r={radius}
+                fill="none"
+                stroke={seg.color}
+                strokeWidth="13"
+                strokeDasharray={`${len} ${circumference}`}
+                strokeDashoffset={dashOffset}
+                style={{ transition: 'stroke-dasharray 1.1s cubic-bezier(0.22, 1, 0.36, 1)' }}
+              />
+            );
+          })}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-3xl font-black tabular-nums text-slate-900 dark:text-white">{displayTotal}</span>
+          <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Solutions</span>
+        </div>
+      </div>
+
+      <div className="w-full space-y-3.5">
+        {DONUT_SEGMENTS.map((seg) => (
+          <DonutLegendRow
+            key={seg.key}
+            label={seg.label}
+            color={seg.color}
+            value={values[seg.key]}
+            pct={total > 0 ? Math.round((values[seg.key] / total) * 100) : 0}
+            mounted={mounted}
+          />
+        ))}
+      </div>
     </div>
   );
 }
 
-function Bar({ label, value, total, className }: { label: string; value: number; total: number; className: string }) {
-  const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+function DonutLegendRow({ label, value, color, pct, mounted }: { label: string; value: number; color: string; pct: number; mounted: boolean }) {
+  const display = useCountUp(value);
   return (
     <div>
-      <div className="mb-1.5 flex justify-between text-sm">
-        <span className="font-semibold text-slate-600 dark:text-slate-300">{label}</span>
-        <span className="font-bold text-slate-900 dark:text-white">{value}</span>
+      <div className="mb-1.5 flex items-center justify-between gap-2 text-sm">
+        <span className="flex items-center gap-2 font-semibold text-slate-600 dark:text-slate-300">
+          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} aria-hidden="true" />
+          {label}
+        </span>
+        <span className="flex items-baseline gap-1.5">
+          <span className="font-black tabular-nums text-slate-900 dark:text-white">{display}</span>
+          <span className="text-xs font-semibold text-slate-400">{pct}%</span>
+        </span>
       </div>
-      <div className="h-2.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-        <div className={`h-full rounded-full transition-all ${className}`} style={{ width: `${pct}%` }} />
+      <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+        <div
+          className="h-full rounded-full"
+          style={{ width: mounted ? `${pct}%` : '0%', backgroundColor: color, transition: 'width 1.1s cubic-bezier(0.22, 1, 0.36, 1)' }}
+        />
       </div>
     </div>
+  );
+}
+
+type TaskTone = { card: string; icon: string; text: string; badge: string };
+
+const TASK_TONES: Record<'amber' | 'rose' | 'violet', TaskTone> = {
+  amber: {
+    card: 'border-amber-100 bg-amber-50 hover:border-amber-200 hover:bg-amber-100/80 dark:border-amber-500/15 dark:bg-amber-500/10 dark:hover:bg-amber-500/15',
+    icon: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
+    text: 'text-amber-700 dark:text-amber-400',
+    badge: 'bg-amber-500',
+  },
+  rose: {
+    card: 'border-rose-100 bg-rose-50 hover:border-rose-200 hover:bg-rose-100/80 dark:border-rose-500/15 dark:bg-rose-500/10 dark:hover:bg-rose-500/15',
+    icon: 'bg-rose-500/15 text-rose-600 dark:text-rose-400',
+    text: 'text-rose-700 dark:text-rose-400',
+    badge: 'bg-togo-red',
+  },
+  violet: {
+    card: 'border-violet-100 bg-violet-50 hover:border-violet-200 hover:bg-violet-100/80 dark:border-violet-500/15 dark:bg-violet-500/10 dark:hover:bg-violet-500/15',
+    icon: 'bg-violet-500/15 text-violet-600 dark:text-violet-400',
+    text: 'text-violet-700 dark:text-violet-400',
+    badge: 'bg-violet-600',
+  },
+};
+
+function TaskRow({ icon: Icon, label, value, tone, onClick }: { icon: any; label: string; value: number; tone: TaskTone; onClick: () => void }) {
+  const display = useCountUp(value);
+  return (
+    <button
+      onClick={onClick}
+      className={`group flex w-full items-center gap-3 rounded-2xl border px-3.5 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${tone.card}`}
+    >
+      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${tone.icon}`}>
+        <Icon className="h-4 w-4" />
+      </span>
+      <span className={`flex-1 text-sm font-semibold ${tone.text}`}>{label}</span>
+      <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold tabular-nums text-white ${tone.badge}`}>{display}</span>
+      <ArrowRight className={`h-4 w-4 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none ${tone.text}`} />
+    </button>
   );
 }
 

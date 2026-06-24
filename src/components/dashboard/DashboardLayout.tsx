@@ -81,7 +81,15 @@ export default function DashboardLayout({
           }`}
         >
           <div className={compact ? 'flex justify-center' : 'min-w-0 flex-1'}>
-            <Logo variant="dashboard" className={compact ? '[&_img]:h-10 [&_img]:sm:h-10' : ''} />
+            {compact ? (
+              <img
+                src="/togosaas-icon-dark.png"
+                alt="Togosaas"
+                className="h-10 w-10 rounded-xl object-contain"
+              />
+            ) : (
+              <Logo variant="dashboard" />
+            )}
           </div>
           <button
             type="button"

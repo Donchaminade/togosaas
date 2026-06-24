@@ -4,17 +4,17 @@ Architecture cible :
 
 | Composant | Hébergeur | URL |
 |-----------|-----------|-----|
-| **API PHP + MySQL** | **Hostinger** | `https://tch.grosbit.com` |
-| **Frontend React** | **Vercel** | ex. `https://hub.grosbit.com` ou `https://xxx.vercel.app` |
+| **API PHP + MySQL** | **Hostinger** | `https://togosaas.grosbit.com` |
+| **Frontend React** | **Vercel** | `https://togosaas.vercel.app` |
 
 ---
 
-## 1. Backend sur Hostinger — `tch.grosbit.com`
+## 1. Backend sur Hostinger — `togosaas.grosbit.com`
 
 ### 1.1 Créer le sous-domaine
 
 1. hPanel Hostinger → **Domaines** → **Sous-domaines**
-2. Créer **`tch.grosbit.com`**
+2. Créer **`togosaas.grosbit.com`**
 3. Dossier cible : ex. `tch` ou `public_html/tch`
 4. **Document root** : pointer vers le dossier `public` du backend  
    (`.../tch/public` ou équivalent)
@@ -32,7 +32,7 @@ Via **Gestionnaire de fichiers** ou **FTP**, uploadez tout le dossier `backend/`
 
 ```
 backend/
-├── public/          ← document root de tch.grosbit.com
+├── public/          ← document root de togosaas.grosbit.com
 ├── src/
 ├── config/
 ├── database/        ← migrations uniquement (pas d'exports SQL)
@@ -62,9 +62,9 @@ JWT_SECRET=...   # openssl rand -hex 32
 APP_ENV=production
 APP_DEBUG=false
 
-# URL du site Vercel (pas tch.grosbit.com — c'est l'API ici)
-FRONTEND_URL=https://votre-projet.vercel.app
-# ou FRONTEND_URLS=https://hub.grosbit.com,https://xxx.vercel.app
+# URL du site Vercel (pas togosaas.grosbit.com — c'est l'API ici)
+FRONTEND_URL=https://togosaas.vercel.app
+# ou FRONTEND_URLS=https://togosaas.vercel.app (toutes les origines front, separees par des virgules)
 ```
 
 ### 1.5 Permissions
@@ -115,7 +115,7 @@ DB_PASS=...   # mot de passe MySQL Hostinger
 **SSH** (si activé sur Hostinger) :
 
 ```bash
-cd ~/domains/tch.grosbit.com/backend   # adaptez le chemin
+cd ~/domains/togosaas.grosbit.com/backend   # adaptez le chemin
 php database/migrate.php
 php database/seed.php
 ```
@@ -130,7 +130,7 @@ php database/seed.php
 
 ### 1.8 Vérifier l'API
 
-Ouvrir : **`https://tch.grosbit.com/health`**  
+Ouvrir : **`https://togosaas.grosbit.com/health`**  
 Réponse attendue : `{"success":true,"data":{"status":"ok"},...}`
 
 ---
@@ -151,7 +151,7 @@ Dans **Settings → Environment Variables** :
 
 | Nom | Valeur | Environnements |
 |-----|--------|----------------|
-| `VITE_API_URL` | `https://tch.grosbit.com` | Production, Preview, Development |
+| `VITE_API_URL` | `https://togosaas.grosbit.com` | Production, Preview, Development |
 
 > Pas de slash final. Rebuild obligatoire après modification.
 
@@ -163,7 +163,7 @@ Le fichier `vercel.json` gère le **fallback SPA** (routes React `/communautes`,
 
 ### 2.4 Domaine custom frontend (optionnel)
 
-Vercel → **Settings → Domains** → ajouter ex. `hub.grosbit.com` ou `www.grosbit.com`  
+Vercel → **Settings → Domains** → ajouter ex. `www.grosbit.com`  
 Configurer le CNAME/DNS selon les instructions Vercel.
 
 Mettre à jour **`FRONTEND_URL`** (ou `FRONTEND_URLS`) dans le `.env` backend Hostinger avec cette URL frontend.
@@ -172,11 +172,11 @@ Mettre à jour **`FRONTEND_URL`** (ou `FRONTEND_URLS`) dans le `.env` backend Ho
 
 ## 3. Checklist finale
 
-- [ ] `https://tch.grosbit.com/health` OK
+- [ ] `https://togosaas.grosbit.com/health` OK
 - [ ] `APP_DEBUG=false` sur le backend
 - [ ] `JWT_SECRET` unique en production
 - [ ] `FRONTEND_URL` = URL exacte du site **Vercel** (pas l'API)
-- [ ] `VITE_API_URL=https://tch.grosbit.com` sur Vercel
+- [ ] `VITE_API_URL=https://togosaas.grosbit.com` sur Vercel
 - [ ] Migrations appliquées
 - [ ] `storage/` inscriptible (775)
 - [ ] Connexion / inscription testées

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace TCH\Controllers;
 
 use TCH\Auth;
+use TCH\AutomationEngine;
 use TCH\Database;
+use TCH\RateLimiter;
 use TCH\ReportEvidenceHelper;
 use TCH\ReportHelper;
 use TCH\Request;
@@ -18,6 +20,8 @@ final class ReportController
     /** Televersement anonyme de preuves (stockage prive). */
     public function uploadEvidence(Request $request): void
     {
+        RateLimiter::enforce('report-evidence', 30, 1800); // 30 fichiers / 30 min / IP
+
         if (empty($_FILES['file'])) {
             Response::error('Aucun fichier envoye.', 422);
         }
@@ -29,6 +33,8 @@ final class ReportController
     /** Deposer un signalement anonyme. */
     public function store(Request $request): void
     {
+        RateLimiter::enforce('report', 5, 1800); // 5 signalements / 30 min / IP
+
         Validator::make($request->all())->validate([
             'communityId' => 'required|integer',
             'targetType' => 'required|in:community,lead',
@@ -45,7 +51,7 @@ final class ReportController
         $community = $stmt->fetch();
 
         if (!$community || $community['status'] !== 'approved') {
-            Response::error('Communaute introuvable ou non eligible au signalement.', 404);
+            Response::error('Solution introuvable ou non eligible au signalement.', 404);
         }
 
         $evidenceInput = $request->input('evidence', []);
@@ -177,6 +183,27 @@ final class ReportController
         ]);
 
         $updated = $this->findAdminRow($id);
+
+        if ($status !== ($row['status'] ?? '') && $updated) {
+            $statusLabels = [
+                'pending' => 'en attente',
+                'investigating' => 'en cours d\'analyse',
+                'resolved' => 'traite',
+                'dismissed' => 'classe',
+            ];
+            $email = (string) ($updated['owner_email'] ?? '');
+            $name = (string) ($updated['owner_name'] ?? $updated['leader_name'] ?? '');
+
+            AutomationEngine::fire('report_status_changed', [
+                'email' => $email,
+                'name' => $name,
+                'nom' => $name,
+                'solution' => (string) ($updated['community_name'] ?? ''),
+                'statut' => $statusLabels[$status] ?? $status,
+                'code' => (string) ($updated['tracking_code'] ?? ''),
+            ]);
+        }
+
         Response::success(['report' => ReportHelper::serialize($updated, true)], 'Signalement mis a jour.');
     }
 

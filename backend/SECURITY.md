@@ -90,7 +90,7 @@ Ajoutés sur toutes les réponses JSON et les téléchargements de fichiers :
 
 ```env
 # Obligatoire en production
-FRONTEND_URL=https://votre-domaine.com
+FRONTEND_URL=https://togosaas.vercel.app
 JWT_SECRET=<au moins 32 caractères aléatoires>
 APP_DEBUG=false
 

@@ -242,3 +242,132 @@ export interface ReportTrackInfo {
   createdAt: string;
   reviewedAt?: string | null;
 }
+
+/* ------------------------------------------------------------------ */
+/* Campagnes email                                                     */
+/* ------------------------------------------------------------------ */
+
+export interface EmailAttachment {
+  key: string;
+  originalName: string;
+  mime: string;
+  size?: number;
+}
+
+export type EmailCampaignStatus = 'draft' | 'sending' | 'sent' | 'partial' | 'failed';
+export type EmailRecipientStatus = 'pending' | 'sent' | 'failed';
+
+export interface EmailCampaign {
+  id: number;
+  subject: string;
+  bodyHtml: string;
+  attachments?: EmailAttachment[];
+  recipientsCount: number;
+  sentCount: number;
+  failedCount: number;
+  status: EmailCampaignStatus;
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export interface EmailCampaignRecipient {
+  id: number;
+  userId: number | null;
+  email: string;
+  name?: string | null;
+  status: EmailRecipientStatus;
+  error?: string | null;
+  sentAt?: string | null;
+}
+
+export interface EmailRecipientOption {
+  id: number;
+  name: string;
+  email: string;
+}
+
+export interface EmailConfig {
+  configured: boolean;
+  fromEmail: string | null;
+  maxFiles: number;
+}
+
+/* ------------------------------------------------------------------ */
+/* Automatisations                                                     */
+/* ------------------------------------------------------------------ */
+
+export interface MessageTemplate {
+  id: number;
+  name: string;
+  subject: string;
+  bodyHtml: string;
+  description?: string | null;
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export type AutomationTrigger =
+  | 'lead_register'
+  | 'community_submitted'
+  | 'community_approved'
+  | 'community_rejected'
+  | 'report_status_changed'
+  | 'scheduled'
+  | 'manual';
+
+export type AutomationAudience = 'event' | 'all_leads' | 'selection';
+
+export type ScheduleMode = 'once' | 'daily' | 'weekly' | 'monthly';
+
+export interface AutomationSchedule {
+  mode: ScheduleMode;
+  date?: string;
+  time?: string;
+  dayOfWeek?: number;
+  dayOfMonth?: number;
+}
+
+export interface Automation {
+  id: number;
+  name: string;
+  triggerEvent: AutomationTrigger;
+  triggerLabel: string;
+  templateId: number | null;
+  templateName?: string | null;
+  isActive: boolean;
+  audience: AutomationAudience;
+  audienceUserIds: number[];
+  schedule?: AutomationSchedule | null;
+  lastRunAt?: string | null;
+  nextRunAt?: string | null;
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export interface AutomationVariable {
+  key: string;
+  label: string;
+}
+
+export interface AutomationTriggerMeta {
+  key: AutomationTrigger;
+  label: string;
+  kind: string;
+  variables: AutomationVariable[];
+}
+
+export type AutomationLogStatus = 'pending' | 'sending' | 'sent' | 'failed' | 'skipped';
+
+export interface AutomationLog {
+  id: number;
+  automationId: number | null;
+  automationName?: string | null;
+  triggerEvent: string;
+  recipientEmail: string;
+  recipientName?: string | null;
+  subject?: string | null;
+  status: AutomationLogStatus;
+  error?: string | null;
+  createdAt: string;
+  sentAt?: string | null;
+}

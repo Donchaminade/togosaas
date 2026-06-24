@@ -39,6 +39,12 @@ const EMPTY: Partial<Community> = {
   memberCount: undefined,
   meetingInfo: '',
   publicEmail: '',
+  pricingType: 'free',
+  priceAmount: undefined,
+  currency: 'XOF',
+  billingPeriod: undefined,
+  appUrl: '',
+  demoUrl: '',
 };
 
 export default function CommunityForm({ initial, membershipRole = 'owner', onSubmit }: CommunityFormProps) {
@@ -125,7 +131,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
       {!isCoLead && (
         <Section title="Logo & visuels">
           <ImageUpload
-            label="Logo de la communauté"
+            label="Logo de la solution"
             value={form.logoUrl}
             onChange={(url) => setValue('logoUrl', url ?? '')}
             required={isNew}
@@ -142,7 +148,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
 
       <Section title="Identité">
         <Input
-          label="Nom de la communauté"
+          label="Nom de la solution"
           value={form.name}
           onChange={set('name')}
           error={errors.name?.[0]}
@@ -153,7 +159,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
           label="Accroche courte"
           value={form.shortDescription ?? ''}
           onChange={set('shortDescription')}
-          placeholder="Une phrase qui résume votre communauté"
+          placeholder="Une phrase qui résume votre solution SaaS"
           maxLength={300}
           disabled={isCoLead}
         />
@@ -165,18 +171,18 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
             rows={4}
             required={!isCoLead}
             className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-togo-green focus:bg-white dark:focus:bg-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-            placeholder="Présentez votre communauté (20 caractères min.)"
+            placeholder="Décrivez votre solution : fonctionnalités, public cible, avantages (20 caractères min.)"
           />
           {errors.description?.[0] && <Err>{errors.description[0]}</Err>}
         </div>
         <div>
-          <Label>Mission</Label>
+          <Label>Proposition de valeur</Label>
           <textarea
             value={form.mission ?? ''}
             onChange={set('mission')}
             rows={2}
             className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-togo-green focus:bg-white dark:focus:bg-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-            placeholder="Quelle est la mission de votre communauté ?"
+            placeholder="Quel problème résout votre solution ?"
           />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -215,7 +221,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
         </div>
       </Section>
 
-      <Section title="Thématiques (max 6)">
+      <Section title="Catégories (max 6)">
         <div className="flex flex-wrap gap-2">
           {AVAILABLE_TAGS.map((tag) => {
             const selected = form.tags?.includes(tag);
@@ -237,15 +243,92 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
         </div>
       </Section>
 
-      <Section title="Site web (optionnel)">
+      {!isCoLead && (
+        <Section title="Tarification">
+          <p className="-mt-2 mb-3 text-xs text-slate-500 dark:text-slate-400">
+            Indiquez si votre solution est gratuite, freemium ou payante. Le badge s&apos;affichera sur le catalogue.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {(['free', 'freemium', 'paid'] as const).map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setValue('pricingType', type)}
+                className={`rounded-xl border px-4 py-3 text-left text-sm font-semibold transition-colors ${
+                  form.pricingType === type
+                    ? 'border-togo-green bg-togo-green/10 text-togo-green dark:border-togo-yellow dark:bg-togo-yellow/10 dark:text-togo-yellow'
+                    : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300'
+                }`}
+              >
+                {type === 'free' && 'Gratuit'}
+                {type === 'freemium' && 'Freemium'}
+                {type === 'paid' && 'Payant'}
+              </button>
+            ))}
+          </div>
+          {(form.pricingType === 'paid' || form.pricingType === 'freemium') && (
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Input
+                label="Prix (optionnel pour freemium)"
+                type="number"
+                min={0}
+                step={1}
+                value={form.priceAmount ?? ''}
+                onChange={set('priceAmount')}
+                placeholder="5000"
+              />
+              <div>
+                <Label>Devise</Label>
+                <select
+                  value={form.currency ?? 'XOF'}
+                  onChange={set('currency')}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-togo-green dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                >
+                  <option value="XOF">XOF (FCFA)</option>
+                  <option value="EUR">EUR</option>
+                  <option value="USD">USD</option>
+                </select>
+              </div>
+              <div>
+                <Label>Période de facturation</Label>
+                <select
+                  value={form.billingPeriod ?? ''}
+                  onChange={set('billingPeriod')}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-togo-green dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                >
+                  <option value="">— Choisir —</option>
+                  <option value="monthly">Mensuel</option>
+                  <option value="yearly">Annuel</option>
+                  <option value="one_time">Paiement unique</option>
+                </select>
+              </div>
+            </div>
+          )}
+        </Section>
+      )}
+
+      <Section title="Accès à la solution">
         <p className="-mt-2 mb-3 text-xs text-slate-500 dark:text-slate-400">
-          Lien vers le site officiel de la communauté. Laissez vide si la communauté n&apos;en a pas.
+          Lien direct pour que les visiteurs accèdent à votre application depuis la fiche publique.
         </p>
         <Input
-          label="URL du site"
+          label="URL de l'application"
+          value={form.appUrl ?? ''}
+          onChange={set('appUrl')}
+          placeholder="https://app.votre-solution.tg"
+          disabled={isCoLead}
+        />
+        <Input
+          label="URL démo / essai gratuit"
+          value={form.demoUrl ?? ''}
+          onChange={set('demoUrl')}
+          placeholder="https://demo.votre-solution.tg"
+        />
+        <Input
+          label="Site web (optionnel)"
           value={form.websiteUrl ?? ''}
           onChange={set('websiteUrl')}
-          placeholder="https://votre-communaute.tg"
+          placeholder="https://votre-solution.tg"
         />
       </Section>
 
@@ -259,7 +342,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
       </Section>
 
       {!isCoLead && (
-        <Section title="Responsable principal">
+        <Section title="Fondateur / éditeur">
           <div className="grid gap-4 sm:grid-cols-2">
             <Input label="Nom" value={form.leaderName ?? ''} onChange={set('leaderName')} error={errors.leaderName?.[0]} required />
             <Input label="Email (privé, admin)" type="email" value={form.leaderEmail ?? ''} onChange={set('leaderEmail')} error={errors.leaderEmail?.[0]} required />
@@ -269,7 +352,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
             label="Photo du responsable"
             value={form.leaderPhotoUrl}
             onChange={(url) => setValue('leaderPhotoUrl', url ?? '')}
-            hint="Photo affichée publiquement sur la fiche communauté"
+            hint="Photo affichée publiquement sur la fiche solution"
           />
           <div>
             <Label>Biographie publique</Label>
@@ -285,7 +368,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
       )}
 
       {!isCoLead && (
-        <Section title="Co-leads & équipe">
+        <Section title="Équipe & co-fondateurs">
           {(form.coLeads ?? []).map((cl, i) => (
             <div key={i} className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
               <div className="mb-3 flex items-center justify-between">
@@ -297,7 +380,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
               <div className="grid gap-3 sm:grid-cols-2">
                 <Input label="Nom" value={cl.name} onChange={(e) => updateCoLead(i, 'name', e.target.value)} required />
                 <Input label="Rôle" value={cl.role ?? ''} onChange={(e) => updateCoLead(i, 'role', e.target.value)} placeholder="Co-lead, Trésorier..." />
-                <Input label="Email du compte T.C.H" type="email" value={cl.email ?? ''} onChange={(e) => updateCoLead(i, 'email', e.target.value)} placeholder="co-lead@exemple.tg" />
+                <Input label="Email du compte Togosaas" type="email" value={cl.email ?? ''} onChange={(e) => updateCoLead(i, 'email', e.target.value)} placeholder="co-lead@exemple.tg" />
                 <Input label="LinkedIn" value={cl.linkedinUrl ?? ''} onChange={(e) => updateCoLead(i, 'linkedinUrl', e.target.value)} />
               </div>
               <div className="mt-3">
@@ -328,24 +411,14 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
         </Section>
       )}
 
-      <Section title="Infos pratiques & galerie">
+      <Section title="Captures d'écran & galerie">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Input label="Année de fondation" type="number" value={form.foundedYear ?? ''} onChange={set('foundedYear')} placeholder="2020" />
-          <Input label="Nombre de membres" type="number" value={form.memberCount ?? ''} onChange={set('memberCount')} placeholder="150" />
-          <Input label="Email public" type="email" value={form.publicEmail ?? ''} onChange={set('publicEmail')} placeholder="contact@..." />
-        </div>
-        <div>
-          <Label>Rencontres & événements (texte libre)</Label>
-          <textarea
-            value={form.meetingInfo ?? ''}
-            onChange={set('meetingInfo')}
-            rows={2}
-            className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-togo-green dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-            placeholder="Quand et où se retrouve votre communauté ?"
-          />
+          <Input label="Année de lancement" type="number" value={form.foundedYear ?? ''} onChange={set('foundedYear')} placeholder="2024" />
+          <Input label="Nombre d'utilisateurs" type="number" value={form.memberCount ?? ''} onChange={set('memberCount')} placeholder="500" />
+          <Input label="Email de support public" type="email" value={form.publicEmail ?? ''} onChange={set('publicEmail')} placeholder="support@..." />
         </div>
         <GalleryUpload
-          label="Galerie photos"
+          label="Captures d'écran & images produit"
           value={form.gallery ?? []}
           onChange={(urls) => setValue('gallery', urls)}
         />
@@ -358,7 +431,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-togo-green px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-togo-green/25 transition-all hover:bg-togo-green-dark disabled:opacity-60 sm:w-auto sm:min-w-[240px]"
         >
           {loading ? <Spinner /> : <Save className="h-4 w-4" />}
-          {initial?.id ? 'Enregistrer les modifications' : 'Soumettre la communauté'}
+          {initial?.id ? 'Enregistrer les modifications' : 'Soumettre la solution'}
         </button>
       </div>
     </form>

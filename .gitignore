@@ -10,3 +10,11 @@ coverage/
 !.env.production.example
 .private/db-exports/*.sql
 backend/storage/ratelimit/
+
+# Secrets / cles privees / certificats (defense en profondeur)
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.json
+credentials.json

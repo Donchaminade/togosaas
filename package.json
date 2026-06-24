@@ -1,5 +1,6 @@
 {
-  "name": "tch-togo-communities-hub",
+  "name": "togosaas",
+  "description": "TogoSaaS — Hub SaaS du Togo",
   "private": true,
   "version": "1.0.0",
   "type": "module",

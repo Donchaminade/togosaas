@@ -83,6 +83,6 @@ export const LEAD_SECTION_TITLES: Record<string, { title: string; subtitle: stri
   communautes: { title: 'Mes communautés', subtitle: 'Créer et gérer vos fiches' },
   'co-leads': { title: 'Gestion des co-leads', subtitle: 'Accès et équipe' },
   evenements: { title: 'Calendrier événementiel', subtitle: 'Tous vos événements' },
-  messages: { title: 'Messages admin', subtitle: 'Échangez avec l\'équipe T.C.H' },
+  messages: { title: 'Messages admin', subtitle: 'Échangez avec l\'équipe Togosaas' },
   profil: { title: 'Mon profil', subtitle: 'Informations du compte' },
 };

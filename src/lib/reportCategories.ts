@@ -10,7 +10,7 @@ export const REPORT_CATEGORIES = [
 export const REPORT_STATUS_LABELS: Record<string, string> = {
   pending: 'En attente de traitement',
   investigating: 'En cours d\'enquête',
-  resolved: 'Traité par l\'équipe T.C.H',
+  resolved: 'Traité par l\'équipe Togosaas',
   dismissed: 'Classé sans suite',
 };
 

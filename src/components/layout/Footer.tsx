@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Github, Heart, Linkedin, Mail, Twitter } from 'lucide-react';
+import { Github, Linkedin, Mail, Twitter } from 'lucide-react';
 import Logo from '../ui/Logo';
 
 export default function Footer() {
@@ -14,10 +14,10 @@ export default function Footer() {
       <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-2">
-            <Logo variant="footer" />
+            <Logo variant="footer" surface="dark" />
             <p className="mt-4 max-w-md text-sm leading-relaxed text-slate-400">
-              T.C.H — Togo Communities Hub recense, valorise et connecte les
-              communautés du Togo — tech, culture, sport, citoyenneté et au-delà.
+              Togosaas recense, valorise et connecte les solutions SaaS du Togo —
+              gratuites et payantes, made in Togo.
             </p>
             <div className="mt-5 flex items-center gap-3">
               {[
@@ -47,9 +47,9 @@ export default function Footer() {
               {[
                 { to: '/', label: 'Accueil' },
                 { to: '/a-propos', label: 'À propos' },
-                { to: '/communautes', label: 'Communautés' },
+                { to: '/solutions', label: 'Solutions SaaS' },
                 { to: '/contact', label: 'Nous contacter' },
-                { to: '/signaler', label: 'Signaler un abus (anonyme)' },
+                { to: '/inscription', label: 'Proposer une solution' },
                 { to: '/mentions-legales', label: 'Mentions légales' },
               ].map((l) => (
                 <li key={l.to}>
@@ -63,12 +63,12 @@ export default function Footer() {
 
           <div>
             <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">
-              Espace lead
+              Espace éditeur
             </h4>
             <ul className="space-y-2.5 text-sm">
               <li>
                 <Link to="/inscription" className="text-slate-400 transition-colors hover:text-togo-yellow">
-                  Exposer ma communauté
+                  Publier ma solution
                 </Link>
               </li>
               <li>
@@ -93,26 +93,10 @@ export default function Footer() {
         </div>
 
         <div className="mt-6 flex flex-col items-center justify-between gap-4 text-xs text-slate-500 sm:flex-row">
-          <div className="flex flex-col items-center gap-1 sm:items-start">
-            <p>© {year} T.C.H — Togo Communities Hub. Tous droits réservés.</p>
-            <Link to="/mentions-legales" className="transition-colors hover:text-togo-yellow">
-              Mentions légales
-            </Link>
-          </div>
-          <div className="text-center sm:text-right">
-            <p className="flex flex-col items-center gap-0.5 sm:items-end">
-              <span className="flex items-center justify-center gap-1.5 sm:justify-end">
-                Dédié à{' '}
-                <span className="font-semibold text-rose-300">Mardiya TCHAKEY</span>
-                <Heart className="h-3.5 w-3.5 fill-togo-red text-togo-red" />
-              </span>
-              <span className="text-[10px] text-slate-500">L&apos;idée est née avec elle</span>
-            </p>
-            <p className="mt-1 flex items-center justify-center gap-1.5 sm:justify-end">
-              Conçu par{' '}
-              <span className="font-semibold text-slate-300">Chaminade Dondah Adjolou</span>
-            </p>
-          </div>
+          <p>© {year} Togosaas — Hub SaaS du Togo. Tous droits réservés.</p>
+          <Link to="/mentions-legales" className="transition-colors hover:text-togo-yellow">
+            Mentions légales
+          </Link>
         </div>
       </div>
     </footer>

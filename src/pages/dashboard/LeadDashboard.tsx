@@ -124,7 +124,7 @@ export default function LeadDashboard() {
                 {[
                   { to: '/espace-lead/communautes/nouvelle', label: 'Nouvelle communauté', desc: 'Soumettre une fiche', accent: true },
                   { to: '/espace-lead/co-leads', label: 'Gérer les co-leads', desc: `${stats.coLeadsTotal} membre(s)` },
-                  { to: '/espace-lead/messages', label: 'Contacter l\'admin', desc: supportUnread ? `${supportUnread} non lu(s)` : 'Support T.C.H' },
+                  { to: '/espace-lead/messages', label: 'Contacter l\'admin', desc: supportUnread ? `${supportUnread} non lu(s)` : 'Support Togosaas' },
                   { to: '/espace-lead/evenements', label: 'Calendrier', desc: 'Tous vos événements' },
                   { to: '/espace-lead/profil', label: 'Mon profil', desc: 'Nom, téléphone' },
                   { to: '/espace-lead/communautes', label: 'Mes communautés', desc: `${stats.total} fiche(s)` },

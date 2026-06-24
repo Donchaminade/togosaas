@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Rocket, Search, Shield, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MessageCircle, Rocket, Search, Sparkles } from 'lucide-react';
 import { HERO_SLIDES } from '../../data/heroSlides';
 
 /** Durée d'affichage par image avant la transition suivante */
@@ -147,20 +147,20 @@ export default function HeroSlideshow({ stats }: HeroSlideshowProps) {
         <div className="mx-auto flex w-full max-w-5xl min-h-0 flex-1 flex-col items-center justify-center text-center">
           <p className="animate-rise mb-3 inline-flex max-w-[95vw] items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.1em] text-white/90 shadow-md backdrop-blur-md sm:mb-4 sm:gap-1.5 sm:px-3 sm:py-1 sm:text-[9px] sm:tracking-[0.14em]">
             <Sparkles className="h-3 w-3 shrink-0 text-togo-yellow sm:h-3.5 sm:w-3.5" />
-            <span className="leading-tight">Le hub des communautés togolaises</span>
+            <span className="leading-tight">Le hub SaaS du Togo</span>
           </p>
 
           <h1 className="animate-rise delay-100 text-[2.25rem] font-black leading-[1.12] tracking-tight text-white drop-shadow-lg sm:text-[2.75rem] sm:leading-[1.08] md:text-[3.25rem] lg:text-[3.75rem] xl:text-[4rem]">
-            Trouvez, rejoignez et faites briller les{' '}
+            Découvrez et accédez aux{' '}
             <span className="bg-gradient-to-r from-togo-green via-togo-yellow to-togo-red bg-clip-text text-transparent">
-              communautés
+              solutions SaaS
             </span>{' '}
             du Togo
           </h1>
 
           <p className="animate-rise delay-200 mt-3 max-w-[20rem] text-sm leading-relaxed text-white/80 sm:mt-5 sm:max-w-xl sm:text-[15px] md:max-w-2xl md:text-base">
-            Fini la chasse au contact : parcourez l&apos;annuaire, découvrez les groupes près de
-            chez vous et échangez directement avec leurs responsables.
+            Parcourez le catalogue, comparez les offres gratuites et payantes, et accédez
+            directement aux applications togolaises.
           </p>
 
           <div className="animate-rise delay-300 mt-5 flex w-full max-w-md flex-col gap-2.5 sm:mt-8 sm:max-w-xl sm:flex-row sm:justify-center sm:gap-3">
@@ -168,25 +168,24 @@ export default function HeroSlideshow({ stats }: HeroSlideshowProps) {
               to="/inscription"
               className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-togo-green px-5 py-3 text-xs font-bold uppercase tracking-wide text-white shadow-xl shadow-togo-green/35 transition-all hover:bg-togo-green-light active:scale-[0.98] sm:w-auto sm:px-7 sm:py-3.5 sm:text-sm"
             >
-              Exposer ma communauté
+              Publier ma solution
               <Rocket className="h-4 w-4 shrink-0 transition-transform group-hover:-translate-y-0.5 sm:h-[18px] sm:w-[18px]" />
             </Link>
             <Link
-              to="/communautes"
+              to="/solutions"
               className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-5 py-3 text-xs font-bold uppercase tracking-wide text-white backdrop-blur-md transition-all hover:bg-white/20 active:scale-[0.98] sm:w-auto sm:px-7 sm:py-3.5 sm:text-sm"
             >
-              Voir l&apos;annuaire
+              Voir le catalogue
               <Search className="h-4 w-4 shrink-0 sm:h-[18px] sm:w-[18px]" />
             </Link>
           </div>
 
           <Link
-            to="/signaler"
-            className="animate-rise delay-400 mt-3 inline-flex w-full max-w-md items-center justify-center gap-2 rounded-full border border-rose-400/40 bg-rose-500/15 px-4 py-2.5 text-[10px] font-bold uppercase tracking-wide text-rose-100 backdrop-blur-md transition-all hover:border-rose-300/60 hover:bg-rose-500/25 active:scale-[0.98] sm:mt-5 sm:w-auto sm:max-w-none sm:px-6 sm:py-3 sm:text-[11px]"
+            to="/contact"
+            className="animate-rise delay-400 mt-3 inline-flex w-full max-w-md items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2.5 text-[10px] font-bold uppercase tracking-wide text-white/90 backdrop-blur-md transition-all hover:bg-white/20 active:scale-[0.98] sm:mt-5 sm:w-auto sm:max-w-none sm:px-6 sm:py-3 sm:text-[11px]"
           >
-            <Shield className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
-            Signaler un abus
-            <span className="hidden font-semibold normal-case sm:inline">(anonyme)</span>
+            <MessageCircle className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+            Contacter le support
           </Link>
         </div>
 
@@ -194,15 +193,15 @@ export default function HeroSlideshow({ stats }: HeroSlideshowProps) {
         <div className="mx-auto mt-4 w-full max-w-xl shrink-0 space-y-3 sm:mt-6 sm:max-w-2xl sm:space-y-4">
           <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
             {[
-              { value: stats.communities > 0 ? String(stats.communities) : '—', label: 'Communautés', short: 'Comm.' },
+              { value: stats.communities > 0 ? String(stats.communities) : '—', label: 'Solutions', short: 'SaaS' },
               { value: stats.cities > 0 ? String(stats.cities) : '—', label: 'Villes', short: 'Villes' },
-              { value: stats.tags > 0 ? String(stats.tags) : '—', label: 'Thématiques', short: 'Thèmes' },
+              { value: stats.tags > 0 ? String(stats.tags) : '—', label: 'Catégories', short: 'Cat.' },
             ].map((s) => (
               <div
                 key={s.label}
                 className="relative rounded-xl border border-white/15 bg-black/30 px-2 py-3 text-center backdrop-blur-md sm:rounded-2xl sm:px-3 sm:py-3.5"
               >
-                {s.label === 'Communautés' && stats.communities > 0 && (
+                {s.label === 'Solutions' && stats.communities > 0 && (
                   <span className="absolute -right-1 -top-1 rounded-full bg-togo-yellow px-1.5 py-0.5 text-[7px] font-black uppercase text-slate-900 shadow sm:text-[7px]">
                     Live
                   </span>

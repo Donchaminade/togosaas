@@ -18,8 +18,8 @@ INSERT INTO site_author (id, name, role_label, badge_label, quote, bio)
 VALUES (
     1,
     'Chaminade Dondah Adjolou',
-    'Initiateur du projet TCH',
+    'Initiateur du projet Togosaas',
     'Fondateur & Auteur',
-    'TCH est une idée que je porte avec conviction : offrir aux communautés togolaises l''espace qu''elles méritent pour exister, se faire connaître et grandir. Chaque communauté est une graine ; ce hub est le terreau qui les aide à s''épanouir et à se rencontrer.',
-    'Passionné par la tech et l''impact social, Chaminade conçoit TCH comme un bien commun au service de l''écosystème togolais.'
+    'Togosaas est une idée que je porte avec conviction : offrir aux solutions SaaS togolaises l''espace qu''elles méritent pour exister, se faire connaître et grandir. Chaque solution est une graine ; ce hub est le terreau qui les aide à s''épanouir et à se rencontrer.',
+    'Passionné par l''impact numérique local, Chaminade conçoit Togosaas comme un bien commun au service de l''écosystème SaaS togolais.'
 ) ON DUPLICATE KEY UPDATE id = id;

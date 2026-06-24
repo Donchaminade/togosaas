@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 248 56" fill="none" role="img" aria-label="Togosaas">
+  <title>Togosaas  Hub SaaS du Togo</title>
+  <rect x="0" y="4" width="48" height="48" rx="12" fill="#00875A"/>
+  <g transform="translate(8, 12) scale(0.5)">
+    <line x1="32" y1="34" x2="32" y2="13" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+    <line x1="32" y1="34" x2="50.2" y2="23.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+    <line x1="32" y1="34" x2="50.2" y2="44.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+    <line x1="32" y1="34" x2="32" y2="55" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+    <line x1="32" y1="34" x2="13.8" y2="44.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+    <line x1="32" y1="34" x2="13.8" y2="23.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+    <circle cx="32" cy="34" r="9" fill="#FFCE00"/>
+    <circle cx="32" cy="13" r="5.5" fill="#FF6B7A"/>
+    <circle cx="50.2" cy="23.5" r="5.5" fill="#FFFFFF"/>
+    <circle cx="50.2" cy="44.5" r="5.5" fill="#FF6B7A"/>
+    <circle cx="32" cy="55" r="5.5" fill="#FFFFFF"/>
+    <circle cx="13.8" cy="44.5" r="5.5" fill="#FF6B7A"/>
+    <circle cx="13.8" cy="23.5" r="5.5" fill="#FFFFFF"/>
+  </g>
+  <text x="58" y="31" font-family="Inter, system-ui, sans-serif" font-size="26" font-weight="900" letter-spacing="-0.5">
+    <tspan fill="#FFFFFF">Togo</tspan><tspan fill="#FFCE00">saas</tspan>
+  </text>
+  <text x="58" y="46" font-family="Inter, system-ui, sans-serif" font-size="9" font-weight="600" letter-spacing="0.16em" fill="#CBD5E1">HUB SAAS DU TOGO</text>
+</svg>

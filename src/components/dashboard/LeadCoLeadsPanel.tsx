@@ -226,7 +226,7 @@ function CoLeadCard({ coLead: cl, communityId }: { coLead: CoLead; communityId: 
           </>
         ) : (
           <>
-            <AlertCircle className="h-3.5 w-3.5" /> Email T.C.H manquant
+            <AlertCircle className="h-3.5 w-3.5" /> Email Togosaas manquant
           </>
         )}
       </div>

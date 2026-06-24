@@ -1,4 +1,4 @@
-# Déploiement T.C.H — Hostinger (API) + Vercel (frontend)
+# Déploiement TogoSaaS — Hostinger (API) + Vercel (frontend)
 
 Architecture cible :
 

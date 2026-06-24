@@ -50,7 +50,7 @@ export default function AdminCreateForm({ onClose, onSubmit }: Props) {
         <Field label="Téléphone" value={phone} onChange={setPhone} placeholder="+228 90 00 00 00" />
 
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          L&apos;administrateur pourra se connecter avec cet email et accéder à tout l&apos;espace admin T.C.H.
+          L&apos;administrateur pourra se connecter avec cet email et accéder à tout l&apos;espace admin Togosaas.
         </p>
 
         <div className="flex gap-3 pt-2">

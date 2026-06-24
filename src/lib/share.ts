@@ -67,7 +67,7 @@ export const SHARE_NETWORKS: ShareOption[] = [
     label: 'Email',
     color: 'bg-slate-600 hover:bg-slate-500 dark:bg-slate-600 dark:hover:bg-slate-500',
     buildUrl: (url, text) =>
-      `mailto:?subject=${encodeURIComponent(text.split(' — ')[0] || 'Communauté T.C.H')}&body=${encodeURIComponent(`${text}\n\n${url}`)}`,
+      `mailto:?subject=${encodeURIComponent(text.split(' — ')[0] || 'Communauté Togosaas')}&body=${encodeURIComponent(`${text}\n\n${url}`)}`,
   },
 ];
 

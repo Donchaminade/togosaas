@@ -20,22 +20,22 @@ export default function AuthShell({ title, subtitle, children }: AuthShellProps)
         <div className="pointer-events-none absolute -left-10 bottom-10 h-64 w-64 rounded-full bg-togo-red/20 blur-3xl animate-blob delay-300" />
 
         <div className="relative">
-          <Logo variant="auth" />
+          <Logo variant="auth" surface="dark" />
         </div>
 
         <div className="relative">
           <Sparkles className="h-10 w-10 text-togo-yellow" />
           <h2 className="mt-6 text-4xl font-black leading-tight">
-            Rejoignez le hub des communautés du Togo.
+            Rejoignez le hub SaaS du Togo.
           </h2>
           <p className="mt-4 max-w-md text-emerald-50">
-            Créez votre espace, exposez votre communauté et gérez vos
-            informations en toute autonomie.
+            Créez votre espace, publiez votre solution et gérez votre fiche
+            en toute autonomie.
           </p>
 
           <div className="mt-10 space-y-4">
             {[
-              { icon: Users, text: 'Un tableau de bord dédié pour vos communautés' },
+              { icon: Users, text: 'Un tableau de bord dédié pour vos solutions' },
               { icon: ShieldCheck, text: 'Validation et mise en avant par notre équipe' },
             ].map((f, i) => (
               <div key={i} className="flex items-center gap-3">
@@ -69,7 +69,7 @@ export default function AuthShell({ title, subtitle, children }: AuthShellProps)
 
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
           <div className="lg:hidden">
-            <Logo variant="auth" />
+            <Logo variant="auth" surface="auto" />
           </div>
           <h1 className="mt-6 text-3xl font-black tracking-tight text-slate-900 dark:text-white lg:mt-0">
             {title}

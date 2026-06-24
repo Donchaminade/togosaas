@@ -150,7 +150,7 @@ export default function LeadAdminChat() {
     <div className="flex h-[calc(100vh-14rem)] max-h-[640px] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <div className="border-b border-slate-100 px-5 py-4 dark:border-slate-800 sm:px-6">
         <p className="text-sm font-bold text-slate-900 dark:text-white">
-          Conversation avec l&apos;administration T.C.H
+          Conversation avec l&apos;administration Togosaas
         </p>
         <p className="mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
           Questions sur la validation, modération ou le fonctionnement de la plateforme. Vous pouvez
@@ -165,7 +165,7 @@ export default function LeadAdminChat() {
               Aucun message pour l&apos;instant.
             </p>
             <p className="mt-1 max-w-sm text-xs leading-relaxed text-slate-400">
-              Écrivez à l&apos;équipe T.C.H pour suivre la validation de votre communauté ou obtenir
+              Écrivez à l&apos;équipe Togosaas pour suivre la validation de votre communauté ou obtenir
               de l&apos;aide. Utilisez le trombone pour joindre un fichier.
             </p>
           </div>

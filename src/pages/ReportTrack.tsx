@@ -51,7 +51,7 @@ const STATUS_STYLES: Record<
 const STATUS_HELP: { status: ReportStatus; text: string }[] = [
   {
     status: 'pending',
-    text: 'Votre signalement a bien été reçu. L\'équipe T.C.H va l\'examiner prochainement.',
+    text: 'Votre signalement a bien été reçu. L\'équipe Togosaas va l\'examiner prochainement.',
   },
   {
     status: 'investigating',
@@ -339,7 +339,7 @@ export default function ReportTrack() {
                 </h3>
                 <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                   Si vous êtes témoin ou victime d&apos;un abus au sein d&apos;une communauté
-                  référencée sur T.C.H, déposez un signalement anonyme. Vous recevrez un code de
+                  référencée sur Togosaas, déposez un signalement anonyme. Vous recevrez un code de
                   suivi à conserver précieusement.
                 </p>
                 <Link
@@ -364,7 +364,7 @@ export default function ReportTrack() {
                   to="/contact"
                   className="mt-4 inline-flex text-sm font-bold text-togo-green hover:underline dark:text-togo-yellow"
                 >
-                  Contacter l&apos;équipe T.C.H →
+                  Contacter l&apos;équipe Togosaas →
                 </Link>
               </div>
             </aside>

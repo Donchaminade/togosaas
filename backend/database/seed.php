@@ -15,13 +15,13 @@ use TCH\Database;
 
 $pdo = Database::connection();
 
-echo "==> TCH : seed des donnees initiales\n";
+echo "==> TogoSaaS : seed des donnees initiales\n";
 
 /* ------------------------------------------------------------------ */
 /* Administrateur                                                      */
 /* ------------------------------------------------------------------ */
 $adminEmail = strtolower((string) env('ADMIN_EMAIL', 'admin@tch.tg'));
-$adminName = (string) env('ADMIN_NAME', 'Administrateur TCH');
+$adminName = (string) env('ADMIN_NAME', 'Administrateur TogoSaaS');
 $adminPass = (string) env('ADMIN_PASSWORD', 'Admin@1234');
 
 $stmt = $pdo->prepare('SELECT id FROM users WHERE email = :email');

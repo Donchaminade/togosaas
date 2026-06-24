@@ -135,9 +135,9 @@ export default function ReportCommunity() {
               <h1 className="text-2xl font-black text-slate-900 dark:text-white">Signaler un abus</h1>
               <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                 Vous êtes <strong>membre</strong> ou témoin d&apos;une situation problématique au sein
-                d&apos;une communauté référencée sur T.C.H ? Signalez-la ici, en toute confidentialité.
+                d&apos;une communauté référencée sur Togosaas ? Signalez-la ici, en toute confidentialité.
                 Votre identité n&apos;est <strong>jamais</strong> enregistrée — aucun compte requis.
-                L&apos;équipe T.C.H examine chaque signalement de manière indépendante.
+                L&apos;équipe Togosaas examine chaque signalement de manière indépendante.
               </p>
             </div>
           </div>

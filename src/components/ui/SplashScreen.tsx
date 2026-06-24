@@ -41,18 +41,18 @@ export default function SplashScreen({ onComplete }: Props) {
 
       <div className="relative z-10 flex flex-col items-center px-6 text-center">
         <div className="splash-logo mb-10 flex flex-col items-center">
-          <Logo variant="splash" linked={false} className="pointer-events-none drop-shadow-2xl" />
+          <Logo variant="splash" linked={false} surface="dark" className="pointer-events-none drop-shadow-2xl" />
         </div>
 
         <h1 className="splash-title text-3xl font-black uppercase leading-none tracking-tight sm:text-5xl md:text-6xl">
-          <span className="text-white">Togo </span>
-          <span className="text-togo-red">Communities Hub</span>
+          <span className="text-white">Togo</span>
+          <span className="text-togo-yellow">saas</span>
         </h1>
 
         <div className="splash-subtitle mt-8 flex items-center gap-4">
           <span className="h-px w-10 bg-white/25 sm:w-14" aria-hidden />
           <p className="text-[10px] font-semibold uppercase tracking-[0.45em] text-white/70 sm:text-xs">
-            L&apos;aventure commence
+            Le hub SaaS du Togo
           </p>
           <span className="h-px w-10 bg-white/25 sm:w-14" aria-hidden />
         </div>

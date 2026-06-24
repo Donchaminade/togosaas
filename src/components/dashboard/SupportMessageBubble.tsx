@@ -335,7 +335,7 @@ export default function SupportMessageBubble({
                 isOwn ? 'text-emerald-100' : 'text-slate-400'
               }`}
             >
-              {!isOwn && message.senderRole === 'admin' ? 'Admin T.C.H · ' : ''}
+              {!isOwn && message.senderRole === 'admin' ? 'Admin Togosaas · ' : ''}
               {formatTime(message.createdAt)}
               {wasEdited ? ' · modifié' : ''}
             </p>

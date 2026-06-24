@@ -52,10 +52,10 @@ final class AuthorHelper
     {
         return [
             'name' => 'Chaminade Dondah Adjolou',
-            'roleLabel' => 'Initiateur du projet T.C.H',
+            'roleLabel' => 'Initiateur du projet Togosaas',
             'badgeLabel' => 'Fondateur & Auteur',
-            'quote' => 'T.C.H est une idée que je porte avec conviction : offrir aux communautés togolaises l\'espace qu\'elles méritent pour exister, se faire connaître et grandir. Chaque communauté est une graine ; ce hub est le terreau qui les aide à s\'épanouir et à se rencontrer.',
-            'bio' => 'Passionné par l\'impact communautaire, Chaminade conçoit T.C.H comme un bien commun au service de toutes les communautés togolaises.',
+            'quote' => 'Togosaas est une idée que je porte avec conviction : offrir aux solutions SaaS togolaises l\'espace qu\'elles méritent pour exister, se faire connaître et grandir. Chaque solution est une graine ; ce hub est le terreau qui les aide à s\'épanouir et à se rencontrer.',
+            'bio' => 'Passionné par l\'impact numérique local, Chaminade conçoit Togosaas comme un bien commun au service de l\'écosystème SaaS togolais.',
             'photoUrl' => null,
             'linkedinUrl' => null,
             'githubUrl' => null,

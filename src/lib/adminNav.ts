@@ -68,7 +68,7 @@ export function adminTabFromSearch(search: string): string {
 }
 
 export const ADMIN_TAB_TITLES: Record<string, { title: string; subtitle: string }> = {
-  overview: { title: 'Administration', subtitle: 'Pilotage de la plateforme T.C.H' },
+  overview: { title: 'Administration', subtitle: 'Pilotage de la plateforme Togosaas' },
   communities: { title: 'Communautés', subtitle: 'Modération et gestion des fiches' },
   leads: { title: 'Leads', subtitle: 'Comptes responsables de communautés' },
   users: { title: 'Utilisateurs', subtitle: 'Administrateurs et gestion des rôles' },

@@ -115,9 +115,9 @@ export default function AdminReportDetailModal({ reportId, onClose, onSaved, onD
     setSendingWarn(true);
     try {
       await api.adminSendSupportMessage(report.ownerId, {
-        body: `[Avertissement T.C.H — signalement #${report.id}]\n\n${warning.trim()}`,
+        body: `[Avertissement Togosaas — signalement #${report.id}]\n\n${warning.trim()}`,
       });
-      notify('Avertissement envoyé au lead via le chat T.C.H.', 'success');
+      notify('Avertissement envoyé au lead via le chat Togosaas.', 'success');
       setWarning('');
     } catch (err) {
       notify(err instanceof ApiError ? err.message : 'Envoi impossible.', 'error');

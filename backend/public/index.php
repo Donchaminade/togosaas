@@ -81,9 +81,9 @@ $router = new Router();
 
 // Sante / meta
 $router->get('/', fn() => Response::success([
-    'name' => 'T.C.H API',
+    'name' => 'TogoSaaS API',
     'version' => '1.0.0',
-], 'Bienvenue sur l\'API T.C.H — Togo Communities Hub'));
+], 'Bienvenue sur l\'API TogoSaaS — Hub SaaS du Togo'));
 $router->get('/health', fn() => Response::success(['status' => 'ok']));
 $router->get('/meta', [new MetaController(), 'meta']);
 $author = new AuthorController();

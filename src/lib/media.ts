@@ -10,7 +10,7 @@ export function mediaUrl(path?: string | null): string {
   if (
     path.startsWith('/diapo/') ||
     path.startsWith('/logo') ||
-    path.startsWith('/navlogo') ||
+    path.startsWith('/togosaas') ||
     path.startsWith('/og-')
   ) {
     return path;
@@ -22,7 +22,7 @@ export function mediaUrl(path?: string | null): string {
 /** Affiche / logo par défaut des communautés sans visuel uploadé (public/). */
 export const DEFAULT_COMMUNITY_COVER = '/logofondnoir.png';
 
-/** Bannière ou logo communauté, sinon visuel TCH par défaut. */
+/** Bannière ou logo communauté, sinon visuel Togosaas par défaut. */
 export function communityCoverUrl(community: {
   bannerUrl?: string | null;
   logoUrl?: string | null;

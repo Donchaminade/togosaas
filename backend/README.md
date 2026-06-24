@@ -1,6 +1,6 @@
-# TCH — API Backend (PHP / MySQL)
+# TogoSaaS — API Backend (PHP / MySQL)
 
-API REST sans framework pour la plateforme Togo Communities Hub.
+API REST sans framework pour la plateforme TogoSaaS — Hub SaaS du Togo.
 
 ## Démarrage rapide
 

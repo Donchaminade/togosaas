@@ -74,7 +74,7 @@ export default function AdminAuthorForm() {
             hint="Photo affichée sur la page À propos"
           />
           <Field label="Nom complet" value={form.name} onChange={set('name')} error={errors.name?.[0]} required />
-          <Field label="Rôle / titre" value={form.roleLabel} onChange={set('roleLabel')} error={errors.roleLabel?.[0]} required placeholder="Initiateur du projet T.C.H" />
+          <Field label="Rôle / titre" value={form.roleLabel} onChange={set('roleLabel')} error={errors.roleLabel?.[0]} required placeholder="Initiateur du projet Togosaas" />
           <Field label="Badge sous la photo" value={form.badgeLabel} onChange={set('badgeLabel')} error={errors.badgeLabel?.[0]} required placeholder="Fondateur & Auteur" />
         </div>
       </div>

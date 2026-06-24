@@ -8,7 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 const NAV_LINKS = [
   { to: '/', label: 'Accueil', end: true },
   { to: '/a-propos', label: 'À propos' },
-  { to: '/communautes', label: 'Communautés' },
+  { to: '/solutions', label: 'Solutions SaaS' },
   { to: '/contact', label: 'Contact' },
 ];
 
@@ -68,7 +68,7 @@ export default function Navbar() {
       <nav className="flex min-h-[3.75rem] items-center gap-2 px-3 py-2 sm:min-h-[4.25rem] sm:gap-3 sm:px-5 lg:px-6">
         {/* Logo */}
         <div className="flex shrink-0 items-center">
-          <Logo variant="nav" />
+          <Logo variant="nav" surface={heroNav ? 'dark' : 'auto'} />
         </div>
 
         {/* Liens centrés (desktop) */}
@@ -136,7 +136,7 @@ export default function Navbar() {
                   className="group flex shrink-0 items-center gap-2 rounded-xl bg-togo-green px-3 py-2 text-sm font-bold text-white shadow-lg shadow-togo-green/25 transition-all hover:bg-togo-green-dark xl:px-4 xl:py-2.5 dark:bg-togo-yellow dark:text-slate-900 dark:shadow-togo-yellow/20 dark:hover:bg-togo-yellow/90"
                 >
                   <Rocket className="h-4 w-4 shrink-0 transition-transform group-hover:-translate-y-0.5" />
-                  <span className="hidden xl:inline">Exposer ma communauté</span>
+                  <span className="hidden xl:inline">Publier ma solution</span>
                   <span className="xl:hidden">S&apos;inscrire</span>
                 </Link>
               )}
@@ -213,7 +213,7 @@ export default function Navbar() {
                   }`}
                 >
                   <LayoutDashboard className="h-4 w-4" />
-                  {isAdmin ? 'Tableau de bord admin' : 'Mon espace lead'}
+                  {isAdmin ? 'Tableau de bord admin' : 'Mon espace éditeur'}
                 </Link>
                 <button
                   type="button"
@@ -243,7 +243,7 @@ export default function Navbar() {
                   className="flex items-center justify-center gap-2 rounded-xl bg-togo-green px-4 py-3 text-sm font-bold text-white dark:bg-togo-yellow dark:text-slate-900"
                 >
                   <Rocket className="h-4 w-4" />
-                  Exposer ma communauté
+                  Publier ma solution
                 </Link>
               </>
             )}

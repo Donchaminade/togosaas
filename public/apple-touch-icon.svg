@@ -15,5 +15,5 @@
     <circle cx="13.8" cy="44.5" r="5.5" fill="#D21034"/>
     <circle cx="13.8" cy="23.5" r="5.5" fill="#FFFFFF"/>
   </g>
-  <text x="90" y="152" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="36" font-weight="900" letter-spacing="3" fill="#FFFFFF">T·C·H</text>
+  <text x="90" y="152" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="900" letter-spacing="1" fill="#FFFFFF">Togosaas</text>
 </svg>

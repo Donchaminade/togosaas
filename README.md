@@ -1,6 +1,6 @@
 <div align="center">
 
-# T.C.H — Togo Communities Hub
+# TogoSaaS — Hub SaaS du Togo
 
 **La vitrine qui recense, valorise et connecte les communautés du Togo.**
 
@@ -45,14 +45,14 @@ Au Togo, les **communautés** — tech, culture, sport, citoyenneté, entreprene
 
 ## Notre réponse
 
-**T.C.H (Togo Communities Hub)** est une plateforme web qui :
+**TogoSaaS (Hub SaaS du Togo)** est une plateforme web qui :
 
 1. **Recense** les communautés togolaises dans un annuaire public, filtrable par ville et thématique
 2. **Valorise** chaque communauté via une fiche riche (mission, événements, liens, galerie, co-leads)
 3. **Connecte** visiteurs et responsables grâce à des coordonnées publiques vérifiées et un canal de contact central
 4. **Protège** l'écosystème via une modération admin et un système de **signalements 100 % anonymes**
 
-> T.C.H n'est pas un réseau social. C'est une **vitrine + annuaire + espace de gestion** pour les communautés, avec une équipe qui valide ce qui est publié.
+> Togosaas n'est pas un réseau social. C'est une **vitrine + annuaire + espace de gestion** pour les communautés, avec une équipe qui valide ce qui est publié.
 
 ---
 
@@ -66,7 +66,7 @@ Au Togo, les **communautés** — tech, culture, sport, citoyenneté, entreprene
 | **Annuaire `/communautes`** | Liste des communautés **approuvées**, recherche texte, filtres par **ville du Togo** et par **tag** |
 | **Fiche communauté** | Bannière, logo, description, mission, co-leads, galerie, réseaux sociaux, site web, calendrier d'événements |
 | **À propos** | Histoire du projet, piliers, profil fondateur (éditable par l'admin) |
-| **Contact** | Formulaire vers l'équipe T.C.H + coordonnées |
+| **Contact** | Formulaire vers l'équipe Togosaas + coordonnées |
 | **Signalement anonyme** | Tout visiteur ou membre peut signaler une communauté ou un lead, avec preuves, **sans compte** |
 | **Suivi de signalement** | Code unique `TCH-XXXX-XXXX-XXXX` pour suivre l'avancement sans révéler son identité |
 | **Inscription lead** | Création de compte pour exposer et gérer une communauté |
@@ -92,7 +92,7 @@ Pour les responsables de communautés :
 
 ### Espace admin (`/admin`)
 
-Pour l'équipe T.C.H :
+Pour l'équipe Togosaas :
 
 | Fonctionnalité | Description |
 |----------------|-------------|
@@ -404,6 +404,6 @@ Contact : `contact@tch.tg`
 
 <div align="center">
 
-**T.C.H — Donnez de la voix aux communautés du Togo.**
+**TogoSaaS — Donnez de la voix aux solutions SaaS du Togo.**
 
 </div>

@@ -1,4 +1,4 @@
--- Migrations T.C.H 015 → 017 (likes, avis, affiche événement)
+-- Migrations TogoSaaS 015 → 017 (likes, avis, affiche événement)
 -- À exécuter dans phpMyAdmin sur la base u878418868_tchdb
 
 CREATE TABLE IF NOT EXISTS community_likes (

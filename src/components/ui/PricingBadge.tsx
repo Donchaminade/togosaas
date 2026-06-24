@@ -23,7 +23,7 @@ export default function PricingBadge({
 
   return (
     <span
-      className={`inline-flex items-center rounded-full font-bold uppercase tracking-wide ring-1 ring-inset ${sizeClass} ${pricingBadgeClass(pricingType)} ${className}`}
+      className={`inline-flex items-center rounded-full font-bold uppercase tracking-wide shadow-sm ${sizeClass} ${pricingBadgeClass(pricingType)} ${className}`}
     >
       {label}
     </span>

@@ -39,13 +39,13 @@ export function formatPrice(
 export function pricingBadgeClass(pricingType: PricingType = 'free'): string {
   switch (pricingType) {
     case 'free':
-      return 'bg-emerald-100 text-emerald-800 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/30';
+      return 'bg-emerald-600 text-white dark:bg-emerald-600 dark:text-white';
     case 'freemium':
-      return 'bg-sky-100 text-sky-800 ring-sky-200 dark:bg-sky-500/15 dark:text-sky-300 dark:ring-sky-500/30';
+      return 'bg-sky-600 text-white dark:bg-sky-600 dark:text-white';
     case 'paid':
-      return 'bg-amber-100 text-amber-900 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-amber-500/30';
+      return 'bg-amber-500 text-white dark:bg-amber-500 dark:text-white';
     default:
-      return 'bg-slate-100 text-slate-700 ring-slate-200';
+      return 'bg-slate-600 text-white dark:bg-slate-600 dark:text-white';
   }
 }
 

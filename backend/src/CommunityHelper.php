@@ -90,6 +90,28 @@ final class CommunityHelper
             $cols[$dbCol] = self::nullableString($request->input($jsonKey));
         }
 
+        $pricingType = trim((string) $request->input('pricingType', 'free'));
+        if (!in_array($pricingType, ['free', 'freemium', 'paid'], true)) {
+            $pricingType = 'free';
+        }
+        $cols['pricing_type'] = $pricingType;
+
+        $priceAmount = $request->input('priceAmount');
+        $cols['price_amount'] = ($priceAmount !== null && $priceAmount !== '')
+            ? round((float) $priceAmount, 2) : null;
+
+        $currency = trim((string) $request->input('currency', 'XOF'));
+        $cols['currency'] = $currency !== '' ? strtoupper(substr($currency, 0, 8)) : 'XOF';
+
+        $billingPeriod = self::nullableString($request->input('billingPeriod'));
+        if ($billingPeriod !== null && !in_array($billingPeriod, ['monthly', 'yearly', 'one_time'], true)) {
+            $billingPeriod = null;
+        }
+        $cols['billing_period'] = $billingPeriod;
+
+        $cols['app_url'] = self::nullableString($request->input('appUrl'));
+        $cols['demo_url'] = self::nullableString($request->input('demoUrl'));
+
         return $cols;
     }
 
@@ -121,7 +143,7 @@ final class CommunityHelper
         $text = preg_replace('/[^a-z0-9]+/', '-', $text) ?? '';
         $text = trim($text, '-');
 
-        return $text !== '' ? $text : 'communaute';
+        return $text !== '' ? $text : 'solution';
     }
 
     public static function uniqueSlug(\PDO $db, string $name, ?int $excludeId = null): string
@@ -188,6 +210,12 @@ final class CommunityHelper
             'lat' => isset($row['lat']) ? (float) $row['lat'] : null,
             'lng' => isset($row['lng']) ? (float) $row['lng'] : null,
             'status' => $row['status'],
+            'pricingType' => $row['pricing_type'] ?? 'free',
+            'priceAmount' => isset($row['price_amount']) ? (float) $row['price_amount'] : null,
+            'currency' => $row['currency'] ?? 'XOF',
+            'billingPeriod' => $row['billing_period'] ?? null,
+            'appUrl' => $row['app_url'] ?? null,
+            'demoUrl' => $row['demo_url'] ?? null,
             'createdAt' => $row['created_at'] ?? null,
             'updatedAt' => $row['updated_at'] ?? null,
             'leaderName' => $row['leader_name'],

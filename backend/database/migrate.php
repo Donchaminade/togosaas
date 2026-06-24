@@ -21,7 +21,7 @@ $fresh = in_array('--fresh', $argv, true);
 $dbName = (string) env('DB_NAME', 'tch_db');
 $charset = (string) env('DB_CHARSET', 'utf8mb4');
 
-echo "==> TCH : migrations\n";
+echo "==> TogoSaaS : migrations\n";
 
 /* 1. Creer la base si besoin. */
 try {
@@ -64,6 +64,10 @@ sort($files);
 $ran = 0;
 foreach ($files as $file) {
     $name = basename($file);
+    /* Bundles Hostinger = doublons des migrations numérotées, à ignorer en local. */
+    if (str_starts_with($name, 'hostinger_')) {
+        continue;
+    }
     if (in_array($name, $applied, true)) {
         continue;
     }

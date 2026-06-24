@@ -16,6 +16,8 @@ final class CommunityAccessHelper
         'linkedin_url',
         'twitter_url',
         'website_url',
+        'app_url',
+        'demo_url',
         'gallery',
         'founded_year',
         'member_count',

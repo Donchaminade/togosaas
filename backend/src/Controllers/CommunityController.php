@@ -35,6 +35,16 @@ final class CommunityController
             $where[] = 'tags LIKE :tag';
             $params['tag'] = '%"' . $tag . '"%';
         }
+        if ($pricing = trim((string) $request->query('pricing', ''))) {
+            if ($pricing === 'free') {
+                $where[] = "pricing_type = 'free'";
+            } elseif ($pricing === 'paid') {
+                $where[] = "pricing_type IN ('paid', 'freemium')";
+            } elseif (in_array($pricing, ['freemium', 'paid'], true)) {
+                $where[] = 'pricing_type = :pricing';
+                $params['pricing'] = $pricing;
+            }
+        }
 
         $sql = 'SELECT * FROM communities WHERE ' . implode(' AND ', $where) . ' ORDER BY created_at DESC';
         $stmt = $db->prepare($sql);
@@ -288,8 +298,9 @@ final class CommunityController
     ];
 
     public const TAGS = [
-        'Google Tech', 'Web', 'Mobile', 'Cloud', 'AI / ML', 'Inclusion', 'Mentorat',
-        'UX / UI', 'Design', 'Figma', 'Sécurité', 'Ethical Hacking', 'Réseaux',
-        'Data Science', 'Python', 'React', 'NodeJS', 'Flutter', 'Open Source',
+        'CRM', 'Facturation', 'Comptabilité', 'E-commerce', 'RH & Paie', 'Gestion de stock',
+        'Éducation', 'Santé', 'Agriculture', 'Logistique', 'Immobilier', 'Marketing',
+        'Communication', 'Paiement mobile', 'Banque & Finance', 'Assurance', 'Juridique',
+        'Productivité', 'Collaboration', 'Analytics', 'IA / ML', 'Sécurité', 'Open Source',
     ];
 }

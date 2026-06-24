@@ -1,4 +1,6 @@
 export type CommunityStatus = 'pending' | 'approved' | 'rejected';
+export type PricingType = 'free' | 'freemium' | 'paid';
+export type BillingPeriod = 'monthly' | 'yearly' | 'one_time';
 export type UserRole = 'lead' | 'admin';
 export type MembershipRole = 'owner' | 'co_lead';
 
@@ -78,6 +80,12 @@ export interface Community {
   memberCount?: number | null;
   meetingInfo?: string | null;
   publicEmail?: string | null;
+  pricingType?: PricingType;
+  priceAmount?: number | null;
+  currency?: string;
+  billingPeriod?: BillingPeriod | null;
+  appUrl?: string | null;
+  demoUrl?: string | null;
   status: CommunityStatus;
   createdAt?: string | null;
   updatedAt?: string | null;

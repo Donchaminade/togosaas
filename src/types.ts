@@ -1,7 +1,7 @@
 export type CommunityStatus = 'pending' | 'approved' | 'rejected';
 export type PricingType = 'free' | 'freemium' | 'paid';
 export type BillingPeriod = 'monthly' | 'yearly' | 'one_time';
-export type UserRole = 'lead' | 'admin';
+export type UserRole = 'lead' | 'admin' | 'subadmin';
 export type MembershipRole = 'owner' | 'co_lead';
 
 export interface User {

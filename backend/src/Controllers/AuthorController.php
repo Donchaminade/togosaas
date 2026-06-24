@@ -21,13 +21,13 @@ final class AuthorController
 
     public function adminShow(Request $request): void
     {
-        Auth::requireAdmin();
+        Auth::requireSuperAdmin();
         Response::success(['author' => AuthorHelper::serialize(AuthorHelper::get())]);
     }
 
     public function adminUpdate(Request $request): void
     {
-        Auth::requireAdmin();
+        Auth::requireSuperAdmin();
 
         Validator::make($request->all())->validate([
             'name' => 'required|min:2|max:160',

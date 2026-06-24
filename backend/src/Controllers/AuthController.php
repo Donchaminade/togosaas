@@ -86,11 +86,36 @@ final class AuthController
             'avatarUrl' => 'max:500',
         ])->abortIfFails();
 
+        $db = Database::connection();
+
         $avatarUrl = array_key_exists('avatarUrl', $request->all())
             ? self::normalizeAvatarUrl($request->input('avatarUrl'))
             : ($user['avatar_url'] ?? null);
 
-        Database::connection()->prepare(
+        // Changement de mot de passe optionnel.
+        $newPassword = (string) ($request->input('newPassword') ?? '');
+        if ($newPassword !== '') {
+            Validator::make($request->all())->validate([
+                'currentPassword' => 'required',
+                'newPassword' => 'required|min:6|max:72',
+                'newPasswordConfirmation' => 'required|same:newPassword',
+            ])->abortIfFails();
+
+            $stmt = $db->prepare('SELECT password_hash FROM users WHERE id = :id LIMIT 1');
+            $stmt->execute(['id' => (int) $user['id']]);
+            $row = $stmt->fetch();
+            if (!$row || !password_verify((string) $request->input('currentPassword'), $row['password_hash'])) {
+                Response::error('Le mot de passe actuel est incorrect.', 422);
+            }
+
+            $db->prepare('UPDATE users SET password_hash = :hash, updated_at = NOW() WHERE id = :id')
+                ->execute([
+                    'hash' => password_hash($newPassword, PASSWORD_BCRYPT),
+                    'id' => (int) $user['id'],
+                ]);
+        }
+
+        $db->prepare(
             'UPDATE users SET name = :name, phone = :phone, avatar_url = :avatar_url, updated_at = NOW() WHERE id = :id'
         )->execute([
             'name' => trim((string) $request->input('name')),
@@ -99,7 +124,7 @@ final class AuthController
             'id' => (int) $user['id'],
         ]);
 
-        $stmt = Database::connection()->prepare(
+        $stmt = $db->prepare(
             'SELECT id, name, email, role, phone, avatar_url, created_at FROM users WHERE id = :id'
         );
         $stmt->execute(['id' => (int) $user['id']]);

@@ -21,6 +21,7 @@ import AdminSupportPanel from '../../components/dashboard/AdminSupportPanel';
 import AdminAuthorForm from '../../components/dashboard/AdminAuthorForm';
 import AdminReportsPanel from '../../components/dashboard/AdminReportsPanel';
 import AdminUsersPanel from '../../components/dashboard/AdminUsersPanel';
+import AdminProfilePanel from '../../components/dashboard/AdminProfilePanel';
 import LeadCreateForm from '../../components/dashboard/LeadCreateForm';
 import LeadEditForm from '../../components/dashboard/LeadEditForm';
 import { PageLoader } from '../../components/ui/Spinner';
@@ -29,6 +30,7 @@ import SearchEmptyState from '../../components/ui/SearchEmptyState';
 import { useToast } from '../../components/ui/Toast';
 import { buildAdminNav, adminTabFromSearch, ADMIN_TAB_TITLES } from '../../lib/adminNav';
 import { StaggerReveal } from '../../components/motion/ScrollReveal';
+import { useAuth } from '../../context/AuthContext';
 import { api, ApiError } from '../../lib/api';
 import { formatLocation } from '../../lib/location';
 import { filterBySearch } from '../../lib/search';
@@ -38,7 +40,8 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { notify } = useToast();
-  const active = adminTabFromSearch(location.search);
+  const { isSuperAdmin } = useAuth();
+  const active = adminTabFromSearch(location.search, isSuperAdmin);
   const [loading, setLoading] = useState(true);
 
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -169,11 +172,14 @@ export default function AdminDashboard() {
     [messages, messageSearch],
   );
 
-  const nav = buildAdminNav({
-    pendingCommunities: stats?.communities.pending,
-    unreadMessages: stats?.messages.unread,
-    pendingReports: stats?.reports?.pending,
-  });
+  const nav = buildAdminNav(
+    {
+      pendingCommunities: stats?.communities.pending,
+      unreadMessages: stats?.messages.unread,
+      pendingReports: stats?.reports?.pending,
+    },
+    { isSuperAdmin },
+  );
 
   const sectionMeta = ADMIN_TAB_TITLES[active] ?? ADMIN_TAB_TITLES.overview;
 
@@ -476,7 +482,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {active === 'users' && <AdminUsersPanel />}
+          {active === 'users' && isSuperAdmin && <AdminUsersPanel />}
 
           {active === 'messages' && (
             <div className="space-y-4">
@@ -532,7 +538,7 @@ export default function AdminDashboard() {
 
           {active === 'reports' && <AdminReportsPanel />}
 
-          {active === 'author' && (
+          {active === 'author' && isSuperAdmin && (
             <div>
               <p className="mb-6 max-w-xl text-sm text-slate-500 dark:text-slate-400">
                 Gérez la section fondateur affichée sur la page{' '}
@@ -544,6 +550,8 @@ export default function AdminDashboard() {
               <AdminAuthorForm />
             </div>
           )}
+
+          {active === 'profile' && <AdminProfilePanel />}
         </>
       )}
 

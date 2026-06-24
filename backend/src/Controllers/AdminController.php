@@ -208,10 +208,10 @@ final class AdminController
         return ($value !== null && $value !== '') ? trim((string) $value) : null;
     }
 
-    /** Suppression d'une communaute par l'admin. */
+    /** Suppression d'une communaute par l'admin (action sensible : super-admin). */
     public function destroy(Request $request): void
     {
-        Auth::requireAdmin();
+        Auth::requireSuperAdmin();
         $id = (int) $request->param('id');
         Database::connection()->prepare('DELETE FROM communities WHERE id = :id')->execute(['id' => $id]);
         Response::success(null, 'Communaute supprimee.');
@@ -382,7 +382,7 @@ final class AdminController
     /** Liste des utilisateurs (filtrable par role). */
     public function users(Request $request): void
     {
-        Auth::requireAdmin();
+        Auth::requireSuperAdmin();
         $role = (string) $request->query('role', '');
 
         $sql = "SELECT u.id, u.name, u.email, u.phone, u.role, u.avatar_url, u.created_at,
@@ -390,12 +390,12 @@ final class AdminController
                 FROM users u";
         $params = [];
 
-        if (in_array($role, ['lead', 'admin'], true)) {
+        if (in_array($role, ['lead', 'admin', 'subadmin'], true)) {
             $sql .= ' WHERE u.role = :role';
             $params['role'] = $role;
         }
 
-        $sql .= " ORDER BY FIELD(u.role, 'admin', 'lead'), u.created_at DESC";
+        $sql .= " ORDER BY FIELD(u.role, 'admin', 'subadmin', 'lead'), u.created_at DESC";
 
         $stmt = Database::connection()->prepare($sql);
         $stmt->execute($params);
@@ -404,17 +404,23 @@ final class AdminController
         Response::success(['users' => array_map([$this, 'serializeUser'], $rows)]);
     }
 
-    /** Creer un compte administrateur. */
+    /** Creer un compte du staff : administrateur ou subadmin (super-admin uniquement). */
     public function storeAdmin(Request $request): void
     {
-        Auth::requireAdmin();
+        Auth::requireSuperAdmin();
 
         Validator::make($request->all())->validate([
             'name' => 'required|min:2|max:120',
             'email' => 'required|email|max:160',
             'password' => 'required|min:6|max:72',
             'phone' => 'max:40',
+            'role' => 'in:admin,subadmin',
         ])->abortIfFails();
+
+        $role = (string) $request->input('role', 'admin');
+        if (!in_array($role, ['admin', 'subadmin'], true)) {
+            $role = 'admin';
+        }
 
         $db = Database::connection();
         $email = strtolower(trim((string) $request->input('email')));
@@ -433,7 +439,7 @@ final class AdminController
             'email' => $email,
             'hash' => password_hash((string) $request->input('password'), PASSWORD_BCRYPT),
             'phone' => $this->nullable($request->input('phone')),
-            'role' => 'admin',
+            'role' => $role,
         ]);
 
         $id = (int) $db->lastInsertId();
@@ -443,20 +449,21 @@ final class AdminController
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch();
 
-        Response::success(['user' => $this->serializeUser($row)], 'Administrateur cree avec succes.', 201);
+        $label = $role === 'subadmin' ? 'Sous-administrateur cree avec succes.' : 'Administrateur cree avec succes.';
+        Response::success(['user' => $this->serializeUser($row)], $label, 201);
     }
 
     /** Mettre a jour un utilisateur (profil et/ou role). */
     public function updateUser(Request $request): void
     {
-        $current = Auth::requireAdmin();
+        $current = Auth::requireSuperAdmin();
         $id = (int) $request->param('id');
 
         Validator::make($request->all())->validate([
             'name' => 'required|max:120',
             'email' => 'required|email|max:160',
             'phone' => 'nullable|max:40',
-            'role' => 'in:lead,admin',
+            'role' => 'in:lead,admin,subadmin',
         ])->abortIfFails();
 
         $name = trim((string) $request->input('name'));
@@ -508,7 +515,7 @@ final class AdminController
     /** Fiche detaillee d'un utilisateur (admin ou lead). */
     public function showUser(Request $request): void
     {
-        Auth::requireAdmin();
+        Auth::requireSuperAdmin();
         $id = (int) $request->param('id');
         $db = Database::connection();
 
@@ -546,7 +553,7 @@ final class AdminController
     /** Suppression definitive d'un utilisateur. */
     public function destroyUser(Request $request): void
     {
-        $current = Auth::requireAdmin();
+        $current = Auth::requireSuperAdmin();
         $id = (int) $request->param('id');
         $db = Database::connection();
 
@@ -597,7 +604,8 @@ final class AdminController
 
     private static function assertRoleChangeAllowed(array $current, int $targetId, string $oldRole, string $newRole, \PDO $db): void
     {
-        if ($oldRole === 'admin' && $newRole === 'lead') {
+        // Perte d'un super-administrateur (admin -> lead ou admin -> subadmin).
+        if ($oldRole === 'admin' && $newRole !== 'admin') {
             if ((int) $current['id'] === $targetId) {
                 Response::error('Vous ne pouvez pas retirer vos propres droits administrateur.', 422);
             }

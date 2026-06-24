@@ -49,13 +49,28 @@ final class Auth
     }
 
     /**
-     * Exige un utilisateur avec le role admin, sinon repond 403.
+     * Exige un membre du staff (admin OU subadmin), sinon repond 403.
+     * Couvre l'acces general a l'espace d'administration et a la moderation.
      */
     public static function requireAdmin(): array
     {
         $user = self::requireUser();
-        if (($user['role'] ?? '') !== 'admin') {
+        if (!in_array($user['role'] ?? '', ['admin', 'subadmin'], true)) {
             Response::error('Acces reserve aux administrateurs.', 403);
+        }
+        return $user;
+    }
+
+    /**
+     * Exige un super-administrateur (role admin uniquement), sinon repond 403.
+     * Reserve aux actions sensibles : gestion des comptes du staff, edition de
+     * la page A propos et suppressions definitives.
+     */
+    public static function requireSuperAdmin(): array
+    {
+        $user = self::requireUser();
+        if (($user['role'] ?? '') !== 'admin') {
+            Response::error('Action reservee au super-administrateur.', 403);
         }
         return $user;
     }

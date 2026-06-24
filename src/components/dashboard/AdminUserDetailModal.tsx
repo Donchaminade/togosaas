@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, ExternalLink, Mail, Phone, Shield, UserCog, Users2, X } from 'lucide-react';
+import { Calendar, ExternalLink, Mail, Phone, Shield, ShieldHalf, UserCog, Users2, X } from 'lucide-react';
 import StatusBadge from './StatusBadge';
 import UserAvatar from '../ui/UserAvatar';
 import Spinner from '../ui/Spinner';
@@ -87,6 +87,10 @@ export default function AdminUserDetailModal({ userId, onClose }: Props) {
                     {user.role === 'admin' ? (
                       <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2.5 py-1 text-[11px] font-bold uppercase text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
                         <Shield className="h-3 w-3" /> Administrateur
+                      </span>
+                    ) : user.role === 'subadmin' ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold uppercase text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                        <ShieldHalf className="h-3 w-3" /> Sous-administrateur
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-bold uppercase text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">

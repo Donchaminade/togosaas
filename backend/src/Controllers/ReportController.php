@@ -183,7 +183,7 @@ final class ReportController
     /** Suppression definitive d'un signalement. */
     public function adminDestroy(Request $request): void
     {
-        Auth::requireAdmin();
+        Auth::requireSuperAdmin();
         $id = (int) $request->param('id');
 
         $row = $this->findAdminRow($id);

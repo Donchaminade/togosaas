@@ -7,6 +7,7 @@ import Spinner from '../components/ui/Spinner';
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../lib/api';
+import { isStaffRole } from '../lib/roles';
 
 export default function Login() {
   const { login } = useAuth();
@@ -27,7 +28,7 @@ export default function Login() {
     try {
       const user = await login(form.email, form.password);
       notify(`Bienvenue, ${user.name} !`, 'success');
-      const target = user.role === 'admin' ? '/admin' : from || '/espace-lead';
+      const target = isStaffRole(user.role) ? '/admin' : from || '/espace-lead';
       navigate(target, { replace: true });
     } catch (err) {
       if (err instanceof ApiError) {

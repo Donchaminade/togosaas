@@ -121,14 +121,19 @@ Pour l'équipe Togosaas :
 | **Messages contact** | Lecture et marquage des messages reçus via le formulaire public |
 | **Chat support** | Réponses individuelles + **message groupé** à tous les leads ou à une sélection |
 | **Signalements** | Liste, statuts (`en attente` → `en enquête` → `traité` / `classé`), preuves, notes internes |
-| **Page À propos** | Édition du profil fondateur (photo, bio, réseaux) |
+| **Page À propos** | Édition du profil fondateur (photo, bio, réseaux) — *super-admin* |
+| **Gestion du staff** | Créer des **admins** (accès complet) ou des **sous-admins** (droits limités), promouvoir/rétrograder, supprimer — *super-admin* |
+| **Mon profil** | Chaque membre du staff gère ses infos (nom, téléphone, photo) et **change son mot de passe** |
 | **Sidebar repliable** | Mode icônes seules pour gagner de l'espace |
+
+> **Rôles du staff :** un **administrateur** (super-admin) a un accès complet. Un **sous-administrateur** assure la modération courante (solutions SaaS, leads, messages, signalements) mais **ne peut pas** gérer les comptes du staff, éditer la page À propos, ni effectuer de suppressions définitives.
 
 ### Sécurité & modération
 
 - Authentification **JWT** (Bearer token)
 - Mots de passe hashés (**bcrypt**)
-- Rôles : `lead` et `admin`
+- Rôles : `lead`, `admin` (super-admin) et `subadmin` (droits limités)
+- Actions sensibles (gestion du staff, page À propos, suppressions définitives) réservées au **super-admin** côté API (`requireSuperAdmin`)
 - Uploads validés (type MIME, taille max)
 - Preuves de signalement en **stockage privé** (accessibles admin uniquement)
 - CORS configuré via `FRONTEND_URL`
@@ -345,7 +350,7 @@ location / {
 | `/admin/communautes/:id/modifier` | Édition |
 | `/admin/leads/:id` | Détail lead |
 
-**Rôles :** `lead` (inscription) · `admin` (seed ou BDD)
+**Rôles :** `lead` (inscription) · `admin` super-administrateur (seed ou BDD) · `subadmin` sous-administrateur aux droits limités (créé par un super-admin)
 
 ---
 
@@ -361,7 +366,9 @@ Réponses JSON : `{ success, message, data, errors? }`
 | **Signalements** | `POST /reports`, `POST /reports/evidence`, `GET /reports/track/{code}`, `GET /reports/categories` |
 | **Lead** | `GET/POST/PUT/DELETE /lead/communities`, events, support messages |
 | **Upload** | `POST /upload` (auth) |
-| **Admin** | `/admin/stats`, `/admin/communities`, `/admin/leads`, `/admin/messages`, `/admin/support`, `/admin/reports`, `/admin/author` |
+| **Admin** | `/admin/stats`, `/admin/communities`, `/admin/leads`, `/admin/messages`, `/admin/support`, `/admin/reports` |
+| **Staff (super-admin)** | `/admin/users`, `POST /admin/admins` (crée un `admin` ou `subadmin`), `/admin/author` |
+| **Profil** | `PUT /auth/profile` (nom, téléphone, photo + changement de mot de passe optionnel) |
 
 Documentation complète des routes : `backend/public/index.php`
 
@@ -396,6 +403,8 @@ Le seed crée aussi **6 communautés fictives** (GDG Lomé, WTM, Cybersec, etc.)
 | 008 | `create_support_messages_table` | Chat lead ↔ admin |
 | 009 | `create_site_author_table` | Profil fondateur |
 | 010 | `create_community_reports_table` | Signalements anonymes |
+| … | *(migrations intermédiaires : likes, avis, slugs, pièces jointes, tarifs SaaS…)* | |
+| 019 | `add_subadmin_role` | Ajoute le rôle **`subadmin`** à l'ENUM `users.role` |
 
 ```bash
 php database/migrate.php          # Appliquer

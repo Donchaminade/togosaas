@@ -7,13 +7,17 @@ import {
   type ReactNode,
 } from 'react';
 import { api, tokenStore } from '../lib/api';
+import { isStaffRole, isSuperAdminRole } from '../lib/roles';
 import type { User } from '../types';
 
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
   isAuthenticated: boolean;
+  /** Membre du staff (admin ou sous-admin) : accès à l'espace d'administration. */
   isAdmin: boolean;
+  /** Super-administrateur : actions sensibles (gestion du staff, page À propos…). */
+  isSuperAdmin: boolean;
   login: (email: string, password: string) => Promise<User>;
   register: (data: {
     name: string;
@@ -87,7 +91,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         loading,
         isAuthenticated: !!user,
-        isAdmin: user?.role === 'admin',
+        isAdmin: isStaffRole(user?.role),
+        isSuperAdmin: isSuperAdminRole(user?.role),
         login,
         register,
         logout,

@@ -6,6 +6,7 @@ import Logo from '../ui/Logo';
 import ThemeToggle from '../ui/ThemeToggle';
 import UserAvatar from '../ui/UserAvatar';
 import { useAuth } from '../../context/AuthContext';
+import { ROLE_LABELS } from '../../lib/roles';
 
 const SIDEBAR_COLLAPSED_KEY = 'tch_sidebar_collapsed';
 
@@ -44,7 +45,8 @@ export default function DashboardLayout({
   onNavigate,
   children,
 }: DashboardLayoutProps) {
-  const { user, isAdmin, logout } = useAuth();
+  const { user, logout } = useAuth();
+  const roleLabel = user?.role ? ROLE_LABELS[user.role] : 'Lead';
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(readCollapsedPreference);
@@ -185,7 +187,7 @@ export default function DashboardLayout({
             <div className="min-w-0 leading-tight">
               <p className="truncate text-sm font-bold text-slate-800 dark:text-slate-100">{user?.name}</p>
               <p className="text-[11px] font-semibold uppercase text-togo-green dark:text-togo-yellow">
-                {isAdmin ? 'Administrateur' : 'Lead'}
+                {roleLabel}
               </p>
             </div>
           </div>
@@ -277,7 +279,7 @@ export default function DashboardLayout({
               <div className="leading-tight">
                 <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{user?.name}</p>
                 <p className="text-[11px] font-semibold uppercase text-togo-green dark:text-togo-yellow">
-                  {isAdmin ? 'Administrateur' : 'Lead'}
+                  {roleLabel}
                 </p>
               </div>
             </div>

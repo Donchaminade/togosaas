@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, Eye, Mail, Pencil, Plus, Shield, Trash2, UserCog, Users } from 'lucide-react';
+import { ArrowDown, ArrowUp, Eye, Mail, Pencil, Plus, Shield, ShieldHalf, Trash2, UserCog, Users } from 'lucide-react';
 import AdminCreateForm from './AdminCreateForm';
 import AdminUserEditForm from './AdminUserEditForm';
 import AdminUserDetailModal from './AdminUserDetailModal';
@@ -69,11 +69,21 @@ export default function AdminUsersPanel() {
   );
 
   const adminCount = users.filter((u) => u.role === 'admin').length;
+  const subadminCount = users.filter((u) => u.role === 'subadmin').length;
 
-  const handleCreate = async (data: { name: string; email: string; password: string; phone?: string | null }) => {
+  const handleCreate = async (data: {
+    name: string;
+    email: string;
+    password: string;
+    phone?: string | null;
+    role: 'admin' | 'subadmin';
+  }) => {
     try {
       await api.adminCreateAdmin(data);
-      notify('Administrateur créé avec succès.', 'success');
+      notify(
+        data.role === 'subadmin' ? 'Sous-administrateur créé avec succès.' : 'Administrateur créé avec succès.',
+        'success',
+      );
       setCreating(false);
       await load();
     } catch (err) {
@@ -147,15 +157,16 @@ export default function AdminUsersPanel() {
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-2xl text-sm text-slate-500 dark:text-slate-400">
-          Gérez les comptes administrateurs et les rôles. Vous pouvez créer de nouveaux admins ou promouvoir un lead
-          existant. {adminCount} administrateur{adminCount > 1 ? 's' : ''} au total.
+          Gérez les comptes du staff et les rôles. Vous pouvez créer des administrateurs (accès complet) ou des
+          sous-administrateurs (droits limités), ou promouvoir un lead existant. {adminCount} admin
+          {adminCount > 1 ? 's' : ''} · {subadminCount} sous-admin{subadminCount > 1 ? 's' : ''}.
         </p>
         <button
           type="button"
           onClick={() => setCreating(true)}
           className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-togo-green px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-togo-green/20 transition-all hover:bg-togo-green-dark"
         >
-          <Plus className="h-4 w-4" /> Ajouter un administrateur
+          <Plus className="h-4 w-4" /> Ajouter un membre du staff
         </button>
       </div>
 
@@ -163,6 +174,7 @@ export default function AdminUsersPanel() {
         {[
           { id: '' as RoleFilter, label: 'Tous' },
           { id: 'admin' as RoleFilter, label: 'Administrateurs' },
+          { id: 'subadmin' as RoleFilter, label: 'Sous-admins' },
           { id: 'lead' as RoleFilter, label: 'Leads' },
         ].map((f) => (
           <button
@@ -278,7 +290,7 @@ export default function AdminUsersPanel() {
                     >
                       <Pencil className="h-4 w-4" />
                     </button>
-                    {u.role === 'lead' && (
+                    {u.role !== 'admin' && (
                       <button
                         type="button"
                         onClick={() => quickRoleChange(u, 'admin')}
@@ -338,6 +350,13 @@ function RoleBadge({ role }: { role: UserRole }) {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2.5 py-1 text-[11px] font-bold uppercase text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
         <Shield className="h-3 w-3" /> Admin
+      </span>
+    );
+  }
+  if (role === 'subadmin') {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold uppercase text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+        <ShieldHalf className="h-3 w-3" /> Sous-admin
       </span>
     );
   }

@@ -5,6 +5,7 @@ import {
   PenLine,
   ShieldAlert,
   ShieldCheck,
+  UserCircle,
   UserCog,
   Users,
 } from 'lucide-react';
@@ -16,8 +17,18 @@ export interface AdminNavStats {
   pendingReports?: number;
 }
 
-export function buildAdminNav(stats: AdminNavStats = {}): DashboardNavItem[] {
-  return [
+export interface AdminNavOptions {
+  /** Réservé au super-admin : affiche les onglets Utilisateurs et Page À propos. */
+  isSuperAdmin?: boolean;
+}
+
+/** Onglets réservés au super-administrateur. */
+export const SUPER_ADMIN_TABS = ['users', 'author'] as const;
+
+export function buildAdminNav(stats: AdminNavStats = {}, options: AdminNavOptions = {}): DashboardNavItem[] {
+  const { isSuperAdmin = false } = options;
+
+  const items: DashboardNavItem[] = [
     { id: 'overview', label: "Vue d'ensemble", icon: LayoutDashboard, href: '/admin', section: 'Principal' },
     {
       id: 'communities',
@@ -27,13 +38,19 @@ export function buildAdminNav(stats: AdminNavStats = {}): DashboardNavItem[] {
       href: '/admin?tab=communities',
     },
     { id: 'leads', label: 'Leads', icon: Users, href: '/admin?tab=leads' },
-    {
+  ];
+
+  if (isSuperAdmin) {
+    items.push({
       id: 'users',
       label: 'Utilisateurs',
       icon: UserCog,
       href: '/admin?tab=users',
       section: 'Administration',
-    },
+    });
+  }
+
+  items.push(
     {
       id: 'messages',
       label: 'Messages contact',
@@ -51,19 +68,35 @@ export function buildAdminNav(stats: AdminNavStats = {}): DashboardNavItem[] {
       href: '/admin?tab=reports',
       section: 'Modération',
     },
-    {
+  );
+
+  if (isSuperAdmin) {
+    items.push({
       id: 'author',
       label: 'Page À propos',
       icon: PenLine,
       href: '/admin?tab=author',
       section: 'Contenu',
-    },
-  ];
+    });
+  }
+
+  items.push({
+    id: 'profile',
+    label: 'Mon profil',
+    icon: UserCircle,
+    href: '/admin?tab=profile',
+    section: 'Compte',
+  });
+
+  return items;
 }
 
-export function adminTabFromSearch(search: string): string {
+export function adminTabFromSearch(search: string, isSuperAdmin = false): string {
   const tab = new URLSearchParams(search).get('tab');
-  const valid = ['overview', 'communities', 'leads', 'users', 'messages', 'support', 'reports', 'author'];
+  const valid = ['overview', 'communities', 'leads', 'messages', 'support', 'reports', 'profile'];
+  if (isSuperAdmin) {
+    valid.push(...SUPER_ADMIN_TABS);
+  }
   return tab && valid.includes(tab) ? tab : 'overview';
 }
 
@@ -71,9 +104,10 @@ export const ADMIN_TAB_TITLES: Record<string, { title: string; subtitle: string 
   overview: { title: 'Administration', subtitle: 'Pilotage de la plateforme Togosaas' },
   communities: { title: 'Solutions SaaS', subtitle: 'Modération et gestion des fiches' },
   leads: { title: 'Leads', subtitle: 'Comptes responsables de solutions SaaS' },
-  users: { title: 'Utilisateurs', subtitle: 'Administrateurs et gestion des rôles' },
+  users: { title: 'Utilisateurs', subtitle: 'Staff (admins & sous-admins) et gestion des rôles' },
   messages: { title: 'Messages contact', subtitle: 'Formulaire public' },
   support: { title: 'Chat leads', subtitle: 'Conversations et messages groupés aux leads' },
   reports: { title: 'Signalements', subtitle: 'Abus signalés anonymement par des membres depuis l\'accueil' },
   author: { title: 'Page À propos', subtitle: 'Profil fondateur & auteur' },
+  profile: { title: 'Mon profil', subtitle: 'Vos informations de compte et mot de passe' },
 };

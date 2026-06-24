@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Save } from 'lucide-react';
 import Modal from '../ui/Modal';
 import Spinner from '../ui/Spinner';
+import { ROLE_DESCRIPTIONS } from '../../lib/roles';
 import type { AdminUserSummary, UserRole } from '../../types';
 
 interface Props {
@@ -51,9 +52,11 @@ export default function AdminUserEditForm({ initial, onClose, onSubmit, isSelf }
             disabled={isSelf}
             className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-colors focus:border-togo-green focus:bg-white focus:ring-2 focus:ring-togo-green/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-togo-yellow dark:focus:ring-togo-yellow/20"
           >
-            <option value="admin">Administrateur</option>
+            <option value="admin">Administrateur (accès complet)</option>
+            <option value="subadmin">Sous-administrateur (droits limités)</option>
             <option value="lead">Lead</option>
           </select>
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{ROLE_DESCRIPTIONS[role]}</p>
           {isSelf && (
             <p className="mt-1 text-xs text-slate-400">Vous ne pouvez pas modifier votre propre rôle.</p>
           )}

@@ -161,8 +161,14 @@ export const api = {
 
   me: () => request<{ user: User }>('/auth/me', { auth: true }),
 
-  updateProfile: (data: { name: string; phone?: string | null; avatarUrl?: string | null }) =>
-    request<{ user: User }>('/auth/profile', { method: 'PUT', body: data, auth: true }),
+  updateProfile: (data: {
+    name: string;
+    phone?: string | null;
+    avatarUrl?: string | null;
+    currentPassword?: string;
+    newPassword?: string;
+    newPasswordConfirmation?: string;
+  }) => request<{ user: User }>('/auth/profile', { method: 'PUT', body: data, auth: true }),
 
   // Meta
   meta: () => request<{ countries: CountryData[]; tags: string[] }>('/meta'),
@@ -358,8 +364,13 @@ export const api = {
     return request<{ users: AdminUserSummary[] }>(`/admin/users${suffix}`, { auth: true });
   },
 
-  adminCreateAdmin: (data: { name: string; email: string; password: string; phone?: string | null }) =>
-    request<{ user: AdminUserSummary }>('/admin/admins', { method: 'POST', body: data, auth: true }),
+  adminCreateAdmin: (data: {
+    name: string;
+    email: string;
+    password: string;
+    phone?: string | null;
+    role?: Extract<UserRole, 'admin' | 'subadmin'>;
+  }) => request<{ user: AdminUserSummary }>('/admin/admins', { method: 'POST', body: data, auth: true }),
 
   adminUpdateUser: (
     id: number,

@@ -19,14 +19,23 @@ final class UploadHelper
             Response::error('Fichier invalide ou manquant.', 422);
         }
 
+        $tmpName = (string) ($file['tmp_name'] ?? '');
+        if ($tmpName === '' || !is_uploaded_file($tmpName)) {
+            Response::error('Fichier invalide ou manquant.', 422);
+        }
+
         $maxBytes = (int) env('MAX_UPLOAD_SIZE', 5_242_880);
         if (($file['size'] ?? 0) > $maxBytes) {
             Response::error('Fichier trop volumineux (max ' . round($maxBytes / 1_048_576, 1) . ' Mo).', 422);
         }
 
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
-        $mime = $finfo->file($file['tmp_name'] ?? '') ?: '';
+        $mime = $finfo->file($tmpName) ?: '';
         if (!isset(self::ALLOWED[$mime])) {
+            Response::error('Format non autorise. Utilisez JPG, PNG, WebP ou GIF.', 422);
+        }
+
+        if (@getimagesize($tmpName) === false) {
             Response::error('Format non autorise. Utilisez JPG, PNG, WebP ou GIF.', 422);
         }
 
@@ -39,7 +48,7 @@ final class UploadHelper
         $name = bin2hex(random_bytes(16)) . '.' . self::ALLOWED[$mime];
         $dest = $dir . '/' . $name;
 
-        if (!move_uploaded_file($file['tmp_name'], $dest)) {
+        if (!move_uploaded_file($tmpName, $dest)) {
             Response::error('Echec de l\'enregistrement du fichier.', 500);
         }
 

@@ -28,14 +28,22 @@ final class SupportAttachmentHelper
             Response::error('Fichier invalide ou manquant.', 422);
         }
 
+        $tmpName = (string) ($file['tmp_name'] ?? '');
+        if ($tmpName === '' || !is_uploaded_file($tmpName)) {
+            Response::error('Fichier invalide ou manquant.', 422);
+        }
+
         $maxBytes = (int) env('MAX_SUPPORT_UPLOAD_SIZE', 5_242_880);
         if (($file['size'] ?? 0) > $maxBytes) {
             Response::error('Fichier trop volumineux (max ' . round($maxBytes / 1_048_576, 1) . ' Mo).', 422);
         }
 
-        $finfo = new \finfo(FILEINFO_MIME_TYPE);
-        $mime = $finfo->file($file['tmp_name'] ?? '') ?: '';
-        if (!isset(self::ALLOWED[$mime])) {
+        $mime = self::detectMime($tmpName);
+        if ($mime === null || !isset(self::ALLOWED[$mime])) {
+            Response::error('Format non autorise. JPG, PNG, WebP, GIF ou PDF uniquement.', 422);
+        }
+
+        if ($mime !== 'application/pdf' && @getimagesize($tmpName) === false) {
             Response::error('Format non autorise. JPG, PNG, WebP, GIF ou PDF uniquement.', 422);
         }
 
@@ -48,7 +56,7 @@ final class SupportAttachmentHelper
         $name = bin2hex(random_bytes(16)) . '.' . self::ALLOWED[$mime];
         $dest = $dir . '/' . $name;
 
-        if (!move_uploaded_file($file['tmp_name'], $dest)) {
+        if (!move_uploaded_file($tmpName, $dest)) {
             Response::error('Echec de l\'enregistrement du fichier.', 500);
         }
 
@@ -59,19 +67,39 @@ final class SupportAttachmentHelper
             'key' => $subdir . '/' . $name,
             'originalName' => mb_substr($original, 0, 180),
             'mime' => $mime,
-            'size' => (int) ($file['size'] ?? 0),
+            'size' => (int) filesize($dest),
         ];
     }
 
     public static function resolvePath(string $key): ?string
     {
         $key = str_replace('\\', '/', trim($key));
-        if ($key === '' || str_contains($key, '..')) {
+        if ($key === '' || str_contains($key, '..') || str_starts_with($key, '/')) {
             return null;
         }
 
         $full = self::basePath() . '/' . $key;
-        return is_file($full) ? $full : null;
+        $realBase = realpath(self::basePath());
+        $realFile = realpath($full);
+        if ($realBase === false || $realFile === false) {
+            return null;
+        }
+
+        $prefix = rtrim($realBase, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        if (!str_starts_with($realFile, $prefix)) {
+            return null;
+        }
+
+        return is_file($realFile) ? $realFile : null;
+    }
+
+    public static function mimeForPath(string $path): ?string
+    {
+        if (!is_file($path)) {
+            return null;
+        }
+
+        return self::detectMime($path);
     }
 
     /** @param mixed $input */
@@ -87,14 +115,24 @@ final class SupportAttachmentHelper
                 continue;
             }
             $key = trim((string) ($item['key'] ?? ''));
-            if ($key === '' || !self::resolvePath($key)) {
+            $path = self::resolvePath($key);
+            if ($path === null) {
                 continue;
             }
+
+            $mime = self::detectMime($path);
+            if ($mime === null || !isset(self::ALLOWED[$mime])) {
+                continue;
+            }
+
+            $original = trim((string) ($item['originalName'] ?? 'fichier'));
+            $original = preg_replace('/[^\w.\-() ]+/u', '_', basename($original)) ?: 'fichier';
+
             $out[] = [
                 'key' => $key,
-                'originalName' => mb_substr(trim((string) ($item['originalName'] ?? 'fichier')), 0, 180),
-                'mime' => (string) ($item['mime'] ?? 'application/octet-stream'),
-                'size' => (int) ($item['size'] ?? 0),
+                'originalName' => mb_substr($original, 0, 180),
+                'mime' => $mime,
+                'size' => (int) filesize($path),
             ];
         }
 
@@ -123,5 +161,13 @@ final class SupportAttachmentHelper
                 @unlink($path);
             }
         }
+    }
+
+    private static function detectMime(string $path): ?string
+    {
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($path) ?: '';
+
+        return $mime !== '' ? $mime : null;
     }
 }

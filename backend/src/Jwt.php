@@ -9,6 +9,8 @@ namespace TCH;
  */
 final class Jwt
 {
+    private const MIN_SECRET_LENGTH = 32;
+
     public static function encode(array $payload): string
     {
         $header = ['alg' => 'HS256', 'typ' => 'JWT'];
@@ -45,7 +47,17 @@ final class Jwt
 
         [$headerB64, $payloadB64, $signatureB64] = $parts;
 
-        $expected = self::sign("{$headerB64}.{$payloadB64}");
+        $header = json_decode(self::base64UrlDecode($headerB64), true);
+        if (!is_array($header) || ($header['alg'] ?? '') !== 'HS256') {
+            return null;
+        }
+
+        try {
+            $expected = self::sign("{$headerB64}.{$payloadB64}");
+        } catch (\RuntimeException) {
+            return null;
+        }
+
         $provided = self::base64UrlDecode($signatureB64);
 
         if (!hash_equals($expected, $provided)) {
@@ -57,6 +69,11 @@ final class Jwt
             return null;
         }
 
+        $issuer = (string) env('JWT_ISSUER', 'tch-api');
+        if (isset($payload['iss']) && (string) $payload['iss'] !== $issuer) {
+            return null;
+        }
+
         if (isset($payload['exp']) && time() >= (int) $payload['exp']) {
             return null;
         }
@@ -64,10 +81,19 @@ final class Jwt
         return $payload;
     }
 
+    private static function secret(): string
+    {
+        $secret = (string) env('JWT_SECRET', '');
+        if ($secret === '' || strlen($secret) < self::MIN_SECRET_LENGTH) {
+            throw new \RuntimeException('JWT_SECRET manquant ou trop court (minimum ' . self::MIN_SECRET_LENGTH . ' caracteres).');
+        }
+
+        return $secret;
+    }
+
     private static function sign(string $input): string
     {
-        $secret = (string) env('JWT_SECRET', 'insecure-default-secret');
-        return hash_hmac('sha256', $input, $secret, true);
+        return hash_hmac('sha256', $input, self::secret(), true);
     }
 
     private static function base64UrlEncode(string $data): string

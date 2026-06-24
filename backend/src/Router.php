@@ -80,7 +80,10 @@ final class Router
             }
         }
 
-        Response::error('Route introuvable : ' . $method . ' ' . $path, 404);
+        Response::error(
+            TCH_DEBUG ? 'Route introuvable : ' . $method . ' ' . $path : 'Route introuvable.',
+            404
+        );
     }
 
     private function compilePattern(string $pattern): string

@@ -8,6 +8,7 @@ use TCH\Auth;
 use TCH\Database;
 use TCH\Request;
 use TCH\Response;
+use TCH\Security;
 use TCH\SupportAttachmentHelper;
 use TCH\Validator;
 
@@ -420,9 +421,11 @@ final class SupportController
             Response::error('Fichier introuvable.', 404);
         }
 
-        $mime = (string) ($item['mime'] ?? 'application/octet-stream');
-        $name = (string) ($item['originalName'] ?? 'fichier');
+        $mime = SupportAttachmentHelper::mimeForPath($path) ?? 'application/octet-stream';
+        $name = basename((string) ($item['originalName'] ?? 'fichier'));
+        $name = preg_replace('/[^\w.\-() ]+/u', '_', $name) ?: 'fichier';
 
+        Security::applyHeaders();
         header('Content-Type: ' . $mime);
         header('Content-Disposition: inline; filename="' . str_replace('"', '', $name) . '"');
         header('Content-Length: ' . (string) filesize($path));

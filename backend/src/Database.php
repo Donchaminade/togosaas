@@ -36,13 +36,11 @@ final class Database
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
         } catch (PDOException $e) {
-            http_response_code(500);
-            header('Content-Type: application/json');
-            $message = TCH_DEBUG
-                ? $e->getMessage()
-                : 'Connexion a la base de donnees impossible.';
-            echo json_encode(['success' => false, 'message' => $message]);
-            exit;
+            error_log('Database connection failed: ' . $e->getMessage());
+            Response::error(
+                TCH_DEBUG ? $e->getMessage() : 'Connexion a la base de donnees impossible.',
+                500
+            );
         }
 
         return self::$instance;

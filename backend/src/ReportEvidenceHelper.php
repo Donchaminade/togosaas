@@ -26,14 +26,22 @@ final class ReportEvidenceHelper
             Response::error('Fichier invalide ou manquant.', 422);
         }
 
+        $tmpName = (string) ($file['tmp_name'] ?? '');
+        if ($tmpName === '' || !is_uploaded_file($tmpName)) {
+            Response::error('Fichier invalide ou manquant.', 422);
+        }
+
         $maxBytes = (int) env('MAX_REPORT_UPLOAD_SIZE', 8_388_608);
         if (($file['size'] ?? 0) > $maxBytes) {
             Response::error('Fichier trop volumineux (max ' . round($maxBytes / 1_048_576, 1) . ' Mo).', 422);
         }
 
-        $finfo = new \finfo(FILEINFO_MIME_TYPE);
-        $mime = $finfo->file($file['tmp_name'] ?? '') ?: '';
-        if (!isset(self::ALLOWED[$mime])) {
+        $mime = self::detectMime($tmpName);
+        if ($mime === null || !isset(self::ALLOWED[$mime])) {
+            Response::error('Format non autorise. JPG, PNG, WebP, GIF ou PDF uniquement.', 422);
+        }
+
+        if ($mime !== 'application/pdf' && @getimagesize($tmpName) === false) {
             Response::error('Format non autorise. JPG, PNG, WebP, GIF ou PDF uniquement.', 422);
         }
 
@@ -46,7 +54,7 @@ final class ReportEvidenceHelper
         $name = bin2hex(random_bytes(16)) . '.' . self::ALLOWED[$mime];
         $dest = $dir . '/' . $name;
 
-        if (!move_uploaded_file($file['tmp_name'], $dest)) {
+        if (!move_uploaded_file($tmpName, $dest)) {
             Response::error('Echec de l\'enregistrement du fichier.', 500);
         }
 
@@ -63,12 +71,32 @@ final class ReportEvidenceHelper
     public static function resolvePath(string $key): ?string
     {
         $key = str_replace('\\', '/', trim($key));
-        if ($key === '' || str_contains($key, '..')) {
+        if ($key === '' || str_contains($key, '..') || str_starts_with($key, '/')) {
             return null;
         }
 
         $full = self::basePath() . '/' . $key;
-        return is_file($full) ? $full : null;
+        $realBase = realpath(self::basePath());
+        $realFile = realpath($full);
+        if ($realBase === false || $realFile === false) {
+            return null;
+        }
+
+        $prefix = rtrim($realBase, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        if (!str_starts_with($realFile, $prefix)) {
+            return null;
+        }
+
+        return is_file($realFile) ? $realFile : null;
+    }
+
+    public static function mimeForPath(string $path): ?string
+    {
+        if (!is_file($path)) {
+            return null;
+        }
+
+        return self::detectMime($path);
     }
 
     /** @param list<array{key?: string}> $evidence */
@@ -80,13 +108,23 @@ final class ReportEvidenceHelper
                 continue;
             }
             $key = trim((string) ($item['key'] ?? ''));
-            if ($key === '' || !self::resolvePath($key)) {
+            $path = self::resolvePath($key);
+            if ($path === null) {
                 continue;
             }
+
+            $mime = self::detectMime($path);
+            if ($mime === null || !isset(self::ALLOWED[$mime])) {
+                continue;
+            }
+
+            $original = trim((string) ($item['originalName'] ?? 'preuve'));
+            $original = preg_replace('/[^\w.\-() ]+/u', '_', basename($original)) ?: 'preuve';
+
             $out[] = [
                 'key' => $key,
-                'originalName' => mb_substr(trim((string) ($item['originalName'] ?? 'preuve')), 0, 180),
-                'mime' => (string) ($item['mime'] ?? 'application/octet-stream'),
+                'originalName' => mb_substr($original, 0, 180),
+                'mime' => $mime,
             ];
         }
         return $out;
@@ -104,5 +142,13 @@ final class ReportEvidenceHelper
                 @unlink($path);
             }
         }
+    }
+
+    private static function detectMime(string $path): ?string
+    {
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($path) ?: '';
+
+        return $mime !== '' ? $mime : null;
     }
 }

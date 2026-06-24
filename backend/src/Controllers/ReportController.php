@@ -10,6 +10,7 @@ use TCH\ReportEvidenceHelper;
 use TCH\ReportHelper;
 use TCH\Request;
 use TCH\Response;
+use TCH\Security;
 use TCH\Validator;
 
 final class ReportController
@@ -223,9 +224,11 @@ final class ReportController
             Response::error('Fichier introuvable.', 404);
         }
 
-        $mime = (string) ($item['mime'] ?? 'application/octet-stream');
-        $name = (string) ($item['originalName'] ?? 'preuve');
+        $mime = ReportEvidenceHelper::mimeForPath($path) ?? 'application/octet-stream';
+        $name = basename((string) ($item['originalName'] ?? 'preuve'));
+        $name = preg_replace('/[^\w.\-() ]+/u', '_', $name) ?: 'preuve';
 
+        Security::applyHeaders();
         header('Content-Type: ' . $mime);
         header('Content-Length: ' . (string) filesize($path));
         header('Content-Disposition: inline; filename="' . rawurlencode($name) . '"');

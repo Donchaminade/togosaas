@@ -16,6 +16,7 @@ use TCH\Controllers\SupportController;
 use TCH\Controllers\UploadController;
 use TCH\Response;
 use TCH\Router;
+use TCH\Security;
 use TCH\HttpMethod;
 
 require_once dirname(__DIR__) . '/src/bootstrap.php';
@@ -32,6 +33,7 @@ if (str_starts_with($requestUri, '/uploads/')) {
             $finfo = new finfo(FILEINFO_MIME_TYPE);
             $mime = $finfo->file($file) ?: 'application/octet-stream';
             header('Content-Type: ' . $mime);
+            header('X-Content-Type-Options: nosniff');
             header('Cache-Control: public, max-age=31536000, immutable');
             readfile($file);
             exit;
@@ -42,32 +44,9 @@ if (str_starts_with($requestUri, '/uploads/')) {
 }
 
 /* ------------------------------------------------------------------ */
-/* CORS                                                                */
+/* CORS + headers de securite                                          */
 /* ------------------------------------------------------------------ */
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-$allowedOrigins = array_values(array_filter(array_map(
-    static fn(string $u) => rtrim(trim($u), '/'),
-    explode(',', (string) env('FRONTEND_URLS', '')),
-)));
-
-if ($allowedOrigins === []) {
-    $single = rtrim(trim((string) env('FRONTEND_URL', '*')), '/');
-    $allowedOrigins = $single !== '' && $single !== '*' ? [$single] : [];
-}
-
-if ($allowedOrigins === []) {
-    $allowOrigin = $origin !== '' ? $origin : '*';
-} elseif ($origin !== '' && in_array(rtrim($origin, '/'), $allowedOrigins, true)) {
-    $allowOrigin = $origin;
-} else {
-    $allowOrigin = $allowedOrigins[0];
-}
-
-header('Access-Control-Allow-Origin: ' . $allowOrigin);
-header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override');
-header('Access-Control-Allow-Credentials: true');
-header('Vary: Origin');
+Security::applyCors();
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
     http_response_code(204);

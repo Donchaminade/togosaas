@@ -2,14 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
-  CheckCircle2,
+  BadgeCheck,
   Compass,
-  EyeOff,
   Megaphone,
   Rocket,
   Search,
-  Shield,
   ShieldCheck,
+  Sparkles,
   Users,
 } from 'lucide-react';
 import HeroSlideshow from '../components/home/HeroSlideshow';
@@ -24,31 +23,31 @@ import type { Community } from '../types';
 const FEATURES = [
   {
     icon: Megaphone,
-    title: 'De la visibilité',
-    text: "Exposez votre communauté à tout le Togo via une vitrine moderne et un annuaire public référencé.",
+    title: 'Visibilité maximale',
+    text: "Exposez votre solution SaaS à tout le Togo via un catalogue moderne et référencé.",
   },
   {
     icon: ShieldCheck,
-    title: 'Contenu vérifié',
-    text: "Chaque communauté est validée par notre équipe avant publication pour garantir la qualité.",
+    title: 'Solutions vérifiées',
+    text: "Chaque solution est validée par notre équipe avant publication pour garantir la qualité.",
   },
   {
     icon: Users,
-    title: 'Espace de gestion',
-    text: "Un tableau de bord dédié pour gérer en autonomie les informations de votre communauté.",
+    title: 'Espace éditeur',
+    text: "Un tableau de bord dédié pour gérer en autonomie votre fiche, vos images et votre tarification.",
   },
   {
     icon: Compass,
-    title: 'Cartographie',
-    text: "Localisez les communautés par pays et par ville dans l'annuaire public.",
+    title: 'Accès direct',
+    text: "Les visiteurs accèdent directement à votre application depuis la fiche publique.",
   },
 ];
 
 const STEPS = [
-  { num: '01', title: 'Créez votre compte', text: 'Inscrivez-vous gratuitement en tant que lead de communauté.' },
-  { num: '02', title: 'Soumettez votre communauté', text: 'Renseignez les infos, liens et coordonnées depuis votre espace.' },
+  { num: '01', title: 'Créez votre compte', text: 'Inscrivez-vous gratuitement en tant qu\'éditeur de solution SaaS.' },
+  { num: '02', title: 'Publiez votre solution', text: 'Renseignez la description, les captures, le tarif et le lien d\'accès.' },
   { num: '03', title: 'Validation admin', text: 'Notre équipe vérifie et approuve votre soumission.' },
-  { num: '04', title: 'Rayonnez', text: 'Votre communauté apparaît dans l’annuaire public du Togo.' },
+  { num: '04', title: 'Rayonnez', text: 'Votre solution apparaît dans le catalogue SaaS du Togo.' },
 ];
 
 export default function Home() {
@@ -88,11 +87,11 @@ export default function Home() {
           <div className="mx-auto max-w-2xl text-center">
             <ScrollReveal variant="fade-up">
               <h2 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl dark:text-white">
-                Pourquoi rejoindre <span className="text-togo-green dark:text-togo-yellow">T.C.H</span> ?
+                Pourquoi rejoindre <span className="text-togo-green dark:text-togo-yellow">TogoSaaS</span> ?
               </h2>
               <p className="mt-4 text-slate-600 dark:text-slate-300">
-                Une plateforme pensée pour fédérer et faire briller les communautés
-                qui font bouger le Togo.
+                Une plateforme pensée pour fédérer et faire briller les solutions SaaS
+                made in Togo.
               </p>
             </ScrollReveal>
           </div>
@@ -143,7 +142,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===================== APERÇU COMMUNAUTÉS ===================== */}
+      {/* ===================== APERÇU SOLUTIONS ===================== */}
       {preview.length > 0 && (
         <section className="bg-white py-20 dark:bg-slate-950">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -151,14 +150,14 @@ export default function Home() {
             <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
               <div>
                 <h2 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl dark:text-white">
-                  Communautés à la une
+                  Solutions à la une
                 </h2>
                 <p className="mt-3 text-slate-600 dark:text-slate-300">
-                  Un aperçu des communautés déjà référencées sur la plateforme.
+                  Un aperçu des solutions SaaS déjà référencées sur la plateforme.
                 </p>
               </div>
               <Link
-                to="/communautes"
+                to="/solutions"
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-700 transition-colors hover:border-togo-green hover:text-togo-green dark:border-slate-700 dark:text-slate-200 dark:hover:border-togo-yellow dark:hover:text-togo-yellow"
               >
                 Voir tout <ArrowRight className="h-4 w-4" />
@@ -177,31 +176,31 @@ export default function Home() {
         </section>
       )}
 
-      {/* ===================== SIGNALEMENT MEMBRES ===================== */}
+      {/* ===================== ESPACE ÉDITEUR ===================== */}
       <section className="relative overflow-hidden bg-slate-50 py-20 dark:bg-slate-900">
-        <div className="pointer-events-none absolute -right-24 top-0 h-72 w-72 rounded-full bg-rose-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -right-24 top-0 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <ScrollReveal variant="fade-up">
             <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
               <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-0">
                 <div className="p-8 sm:p-10 lg:p-12">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-rose-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-rose-700 dark:bg-rose-500/15 dark:text-rose-300">
-                    <Shield className="h-3.5 w-3.5" />
-                    Espace membres
+                  <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Espace éditeur
                   </span>
                   <h2 className="mt-5 text-3xl font-black tracking-tight text-slate-900 dark:text-white sm:text-4xl">
-                    Vous êtes membre d&apos;une communauté ?
+                    Vous êtes éditeur de solution SaaS ?
                   </h2>
                   <p className="mt-4 text-base leading-relaxed text-slate-600 dark:text-slate-300">
-                    Si vous constatez un <strong>abus</strong>, un comportement inapproprié ou un problème
-                    grave concernant une communauté référencée ou son/ses responsable(s), vous pouvez
-                    le signaler <strong>anonymement</strong> depuis l&apos;accueil — sans créer de compte.
+                    Rejoignez le hub SaaS du Togo et exposez votre application à un public
+                    qualifié. Inscription gratuite, validation par notre équipe, gestion autonome
+                    de votre fiche depuis votre tableau de bord.
                   </p>
                   <ul className="mt-6 space-y-3 text-sm text-slate-600 dark:text-slate-300">
                     {[
-                      { icon: EyeOff, text: 'Anonymat garanti — votre identité n\'est jamais enregistrée' },
-                      { icon: ShieldCheck, text: 'Signalement d\'une communauté ou de son lead / co-leads' },
-                      { icon: CheckCircle2, text: 'Code de suivi pour connaître l\'avancement du traitement' },
+                      { icon: Megaphone, text: 'Visibilité nationale dans le catalogue Togosaas' },
+                      { icon: BadgeCheck, text: 'Badge « vérifié » après validation éditoriale' },
+                      { icon: ShieldCheck, text: 'Gestion autonome : description, tarifs, captures et lien d\'accès' },
                     ].map(({ icon: Icon, text }) => (
                       <li key={text} className="flex items-start gap-3">
                         <Icon className="mt-0.5 h-4 w-4 shrink-0 text-togo-green dark:text-togo-yellow" />
@@ -211,29 +210,29 @@ export default function Home() {
                   </ul>
                   <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                     <Link
-                      to="/signaler"
-                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-rose-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-rose-600/25 transition-all hover:bg-rose-700 dark:bg-rose-500 dark:shadow-rose-500/20 dark:hover:bg-rose-600"
+                      to="/inscription"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-togo-green px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-togo-green/25 transition-all hover:bg-togo-green-light dark:shadow-togo-green/20"
                     >
-                      <Shield className="h-4 w-4" />
-                      Signaler un abus (anonyme)
+                      <Rocket className="h-4 w-4" />
+                      Publier ma solution
                     </Link>
                     <Link
-                      to="/signaler/suivi"
+                      to="/contact"
                       className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-6 py-3.5 text-sm font-bold text-slate-700 transition-colors hover:border-togo-green hover:text-togo-green dark:border-slate-700 dark:text-slate-200 dark:hover:border-togo-yellow dark:hover:text-togo-yellow"
                     >
-                      Suivre un signalement
+                      Contacter le support
                     </Link>
                   </div>
                 </div>
-                <div className="relative min-h-[280px] bg-gradient-to-br from-rose-50 via-emerald-50/40 to-amber-50/30 p-8 dark:from-rose-950/30 dark:via-slate-900 dark:to-slate-950 lg:min-h-full lg:p-12">
+                <div className="relative min-h-[280px] bg-gradient-to-br from-emerald-50 via-amber-50/40 to-slate-50/30 p-8 dark:from-emerald-950/30 dark:via-slate-900 dark:to-slate-950 lg:min-h-full lg:p-12">
                   <div className="relative flex h-full flex-col justify-center">
-                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Exemples de situations</p>
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Pourquoi publier ici ?</p>
                     <div className="mt-4 space-y-3">
                       {[
-                        'Harcèlement ou discrimination au sein d\'une communauté',
-                        'Arnaque ou fausses informations publiées par un lead',
-                        'Comportement abusif d\'un responsable envers des membres',
-                        'Contenu illégal ou contraire aux valeurs de T.C.H',
+                        'Référencement dans le premier catalogue SaaS togolais',
+                        'Accès direct des visiteurs à votre application',
+                        'Tarification transparente (gratuit, freemium ou payant)',
+                        'Support éditorial et accompagnement à la publication',
                       ].map((item, i) => (
                         <StaggerReveal key={item} index={i} variant="gentle-in" stagger={80}>
                         <div
@@ -259,10 +258,10 @@ export default function Home() {
         <ScrollReveal variant="gentle-in" duration={1150}>
         <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="text-3xl font-black tracking-tight text-white sm:text-4xl">
-            Votre communauté mérite d'être connue.
+            Votre solution mérite d'être connue.
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-emerald-50">
-            Rejoignez le hub des communautés du Togo et offrez à la vôtre la
+            Rejoignez le hub SaaS du Togo et offrez à votre solution la
             visibilité qu'elle mérite.
           </p>
           <Link
@@ -270,7 +269,7 @@ export default function Home() {
             className="group mt-9 inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-base font-bold text-togo-green shadow-xl transition-all hover:scale-[1.03] hover:bg-togo-yellow hover:text-slate-900"
           >
             <Rocket className="h-5 w-5 transition-transform group-hover:-translate-y-1" />
-            Exposer ma communauté
+            Publier ma solution
           </Link>
         </div>
         </ScrollReveal>

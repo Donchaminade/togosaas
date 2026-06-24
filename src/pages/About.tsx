@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
+  BadgeCheck,
   Github,
-  Heart,
   Linkedin,
-  MapPin,
+  Package,
   Rocket,
   Search,
   Shield,
   Sparkles,
+  Store,
   Target,
   Trophy,
   Twitter,
-  Users,
   Zap,
 } from 'lucide-react';
 import ScrollReveal, { StaggerReveal } from '../components/motion/ScrollReveal';
@@ -27,28 +27,28 @@ const PILLARS = [
   {
     icon: Trophy,
     label: 'Notre mission',
-    text: 'Recenser, valoriser et connecter les communautés togolaises — tech, créatives, citoyennes ou associatives — pour qu’aucune initiative locale ne reste invisible.',
+    text: 'Recenser, valoriser et connecter les solutions SaaS togolaises — gratuites ou payantes — pour qu\'aucune innovation locale ne reste invisible.',
     color: 'text-togo-red',
     bg: 'bg-togo-red/10',
   },
   {
     icon: Target,
     label: 'Notre vision',
-    text: 'Faire de T.C.H la référence nationale pour découvrir, rejoindre et faire grandir l’écosystème communautaire du Togo, de Lomé aux régions.',
+    text: 'Faire de Togosaas la référence nationale pour découvrir, comparer et adopter l\'écosystème SaaS du Togo, de Lomé aux régions.',
     color: 'text-togo-green',
     bg: 'bg-togo-green/10',
   },
   {
-    icon: Users,
+    icon: Store,
     label: 'Pour qui ?',
-    text: 'Membres, curieux, partenaires et responsables de communautés (leads) : une vitrine publique pour les uns, un tableau de bord autonome pour les autres.',
+    text: 'Utilisateurs, entreprises, éditeurs et partenaires : un catalogue public pour découvrir les solutions, un tableau de bord autonome pour les publier.',
     color: 'text-togo-yellow',
     bg: 'bg-togo-yellow/15',
   },
   {
     icon: Shield,
     label: 'Notre engagement',
-    text: 'Des fiches validées, une modération attentive et un espace de confiance où chaque communauté présente son identité, ses événements et ses contacts en toute clarté.',
+    text: 'Des fiches vérifiées, une modération attentive et une charte qualité où chaque éditeur présente son offre, sa tarification et son accès en toute transparence.',
     color: 'text-togo-red',
     bg: 'bg-togo-red/10',
   },
@@ -57,37 +57,37 @@ const PILLARS = [
 const OFFERINGS = [
   {
     icon: Search,
-    title: 'Annuaire intelligent',
-    text: 'Filtrez par ville, thématique ou mot-clé — GDG, cybersécurité, design, data science, inclusion — et trouvez la communauté qui vous correspond.',
+    title: 'Catalogue intelligent',
+    text: 'Filtrez par catégorie, tarif (gratuit ou payant) ou mot-clé — fintech, RH, e-commerce, éducation — et trouvez la solution qui correspond à vos besoins.',
   },
   {
-    icon: MapPin,
-    title: 'Ancrage territorial',
-    text: 'Chaque fiche situe la communauté sur la carte du Togo : Lomé, Kara, Sokodé et au-delà. Proximité géographique, impact local.',
+    icon: Package,
+    title: 'Solutions made in Togo',
+    text: 'Chaque fiche met en avant une application togolaise : éditeur, ville d\'origine, captures d\'écran et lien d\'accès direct. Proximité locale, impact national.',
   },
   {
     icon: Zap,
-    title: 'Mise en relation directe',
-    text: 'WhatsApp, Telegram, LinkedIn, site web : accédez aux bons contacts sans intermédiaire. Rejoignez un meetup, un atelier ou un hackathon en quelques clics.',
+    title: 'Accès immédiat',
+    text: 'Essai gratuit, abonnement ou achat : accédez à l\'application depuis la fiche publique, sans intermédiaire ni recherche fastidieuse.',
   },
   {
     icon: Sparkles,
-    title: 'Visibilité pour les leads',
-    text: 'Les responsables gèrent leur fiche, leurs événements et leur galerie depuis un espace dédié. Exposer sa communauté, c’est lui donner la place qu’elle mérite.',
+    title: 'Visibilité pour les éditeurs',
+    text: 'Les éditeurs gèrent leur fiche, leurs visuels et leur tarification depuis un espace dédié. Publier sur Togosaas, c\'est offrir à sa solution la visibilité qu\'elle mérite.',
   },
 ];
 
 const KEYWORDS = [
-  'Communautés togolaises',
-  'Annuaire Togo',
-  'Tech & innovation',
-  'Meetups & événements',
-  'Écosystème digital',
-  'Inclusion & diversité',
+  'Hub SaaS du Togo',
+  'Solutions togolaises',
+  'Made in Togo',
+  'Catalogue SaaS',
+  'Applications locales',
+  'Gratuit & payant',
+  'Éditeurs vérifiés',
+  'Innovation digitale',
   'Lomé & régions',
-  'Mise en relation',
-  'Open source',
-  'Citoyenneté numérique',
+  'Marketplace SaaS',
 ];
 
 export default function About() {
@@ -131,20 +131,20 @@ export default function About() {
             À propos de nous
           </span>
           <h1 className="mt-8 text-4xl font-black uppercase leading-tight tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
-            L&apos;histoire d&apos;une vision
+            Le hub SaaS du Togo
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-white/85 sm:text-lg">
-            <strong className="font-semibold text-white">Togo Communities Hub</strong> (T.C.H) est
-            le premier hub national dédié au recensement, à la valorisation et à la mise en
-            relation des communautés togolaises — un pont entre les talents, les initiatives
-            locales et celles qui cherchent à les rejoindre.
+            <strong className="font-semibold text-white">TogoSaaS</strong> (Hub SaaS du Togo) est
+            la première marketplace nationale dédiée au recensement, à la valorisation et à la
+            mise en relation des solutions SaaS togolaises — un pont entre les éditeurs locaux
+            et ceux qui cherchent les bonnes applications.
           </p>
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-togo-green via-togo-yellow to-togo-red" />
       </section>
 
-      {/* Qu'est-ce que TCH ? */}
+      {/* Qu'est-ce que Togosaas ? */}
       <section className="bg-white py-20 dark:bg-slate-950 lg:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
@@ -152,30 +152,29 @@ export default function About() {
               <div>
                 <h2 className="text-3xl font-black uppercase leading-tight tracking-tight text-slate-900 dark:text-white sm:text-4xl">
                   Qu&apos;est-ce que{' '}
-                  <span className="text-togo-green dark:text-togo-yellow">Togo Communities Hub</span>{' '}
+                  <span className="text-togo-green dark:text-togo-yellow">TogoSaaS</span>{' '}
                   ?
                 </h2>
                 <p className="mt-6 text-base leading-relaxed text-slate-600 dark:text-slate-300 sm:text-lg">
-                  Au Togo, des centaines de communautés dynamisent le paysage numérique, culturel
-                  et citoyen : groupes de développeurs, collectifs créatifs, associations
-                  d&apos;entraide, clubs étudiants, réseaux professionnels… Pourtant, les
-                  retrouver reste souvent un parcours du combattant — informations éparpillées,
-                  contacts absents, visibilité limitée.
+                  Au Togo, des dizaines de solutions SaaS émergent dans la fintech, la gestion
+                  d&apos;entreprise, l&apos;éducation, la santé ou le e-commerce. Pourtant, les
+                  découvrir reste souvent un parcours du combattant — informations éparpillées,
+                  comparatifs absents, visibilité limitée pour les éditeurs locaux.
                 </p>
                 <p className="mt-4 text-base leading-relaxed text-slate-600 dark:text-slate-300 sm:text-lg">
-                  <strong className="font-semibold text-slate-800 dark:text-white">T.C.H</strong>{' '}
+                  <strong className="font-semibold text-slate-800 dark:text-white">Togosaas</strong>{' '}
                   répond à ce besoin avec une plateforme claire et moderne : un{' '}
                   <strong className="font-semibold text-slate-800 dark:text-white">
-                    annuaire des communautés togolaises
+                    catalogue des solutions SaaS togolaises
                   </strong>{' '}
-                  où chaque groupe dispose d&apos;une fiche publique soignée, modérée et
-                  régulièrement mise à jour par ses responsables.
+                  où chaque éditeur dispose d&apos;une fiche publique soignée, vérifiée et
+                  régulièrement mise à jour.
                 </p>
                 <p className="mt-4 text-base leading-relaxed text-slate-600 dark:text-slate-300 sm:text-lg">
-                  Que vous cherchiez un{' '}
-                  <em>meetup tech à Lomé</em>, un cercle de mentorat, une communauté UX/UI ou un
-                  réseau d&apos;entrepreneurs, T.C.H centralise l&apos;information pour
-                  accélérer la découverte, la collaboration et l&apos;impact collectif.
+                  Que vous cherchiez un <em>outil de facturation à Lomé</em>, une plateforme
+                  e-learning, une solution RH ou une application mobile togolaise, Togosaas
+                  centralise l&apos;information pour accélérer la découverte, l&apos;adoption et
+                  la croissance de l&apos;écosystème digital local.
                 </p>
 
                 <div className="mt-10 space-y-8">
@@ -206,7 +205,7 @@ export default function About() {
                 <div className="absolute -bottom-4 -right-4 h-full w-full rounded-3xl bg-togo-yellow/30 dark:bg-togo-yellow/20" />
                 <img
                   src={DIAPO.aboutSection}
-                  alt="Communauté en événement"
+                  alt="Écosystème SaaS togolais"
                   className="relative z-10 aspect-[4/5] w-full rounded-3xl object-cover shadow-2xl ring-1 ring-slate-200 dark:ring-slate-800 lg:aspect-[3/4]"
                   loading="lazy"
                 />
@@ -216,7 +215,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* Ce que T.C.H vous apporte */}
+      {/* Ce que Togosaas vous apporte */}
       <section className="border-t border-slate-100 bg-slate-50 py-20 dark:border-slate-800 dark:bg-slate-900 lg:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <ScrollReveal variant="fade-up">
@@ -225,10 +224,10 @@ export default function About() {
                 Fonctionnalités clés
               </p>
               <h2 className="mt-4 text-3xl font-black uppercase tracking-tight text-slate-900 dark:text-white sm:text-4xl">
-                Ce que <span className="text-togo-green dark:text-togo-yellow">T.C.H</span> vous apporte
+                Ce que <span className="text-togo-green dark:text-togo-yellow">Togosaas</span> vous apporte
               </h2>
               <p className="mt-4 text-base leading-relaxed text-slate-600 dark:text-slate-300 sm:text-lg">
-                Une plateforme pensée pour l&apos;écosystème communautaire togolais : découverte,
+                Une marketplace pensée pour l&apos;écosystème SaaS togolais : découverte,
                 transparence, autonomie et confiance.
               </p>
             </div>
@@ -267,28 +266,26 @@ export default function About() {
         </div>
       </section>
 
-      {/* Genèse du projet */}
+      {/* Charte qualité */}
       <section className="bg-white py-20 dark:bg-slate-950 lg:py-24">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <ScrollReveal variant="fade-up">
-            <div className="overflow-hidden rounded-3xl border border-rose-200/80 bg-gradient-to-br from-rose-50 via-white to-amber-50/60 p-8 text-center shadow-sm dark:border-rose-500/20 dark:from-rose-950/30 dark:via-slate-900 dark:to-slate-950 sm:p-10">
-              <Heart className="mx-auto h-8 w-8 fill-togo-red text-togo-red" />
-              <p className="mt-4 text-xs font-bold uppercase tracking-[0.25em] text-togo-red dark:text-rose-400">
-                La genèse de T.C.H
+            <div className="overflow-hidden rounded-3xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50 via-white to-amber-50/60 p-8 text-center shadow-sm dark:border-emerald-500/20 dark:from-emerald-950/30 dark:via-slate-900 dark:to-slate-950 sm:p-10">
+              <BadgeCheck className="mx-auto h-8 w-8 text-togo-green dark:text-togo-yellow" />
+              <p className="mt-4 text-xs font-bold uppercase tracking-[0.25em] text-togo-green dark:text-togo-yellow">
+                Charte qualité
               </p>
               <p className="mt-5 text-base leading-relaxed text-slate-700 dark:text-slate-200 sm:text-lg">
-                L&apos;idée de <strong>Togo Communities Hub</strong> est née d&apos;une
-                conviction simple : au Togo, l&apos;énergie collective existe déjà — il manquait
-                un lieu unique pour la rendre visible, accessible et durable.
-              </p>
-              <p className="mt-4 text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-                C&apos;est avec{' '}
-                <span className="text-togo-green dark:text-togo-yellow">Mardiya TCHAKEY</span>{' '}
-                que cette vision a pris forme.
+                Chaque solution publiée sur <strong>TogoSaaS</strong> passe par une{' '}
+                <strong>vérification éditoriale</strong> : identité de l&apos;éditeur, description
+                claire, tarification transparente et lien d&apos;accès fonctionnel.
               </p>
               <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-slate-500 dark:text-slate-400 sm:text-base">
-                Ce hub des communautés togolaises porte la trace de cette genèse — avec gratitude,
-                affection et la volonté de servir un écosystème qui mérite d&apos;être célébré.
+                Une question sur une fiche, une suggestion de solution ou un besoin d&apos;assistance ?
+                Notre équipe est disponible via le{' '}
+                <Link to="/contact" className="font-semibold text-togo-green hover:underline dark:text-togo-yellow">
+                  formulaire de contact
+                </Link>.
               </p>
             </div>
           </ScrollReveal>
@@ -403,27 +400,27 @@ export default function About() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,206,0,0.15)_0%,transparent_50%)]" />
         <div className="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
           <h2 className="text-2xl font-black uppercase text-white sm:text-3xl">
-            Rejoignez l&apos;aventure T.C.H
+            Rejoignez l&apos;aventure Togosaas
           </h2>
           <p className="mt-4 text-emerald-100 sm:text-lg">
-            Vous animez une communauté togolaise ? Inscrivez-la et gagnez en visibilité. Vous
-            cherchez votre prochain meetup, mentor ou réseau ? Explorez l&apos;annuaire dès
+            Vous éditez une solution SaaS togolaise ? Publiez-la et gagnez en visibilité. Vous
+            cherchez la bonne application pour votre activité ? Explorez le catalogue dès
             maintenant.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
-              to="/communautes"
+              to="/solutions"
               className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-white/40 px-7 py-3.5 text-base font-bold text-white transition-all hover:border-white hover:bg-white/10"
             >
               <Search className="h-5 w-5" />
-              Explorer les communautés
+              Explorer le catalogue
             </Link>
             <Link
               to="/inscription"
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-togo-yellow px-7 py-3.5 text-base font-bold text-slate-900 shadow-lg transition-all hover:bg-white"
             >
               <Rocket className="h-5 w-5" />
-              Exposer ma communauté
+              Publier ma solution
             </Link>
             <Link
               to="/contact"

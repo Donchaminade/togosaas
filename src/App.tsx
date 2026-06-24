@@ -26,6 +26,7 @@ import AdminCommunityEdit from './pages/dashboard/AdminCommunityEdit';
 import AdminCommunityDetail from './pages/dashboard/AdminCommunityDetail';
 import AdminLeadDetail from './pages/dashboard/AdminLeadDetail';
 import NotFound from './pages/NotFound';
+import { LegacyCommunityEventRedirect, LegacyCommunityRedirect, LegacyCommunityReportRedirect } from './components/LegacyRedirects';
 
 export default function App() {
   const [splashDone, setSplashDone] = useState(() => !shouldShowSplash());
@@ -42,10 +43,15 @@ export default function App() {
               <Route element={<PublicLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/a-propos" element={<About />} />
-                <Route path="/communautes" element={<Communities />} />
-                <Route path="/communautes/:id" element={<CommunityDetail />} />
-                <Route path="/communautes/:id/evenements/:eventId" element={<CommunityEventDetail />} />
-                <Route path="/communautes/:id/signaler" element={<ReportCommunity />} />
+                <Route path="/solutions" element={<Communities />} />
+                <Route path="/solutions/:id" element={<CommunityDetail />} />
+                <Route path="/solutions/:id/evenements/:eventId" element={<CommunityEventDetail />} />
+                <Route path="/solutions/:id/signaler" element={<ReportCommunity />} />
+                {/* Redirections anciennes URLs */}
+                <Route path="/communautes" element={<Navigate to="/solutions" replace />} />
+                <Route path="/communautes/:id" element={<LegacyCommunityRedirect />} />
+                <Route path="/communautes/:id/evenements/:eventId" element={<LegacyCommunityEventRedirect />} />
+                <Route path="/communautes/:id/signaler" element={<LegacyCommunityReportRedirect />} />
                 <Route path="/signaler" element={<ReportCommunity />} />
                 <Route path="/signaler/suivi" element={<ReportTrack />} />
                 <Route path="/contact" element={<Contact />} />

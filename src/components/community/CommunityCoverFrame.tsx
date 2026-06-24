@@ -7,7 +7,7 @@ interface CommunityCoverFrameProps {
   className?: string;
 }
 
-/** Visuel communauté entièrement visible (bannière, logo ou défaut TCH). */
+/** Visuel communauté entièrement visible (bannière, logo ou défaut Togosaas). */
 export default function CommunityCoverFrame({
   bannerUrl,
   logoUrl,

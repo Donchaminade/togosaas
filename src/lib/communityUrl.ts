@@ -7,7 +7,7 @@ export function slugifyCommunityName(name: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
-  return slug || 'communaute';
+  return slug || 'solution';
 }
 
 export interface CommunityLinkTarget {
@@ -16,10 +16,10 @@ export interface CommunityLinkTarget {
   name: string;
 }
 
-/** Chemin public d'une fiche communauté, ex. /communautes/designers-du-togo-ux-ui */
+/** Chemin public d'une fiche solution SaaS, ex. /solutions/mon-app-togo */
 export function communityPublicPath(community: CommunityLinkTarget): string {
   const slug = community.slug?.trim() || slugifyCommunityName(community.name);
-  return `/communautes/${slug}`;
+  return `/solutions/${slug}`;
 }
 
 export function communityEventPath(community: CommunityLinkTarget, eventId: number): string {

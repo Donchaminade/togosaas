@@ -4,7 +4,6 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   BadgeCheck,
-  Calendar,
   ExternalLink,
   Flag,
   Globe,
@@ -12,14 +11,16 @@ import {
   Linkedin,
   Mail,
   MapPin,
+  Play,
+  Rocket,
   Target,
   Users,
   Users2,
 } from 'lucide-react';
 import CommunityEngagementBar from '../components/community/CommunityEngagementBar';
 import CommunityShareSidebar from '../components/community/CommunityShareSidebar';
-import CommunityEventsExplorer from '../components/community/CommunityEventsExplorer';
 import ScrollReveal from '../components/motion/ScrollReveal';
+import PricingBadge from '../components/ui/PricingBadge';
 import { PageLoader } from '../components/ui/Spinner';
 import { api } from '../lib/api';
 import { getActiveSocialLinks } from '../lib/socialLinks';
@@ -27,14 +28,15 @@ import { externalUrl, websiteLabel } from '../lib/externalUrl';
 import { formatLocation } from '../lib/location';
 import { mediaUrl } from '../lib/media';
 import { communityPublicPath } from '../lib/communityUrl';
+import { solutionAccessUrl } from '../lib/pricing';
 import type { CoLead, Community } from '../types';
 
-type DetailTab = 'about' | 'events' | 'organizers';
+type DetailTab = 'about' | 'screenshots' | 'team';
 
 const TABS: { id: DetailTab; label: string; icon: typeof Info }[] = [
-  { id: 'about', label: 'À propos', icon: Info },
-  { id: 'events', label: 'Événements', icon: Calendar },
-  { id: 'organizers', label: 'Organisateurs', icon: Users },
+  { id: 'about', label: 'Description', icon: Info },
+  { id: 'screenshots', label: 'Captures', icon: Globe },
+  { id: 'team', label: 'Équipe', icon: Users },
 ];
 
 export default function CommunityDetail() {
@@ -48,15 +50,16 @@ export default function CommunityDetail() {
   useEffect(() => {
     if (!slugOrId) return;
     const tabParam = new URLSearchParams(window.location.search).get('tab');
-    if (tabParam === 'events' || tabParam === 'about' || tabParam === 'organizers') {
-      setTab(tabParam);
+    if (tabParam === 'screenshots' || tabParam === 'about' || tabParam === 'team' || tabParam === 'events' || tabParam === 'organizers') {
+      const mapped = tabParam === 'events' ? 'about' : tabParam === 'organizers' ? 'team' : tabParam;
+      setTab(mapped as DetailTab);
     }
     api
       .getCommunity(slugOrId)
       .then((res) => {
         const c = res.data.community;
         setCommunity(c);
-        const canonical = communityPublicPath(c).replace('/communautes/', '');
+        const canonical = communityPublicPath(c).replace('/solutions/', '');
         if (slugOrId !== canonical && /^\d+$/.test(slugOrId)) {
           navigate(communityPublicPath(c), { replace: true });
         }
@@ -66,15 +69,15 @@ export default function CommunityDetail() {
   }, [slugOrId, navigate]);
 
   if (loading) {
-    return <PageLoader label="Chargement de la communauté..." />;
+    return <PageLoader label="Chargement de la solution..." />;
   }
 
   if (error || !community) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
-        <p className="text-lg font-bold text-slate-700 dark:text-slate-200">Communauté introuvable</p>
-        <Link to="/communautes" className="mt-4 text-sm font-semibold text-togo-green hover:underline dark:text-togo-yellow">
-          ← Retour à l'annuaire
+        <p className="text-lg font-bold text-slate-700 dark:text-slate-200">Solution introuvable</p>
+        <Link to="/solutions" className="mt-4 text-sm font-semibold text-togo-green hover:underline dark:text-togo-yellow">
+          ← Retour au catalogue
         </Link>
       </div>
     );
@@ -82,9 +85,11 @@ export default function CommunityDetail() {
 
   const links = getActiveSocialLinks(community);
   const websiteHref = externalUrl(community.websiteUrl);
+  const appHref = externalUrl(community.appUrl);
+  const demoHref = externalUrl(community.demoUrl);
+  const accessHref = externalUrl(solutionAccessUrl(community));
   const coLeads = community.coLeads ?? [];
   const gallery = community.gallery ?? [];
-  const events = community.events ?? [];
 
   return (
     <>
@@ -99,7 +104,7 @@ export default function CommunityDetail() {
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
 
           <Link
-            to="/communautes"
+            to="/solutions"
             className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-black/30 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-black/50 sm:left-8"
           >
             <ArrowLeft className="h-4 w-4" /> Retour
@@ -119,9 +124,18 @@ export default function CommunityDetail() {
                 )}
               </div>
               <div className="min-w-0 flex-1 sm:pt-3">
-                <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">
-                  {community.name}
-                </h1>
+                <div className="flex flex-wrap items-center gap-3">
+                  <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+                    {community.name}
+                  </h1>
+                  <PricingBadge
+                    pricingType={community.pricingType}
+                    priceAmount={community.priceAmount}
+                    currency={community.currency}
+                    billingPeriod={community.billingPeriod}
+                    size="md"
+                  />
+                </div>
                 {community.shortDescription && (
                   <p className="mt-1 max-w-2xl text-sm text-slate-600 sm:text-base dark:text-slate-300">
                     {community.shortDescription}
@@ -133,10 +147,22 @@ export default function CommunityDetail() {
                   </span>
                   {community.memberCount != null && community.memberCount > 0 && (
                     <span className="flex items-center gap-1.5">
-                      <Users2 className="h-4 w-4 text-togo-green" /> {community.memberCount.toLocaleString('fr-FR')} membres
+                      <Users2 className="h-4 w-4 text-togo-green" /> {community.memberCount.toLocaleString('fr-FR')} utilisateurs
                     </span>
                   )}
                 </div>
+                {accessHref && (
+                  <a
+                    href={accessHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-4 inline-flex items-center gap-2 rounded-xl bg-togo-green px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-togo-green/25 transition-all hover:bg-togo-green-dark dark:bg-togo-yellow dark:text-slate-900 dark:shadow-togo-yellow/20 dark:hover:bg-togo-yellow/90"
+                  >
+                    <Rocket className="h-4 w-4" />
+                    Accéder à la solution
+                    <ExternalLink className="h-3.5 w-3.5 opacity-80" />
+                  </a>
+                )}
                 <div className="mt-4">
                   <CommunityEngagementBar community={community} />
                 </div>
@@ -149,10 +175,10 @@ export default function CommunityDetail() {
       {/* Onglets */}
       <section className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <nav className="-mb-px flex gap-1 overflow-x-auto" aria-label="Sections de la communauté">
+          <nav className="-mb-px flex gap-1 overflow-x-auto" aria-label="Sections de la solution">
             {TABS.map(({ id, label, icon: Icon }) => {
               const active = tab === id;
-              const eventsCount = id === 'events' ? events.length : 0;
+              const shotsCount = id === 'screenshots' ? gallery.length : 0;
               return (
                 <button
                   key={id}
@@ -166,9 +192,9 @@ export default function CommunityDetail() {
                 >
                   <Icon className="h-4 w-4" />
                   {label}
-                  {eventsCount > 0 && (
+                  {shotsCount > 0 && (
                     <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
-                      {eventsCount}
+                      {shotsCount}
                     </span>
                   )}
                 </button>
@@ -185,8 +211,8 @@ export default function CommunityDetail() {
               <div className="space-y-6 lg:col-span-2">
                 <PanelCard
                   icon={Globe}
-                  title={`À propos ${community.name}`}
-                  subtitle="Découvrez la mission et l'identité de cette communauté"
+                  title={`À propos de ${community.name}`}
+                  subtitle="Description complète et proposition de valeur"
                 >
                   <div className="space-y-5 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                     {community.description.split('\n').map((p, i) => (
@@ -198,7 +224,7 @@ export default function CommunityDetail() {
                     <div className="mt-8 border-t border-slate-100 pt-6 dark:border-slate-800">
                       <h3 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                         <Target className="h-4 w-4 text-togo-green dark:text-togo-yellow" />
-                        Notre mission
+                        Proposition de valeur
                       </h3>
                       <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                         {community.mission}
@@ -217,14 +243,23 @@ export default function CommunityDetail() {
 
                   {gallery.length > 0 && (
                     <div className="mt-8 border-t border-slate-100 pt-6 dark:border-slate-800">
-                      <h3 className="text-base font-bold text-slate-900 dark:text-white">Galerie</h3>
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">Aperçu visuel</h3>
                       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        {gallery.map((url, i) => (
+                        {gallery.slice(0, 4).map((url, i) => (
                           <div key={i} className="overflow-hidden rounded-xl ring-1 ring-slate-200 dark:ring-slate-700">
                             <img src={mediaUrl(url)} alt="" className="aspect-video w-full object-cover" loading="lazy" />
                           </div>
                         ))}
                       </div>
+                      {gallery.length > 4 && (
+                        <button
+                          type="button"
+                          onClick={() => setTab('screenshots')}
+                          className="mt-4 text-sm font-semibold text-togo-green hover:underline dark:text-togo-yellow"
+                        >
+                          Voir toutes les captures ({gallery.length})
+                        </button>
+                      )}
                     </div>
                   )}
                 </PanelCard>
@@ -233,10 +268,34 @@ export default function CommunityDetail() {
               <aside className="space-y-4">
                 {community.id != null && <CommunityShareSidebar community={{ ...community, id: community.id }} />}
 
-                {(links.length > 0 || community.publicEmail || websiteHref) && (
+                {(accessHref || demoHref || links.length > 0 || community.publicEmail || websiteHref) && (
                   <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">Rejoindre / suivre</h3>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">Accéder & contacter</h3>
                     <div className="mt-3 space-y-2">
+                      {appHref && (
+                        <a
+                          href={appHref}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-semibold text-emerald-800 transition-colors hover:bg-togo-green hover:text-white dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300"
+                        >
+                          <Rocket className="h-4 w-4 shrink-0" />
+                          <span className="min-w-0 truncate">Ouvrir l&apos;application</span>
+                          <ExternalLink className="ml-auto h-3.5 w-3.5 shrink-0 opacity-60" />
+                        </a>
+                      )}
+                      {demoHref && (
+                        <a
+                          href={demoHref}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-3 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2.5 text-sm font-semibold text-sky-800 transition-colors hover:bg-sky-600 hover:text-white dark:border-sky-900/50 dark:bg-sky-950/40 dark:text-sky-300"
+                        >
+                          <Play className="h-4 w-4 shrink-0" />
+                          <span className="min-w-0 truncate">Essayer la démo</span>
+                          <ExternalLink className="ml-auto h-3.5 w-3.5 shrink-0 opacity-60" />
+                        </a>
+                      )}
                       {websiteHref && (
                         <a
                           href={websiteHref}
@@ -285,39 +344,50 @@ export default function CommunityDetail() {
             </div>
           )}
 
-          {tab === 'events' && (
+          {tab === 'screenshots' && (
             <PanelCard
-              icon={Calendar}
-              title="Événements du Chapitre"
-              subtitle="Les rendez-vous et activités de l'année"
+              icon={Globe}
+              title="Captures d'écran"
+              subtitle="Découvrez l'interface et les fonctionnalités en images"
             >
-              {events.length > 0 ? (
-                <CommunityEventsExplorer community={community} events={events} />
+              {gallery.length > 0 ? (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {gallery.map((url, i) => (
+                    <div key={i} className="overflow-hidden rounded-2xl ring-1 ring-slate-200 dark:ring-slate-700">
+                      <img
+                        src={mediaUrl(url)}
+                        alt={`Capture ${i + 1} — ${community.name}`}
+                        className="aspect-video w-full object-cover transition-transform hover:scale-[1.02]"
+                        loading="lazy"
+                      />
+                    </div>
+                  ))}
+                </div>
               ) : (
                 <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-                  Aucun événement publié pour le moment.
+                  Aucune capture d&apos;écran publiée pour le moment.
                 </p>
               )}
             </PanelCard>
           )}
 
-          {tab === 'organizers' && (
+          {tab === 'team' && (
             <PanelCard
               icon={Users}
-              title={`Organisateurs de ${community.name}`}
-              subtitle="Rencontrez l'équipe derrière cette communauté"
+              title={`Équipe de ${community.name}`}
+              subtitle="Les fondateurs et l'équipe derrière la solution"
             >
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 <OrganizerCard
                   name={community.leaderName}
-                  role={community.leaderBio ? undefined : 'Responsable'}
+                  role={community.leaderBio ? undefined : 'Fondateur'}
                   photoUrl={community.leaderPhotoUrl}
                   bio={community.leaderBio}
-                  badge="Responsable"
+                  badge="Fondateur"
                   verified
                 />
                 {coLeads.map((c, i) => (
-                  <OrganizerCard key={i} {...c} badge="Co-lead" />
+                  <OrganizerCard key={i} {...c} badge={c.role ?? 'Co-fondateur'} />
                 ))}
               </div>
             </PanelCard>
@@ -422,10 +492,21 @@ function InfoCard({ community }: { community: Community }) {
         )}
         {community.foundedYear && (
           <div>
-            <dt className="text-slate-500 dark:text-slate-400">Fondée en</dt>
+            <dt className="text-slate-500 dark:text-slate-400">Lancée en</dt>
             <dd className="font-medium text-slate-800 dark:text-slate-100">{community.foundedYear}</dd>
           </div>
         )}
+        <div>
+          <dt className="text-slate-500 dark:text-slate-400">Tarif</dt>
+          <dd className="font-medium text-slate-800 dark:text-slate-100">
+            <PricingBadge
+              pricingType={community.pricingType}
+              priceAmount={community.priceAmount}
+              currency={community.currency}
+              billingPeriod={community.billingPeriod}
+            />
+          </dd>
+        </div>
       </dl>
     </div>
   );

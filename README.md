@@ -8,6 +8,25 @@ Annuaire public · Espace lead · Modération admin · Signalements anonymes
 
 *Idée et conception : Chaminade Dondah Adjolou*
 
+<br/>
+
+<!-- Open source -->
+[![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-brightgreen?style=for-the-badge)](#licence--contact)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](./LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blueviolet?style=for-the-badge)](#)
+
+<!-- Frontend -->
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=flat&logo=vite&logoColor=white)](https://vite.dev)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=flat&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![React Router](https://img.shields.io/badge/React_Router-7-CA4245?style=flat&logo=reactrouter&logoColor=white)](https://reactrouter.com)
+
+<!-- Backend -->
+[![PHP](https://img.shields.io/badge/PHP-8%2B-777BB4?style=flat&logo=php&logoColor=white)](https://www.php.net)
+[![MySQL](https://img.shields.io/badge/MySQL-5.7%2B-4479A1?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com)
+[![JWT](https://img.shields.io/badge/Auth-JWT-000000?style=flat&logo=jsonwebtokens&logoColor=white)](https://jwt.io)
+
 </div>
 
 ---
@@ -396,7 +415,11 @@ php database/migrate.php --fresh  # Reset complet (destructif)
 
 ## Licence & contact
 
-Projet porté par **Chaminade Dondah Adjolou**.
+Projet **open source** porté par **Chaminade Dondah Adjolou**.
+
+Distribué sous licence **MIT** — voir le fichier [`LICENSE`](./LICENSE). Vous êtes libre d'utiliser, modifier et redistribuer ce projet, y compris à des fins commerciales, en conservant l'avis de copyright.
+
+Les contributions sont les bienvenues : ouvrez une *issue* ou une *pull request*.
 
 Contact : `contact@tch.tg`
 

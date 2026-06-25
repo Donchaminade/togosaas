@@ -246,19 +246,19 @@ export default function CommunityDetail() {
                   {gallery.length > 0 && (
                     <div className="mt-8 border-t border-slate-100 pt-6 dark:border-slate-800">
                       <h3 className="text-base font-bold text-slate-900 dark:text-white">Aperçu visuel</h3>
-                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <div className="mt-4 flex flex-wrap gap-3">
                         {gallery.slice(0, 4).map((url, i) => (
                           <button
                             key={i}
                             type="button"
                             onClick={() => setLightboxUrl(mediaUrl(url))}
-                            className="group flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 transition hover:ring-2 hover:ring-togo-green dark:bg-slate-800 dark:ring-slate-700"
+                            className="group overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 transition hover:ring-2 hover:ring-togo-green dark:bg-slate-800 dark:ring-slate-700"
                             title="Cliquer pour agrandir"
                           >
                             <img
                               src={mediaUrl(url)}
                               alt={`Image ${i + 1}`}
-                              className="max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+                              className="h-64 w-auto max-w-full object-contain transition-transform duration-200 group-hover:scale-[1.02] sm:h-72"
                               loading="lazy"
                             />
                           </button>
@@ -364,19 +364,19 @@ export default function CommunityDetail() {
               subtitle="Découvrez l'interface et les fonctionnalités en images"
             >
               {gallery.length > 0 ? (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="flex flex-wrap gap-4">
                   {gallery.map((url, i) => (
                     <button
                       key={i}
                       type="button"
                       onClick={() => setLightboxUrl(mediaUrl(url))}
-                      className="group flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 transition hover:ring-2 hover:ring-togo-green dark:bg-slate-800 dark:ring-slate-700"
+                      className="group overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 transition hover:ring-2 hover:ring-togo-green dark:bg-slate-800 dark:ring-slate-700"
                       title="Cliquer pour agrandir"
                     >
                       <img
                         src={mediaUrl(url)}
                         alt={`Capture ${i + 1} — ${community.name}`}
-                        className="max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+                        className="h-72 w-auto max-w-full object-contain transition-transform duration-200 group-hover:scale-[1.02] sm:h-80"
                         loading="lazy"
                       />
                     </button>

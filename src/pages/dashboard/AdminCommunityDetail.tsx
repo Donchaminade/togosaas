@@ -225,19 +225,19 @@ export default function AdminCommunityDetail() {
           </Block>
           {gallery.length > 0 && (
             <Block icon={Sparkles} title="Galerie">
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-wrap gap-4">
                 {gallery.map((url, i) => (
                   <button
                     key={i}
                     type="button"
                     onClick={() => setLightboxUrl(mediaUrl(url))}
-                    className="group flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 transition hover:ring-2 hover:ring-togo-green dark:bg-slate-800 dark:ring-slate-700"
+                    className="group overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 transition hover:ring-2 hover:ring-togo-green dark:bg-slate-800 dark:ring-slate-700"
                     title="Cliquer pour agrandir"
                   >
                     <img
                       src={mediaUrl(url)}
                       alt={`Capture ${i + 1} — ${community.name}`}
-                      className="max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+                      className="h-72 w-auto max-w-full object-contain transition-transform duration-200 group-hover:scale-[1.02] sm:h-80"
                       loading="lazy"
                     />
                   </button>

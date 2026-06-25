@@ -37,6 +37,7 @@ import { useCountUp, useMounted } from '../../hooks/useCountUp';
 import { useAuth } from '../../context/AuthContext';
 import { api, ApiError } from '../../lib/api';
 import { formatLocation } from '../../lib/location';
+import { mediaUrl } from '../../lib/media';
 import { filterBySearch } from '../../lib/search';
 import type { AdminStats, Community, ContactMessage, LeadSummary } from '../../types';
 
@@ -311,7 +312,7 @@ export default function AdminDashboard() {
                 <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
                   {/* En-tête (desktop) */}
                   <div className="hidden grid-cols-12 gap-3 border-b border-slate-100 px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:border-slate-800 sm:grid">
-                    <span className="col-span-5">Communauté</span>
+                    <span className="col-span-5">Solution</span>
                     <span className="col-span-3">Responsable</span>
                     <span className="col-span-2">Statut</span>
                     <span className="col-span-2 text-right">Actions</span>
@@ -336,7 +337,7 @@ export default function AdminDashboard() {
                         >
                           <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-togo-green/10 to-togo-yellow/10 ring-1 ring-slate-200 dark:ring-slate-700">
                             {c.logoUrl ? (
-                              <img src={c.logoUrl} alt={c.name} className="h-full w-full object-cover" />
+                              <img src={mediaUrl(c.logoUrl)} alt={c.name} className="h-full w-full object-cover" />
                             ) : (
                               <span className="grid h-full w-full place-items-center text-sm font-black text-togo-green">{c.name.charAt(0)}</span>
                             )}
@@ -426,7 +427,7 @@ export default function AdminDashboard() {
                     <span className="col-span-3">Lead</span>
                     <span className="col-span-3">Email</span>
                     <span className="col-span-2">Téléphone</span>
-                    <span className="col-span-2">Communautés</span>
+                    <span className="col-span-2">Solutions</span>
                     <span className="col-span-2 text-right">Actions</span>
                   </div>
 

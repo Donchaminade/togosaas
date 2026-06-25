@@ -31,6 +31,7 @@ import { getActiveSocialLinks } from '../../lib/socialLinks';
 import { externalUrl, websiteLabel } from '../../lib/externalUrl';
 import { communityPublicPath } from '../../lib/communityUrl';
 import { formatLocation } from '../../lib/location';
+import { mediaUrl } from '../../lib/media';
 import type { CoLead, Community } from '../../types';
 import EventsCardGrid from '../../components/dashboard/EventsCardGrid';
 import CommunityEventsManager from '../../components/dashboard/CommunityEventsManager';
@@ -159,7 +160,7 @@ export default function AdminCommunityDetail() {
       <div className="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800">
         <div className="relative h-48 sm:h-56">
           {community.bannerUrl ? (
-            <img src={community.bannerUrl} alt="" className="h-full w-full object-cover" />
+            <img src={mediaUrl(community.bannerUrl)} alt="" className="h-full w-full object-cover" />
           ) : (
             <div className="h-full bg-gradient-to-br from-togo-green via-togo-green-dark to-slate-900" />
           )}
@@ -169,7 +170,7 @@ export default function AdminCommunityDetail() {
           <div className="-mt-14 flex flex-col gap-5 sm:-mt-16 sm:flex-row sm:items-end">
             <div className="h-28 w-28 shrink-0 overflow-hidden rounded-3xl ring-4 ring-white dark:ring-slate-900 sm:h-32 sm:w-32">
               {community.logoUrl ? (
-                <img src={community.logoUrl} alt={community.name} className="h-full w-full object-cover" />
+                <img src={mediaUrl(community.logoUrl)} alt={community.name} className="h-full w-full object-cover" />
               ) : (
                 <span className="grid h-full w-full place-items-center bg-gradient-to-br from-togo-green/15 to-togo-yellow/15 text-3xl font-black text-togo-green">
                   {community.name.charAt(0)}
@@ -378,7 +379,7 @@ function TeamCard({ name, role, photoUrl, bio, linkedinUrl, isLead }: CoLead & {
       <div className="flex items-center gap-4">
         <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl ring-2 ring-white dark:ring-slate-900">
           {photoUrl ? (
-            <img src={photoUrl} alt={name} className="h-full w-full object-cover" />
+            <img src={mediaUrl(photoUrl)} alt={name} className="h-full w-full object-cover" />
           ) : (
             <span className="grid h-full w-full place-items-center bg-gradient-to-br from-togo-green to-togo-green-dark text-2xl font-black text-white">
               {name.charAt(0)}

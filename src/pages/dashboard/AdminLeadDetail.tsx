@@ -21,6 +21,7 @@ import { useToast } from '../../components/ui/Toast';
 import { buildAdminNav } from '../../lib/adminNav';
 import { api, ApiError } from '../../lib/api';
 import { formatLocation } from '../../lib/location';
+import { mediaUrl } from '../../lib/media';
 import { filterBySearch } from '../../lib/search';
 import type { Community, LeadDetail, LeadSummary } from '../../types';
 
@@ -183,7 +184,7 @@ export default function AdminLeadDetail() {
                       <div className="col-span-9 flex min-w-0 items-center gap-3 sm:col-span-5">
                         <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-togo-green/10 to-togo-yellow/10 ring-1 ring-slate-200 dark:ring-slate-700">
                           {c.logoUrl ? (
-                            <img src={c.logoUrl} alt={c.name} className="h-full w-full object-cover" />
+                            <img src={mediaUrl(c.logoUrl)} alt={c.name} className="h-full w-full object-cover" />
                           ) : (
                             <span className="grid h-full w-full place-items-center text-sm font-black text-togo-green">{c.name.charAt(0)}</span>
                           )}

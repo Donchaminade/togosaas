@@ -18,6 +18,7 @@ import {
 import StatusBadge from './StatusBadge';
 import { getActiveSocialLinks } from '../../lib/socialLinks';
 import { formatLocation } from '../../lib/location';
+import { mediaUrl } from '../../lib/media';
 import type { Community } from '../../types';
 
 interface Props {
@@ -78,7 +79,7 @@ export default function CommunityAdminDrawer({ community, onClose, onEdit, onSta
           <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
             <div className="relative h-32">
               {community.bannerUrl ? (
-                <img src={community.bannerUrl} alt="" className="h-full w-full object-cover" />
+                <img src={mediaUrl(community.bannerUrl)} alt="" className="h-full w-full object-cover" />
               ) : (
                 <div className="h-full bg-gradient-to-br from-togo-green to-togo-green-dark" />
               )}
@@ -86,7 +87,7 @@ export default function CommunityAdminDrawer({ community, onClose, onEdit, onSta
             <div className="flex items-start gap-5 bg-slate-50 p-5 dark:bg-slate-900">
               <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl ring-2 ring-white dark:ring-slate-800">
                 {community.logoUrl ? (
-                  <img src={community.logoUrl} alt={community.name} className="h-full w-full object-cover" />
+                  <img src={mediaUrl(community.logoUrl)} alt={community.name} className="h-full w-full object-cover" />
                 ) : (
                   <span className="grid h-full w-full place-items-center bg-gradient-to-br from-togo-green/15 to-togo-yellow/15 text-2xl font-black text-togo-green">
                     {community.name.charAt(0)}

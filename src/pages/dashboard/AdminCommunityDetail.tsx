@@ -225,7 +225,7 @@ export default function AdminCommunityDetail() {
             <Block icon={Sparkles} title="Galerie">
               <div className="grid gap-4 sm:grid-cols-2">
                 {gallery.map((url, i) => (
-                  <img key={i} src={url} alt="" className="aspect-video w-full rounded-2xl object-cover ring-1 ring-slate-200 dark:ring-slate-800" />
+                  <img key={i} src={mediaUrl(url)} alt="" className="aspect-video w-full rounded-2xl object-cover ring-1 ring-slate-200 dark:ring-slate-800" />
                 ))}
               </div>
             </Block>

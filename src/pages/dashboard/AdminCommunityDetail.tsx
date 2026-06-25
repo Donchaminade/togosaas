@@ -18,6 +18,7 @@ import {
   User2,
   Users,
   Users2,
+  X,
   XCircle,
 } from 'lucide-react';
 import DashboardLayout from '../../components/dashboard/DashboardLayout';
@@ -45,6 +46,7 @@ export default function AdminCommunityDetail() {
   const [community, setCommunity] = useState<Community | null>(null);
   const [loading, setLoading] = useState(true);
   const [eventsManagerOpen, setEventsManagerOpen] = useState(false);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   const load = async () => {
     if (!id) return;
@@ -225,7 +227,20 @@ export default function AdminCommunityDetail() {
             <Block icon={Sparkles} title="Galerie">
               <div className="grid gap-4 sm:grid-cols-2">
                 {gallery.map((url, i) => (
-                  <img key={i} src={mediaUrl(url)} alt="" className="aspect-video w-full rounded-2xl object-cover ring-1 ring-slate-200 dark:ring-slate-800" />
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setLightboxUrl(mediaUrl(url))}
+                    className="group flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 transition hover:ring-2 hover:ring-togo-green dark:bg-slate-800 dark:ring-slate-700"
+                    title="Cliquer pour agrandir"
+                  >
+                    <img
+                      src={mediaUrl(url)}
+                      alt={`Capture ${i + 1} — ${community.name}`}
+                      className="max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+                      loading="lazy"
+                    />
+                  </button>
                 ))}
               </div>
             </Block>
@@ -348,6 +363,31 @@ export default function AdminCommunityDetail() {
           onClose={() => setEventsManagerOpen(false)}
           onEventsChange={load}
         />
+      )}
+
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          onClick={() => setLightboxUrl(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxUrl(null)}
+            className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+            title="Fermer"
+            aria-label="Fermer l'aperçu"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <img
+            src={lightboxUrl}
+            alt="Aperçu en grand"
+            className="max-h-[90vh] max-w-[92vw] rounded-xl object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
       )}
     </DashboardLayout>
   );

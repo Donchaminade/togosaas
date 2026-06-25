@@ -16,6 +16,7 @@ import {
   Target,
   Users,
   Users2,
+  X,
 } from 'lucide-react';
 import CommunityEngagementBar from '../components/community/CommunityEngagementBar';
 import CommunityShareSidebar from '../components/community/CommunityShareSidebar';
@@ -46,6 +47,7 @@ export default function CommunityDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [tab, setTab] = useState<DetailTab>('about');
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!slugOrId) return;
@@ -246,9 +248,20 @@ export default function CommunityDetail() {
                       <h3 className="text-base font-bold text-slate-900 dark:text-white">Aperçu visuel</h3>
                       <div className="mt-4 grid gap-3 sm:grid-cols-2">
                         {gallery.slice(0, 4).map((url, i) => (
-                          <div key={i} className="overflow-hidden rounded-xl ring-1 ring-slate-200 dark:ring-slate-700">
-                            <img src={mediaUrl(url)} alt="" className="aspect-video w-full object-cover" loading="lazy" />
-                          </div>
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => setLightboxUrl(mediaUrl(url))}
+                            className="group flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 transition hover:ring-2 hover:ring-togo-green dark:bg-slate-800 dark:ring-slate-700"
+                            title="Cliquer pour agrandir"
+                          >
+                            <img
+                              src={mediaUrl(url)}
+                              alt={`Image ${i + 1}`}
+                              className="max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-[1.02]"
+                              loading="lazy"
+                            />
+                          </button>
                         ))}
                       </div>
                       {gallery.length > 4 && (
@@ -353,14 +366,20 @@ export default function CommunityDetail() {
               {gallery.length > 0 ? (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {gallery.map((url, i) => (
-                    <div key={i} className="overflow-hidden rounded-2xl ring-1 ring-slate-200 dark:ring-slate-700">
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setLightboxUrl(mediaUrl(url))}
+                      className="group flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 transition hover:ring-2 hover:ring-togo-green dark:bg-slate-800 dark:ring-slate-700"
+                      title="Cliquer pour agrandir"
+                    >
                       <img
                         src={mediaUrl(url)}
                         alt={`Capture ${i + 1} — ${community.name}`}
-                        className="aspect-video w-full object-cover transition-transform hover:scale-[1.02]"
+                        className="max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-[1.02]"
                         loading="lazy"
                       />
-                    </div>
+                    </button>
                   ))}
                 </div>
               ) : (
@@ -394,6 +413,31 @@ export default function CommunityDetail() {
           )}
         </div>
       </section>
+
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          onClick={() => setLightboxUrl(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxUrl(null)}
+            className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+            title="Fermer"
+            aria-label="Fermer l'aperçu"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <img
+            src={lightboxUrl}
+            alt="Aperçu en grand"
+            className="max-h-[90vh] max-w-[92vw] rounded-xl object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </>
   );
 }

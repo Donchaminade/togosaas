@@ -12,6 +12,14 @@ export interface User {
   phone?: string | null;
   avatarUrl?: string | null;
   createdAt?: string | null;
+  /** Vrai si le compte a été créé par l'admin sans email réel (adresse sentinelle). */
+  profileIncomplete?: boolean;
+}
+
+/** Identifiants temporaires renvoyés à l'admin lors de la création d'un compte lead sentinelle. */
+export interface TempLeadCredentials {
+  email: string;
+  password: string;
 }
 
 export interface CoLead {

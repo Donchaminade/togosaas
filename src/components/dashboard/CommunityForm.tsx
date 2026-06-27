@@ -11,6 +11,8 @@ interface CommunityFormProps {
   initial?: Partial<Community> | null;
   membershipRole?: MembershipRole;
   onSubmit: (data: Partial<Community>) => Promise<void>;
+  /** Rend l'email du fondateur facultatif (mode admin « lead inconnu »). */
+  leaderEmailOptional?: boolean;
 }
 
 const EMPTY: Partial<Community> = {
@@ -47,7 +49,7 @@ const EMPTY: Partial<Community> = {
   demoUrl: '',
 };
 
-export default function CommunityForm({ initial, membershipRole = 'owner', onSubmit }: CommunityFormProps) {
+export default function CommunityForm({ initial, membershipRole = 'owner', onSubmit, leaderEmailOptional = false }: CommunityFormProps) {
   const isCoLead = membershipRole === 'co_lead';
   const isNew = !initial?.id;
 
@@ -345,7 +347,14 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
         <Section title="Fondateur / éditeur">
           <div className="grid gap-4 sm:grid-cols-2">
             <Input label="Nom" value={form.leaderName ?? ''} onChange={set('leaderName')} error={errors.leaderName?.[0]} required />
-            <Input label="Email (privé, admin)" type="email" value={form.leaderEmail ?? ''} onChange={set('leaderEmail')} error={errors.leaderEmail?.[0]} required />
+            <Input
+              label={leaderEmailOptional ? 'Email (privé, facultatif)' : 'Email (privé, admin)'}
+              type="email"
+              value={form.leaderEmail ?? ''}
+              onChange={set('leaderEmail')}
+              error={errors.leaderEmail?.[0]}
+              required={!leaderEmailOptional}
+            />
             <Input label="Téléphone (privé)" value={form.leaderPhone ?? ''} onChange={set('leaderPhone')} placeholder="+228 ..." />
           </div>
           <ImageUpload

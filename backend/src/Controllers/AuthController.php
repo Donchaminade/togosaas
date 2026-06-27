@@ -95,13 +95,36 @@ final class AuthController
     public function updateProfile(Request $request): void
     {
         $user = Auth::requireUser();
-        Validator::make($request->all())->validate([
+
+        $all = $request->all();
+        // L'email n'est mis a jour que s'il est explicitement fourni (ex. completion de profil
+        // d'un compte sentinelle). L'edition de profil classique n'envoie pas ce champ.
+        $emailProvided = array_key_exists('email', $all)
+            && trim((string) ($all['email'] ?? '')) !== '';
+
+        $rules = [
             'name' => 'required|min:2|max:120',
             'phone' => 'max:40',
             'avatarUrl' => 'max:500',
-        ])->abortIfFails();
+        ];
+        if ($emailProvided) {
+            $rules['email'] = 'required|email|max:160';
+        }
+        Validator::make($all)->validate($rules)->abortIfFails();
 
         $db = Database::connection();
+
+        $newEmail = null;
+        if ($emailProvided) {
+            $newEmail = strtolower(trim((string) $request->input('email')));
+            if ($newEmail !== (string) ($user['email'] ?? '')) {
+                $check = $db->prepare('SELECT id FROM users WHERE email = :email AND id != :id LIMIT 1');
+                $check->execute(['email' => $newEmail, 'id' => (int) $user['id']]);
+                if ($check->fetch()) {
+                    Response::error('Cet email est deja utilise.', 422);
+                }
+            }
+        }
 
         $avatarUrl = array_key_exists('avatarUrl', $request->all())
             ? self::normalizeAvatarUrl($request->input('avatarUrl'))
@@ -130,14 +153,21 @@ final class AuthController
                 ]);
         }
 
-        $db->prepare(
-            'UPDATE users SET name = :name, phone = :phone, avatar_url = :avatar_url, updated_at = NOW() WHERE id = :id'
-        )->execute([
+        $params = [
             'name' => trim((string) $request->input('name')),
             'phone' => $request->input('phone') ? trim((string) $request->input('phone')) : null,
             'avatar_url' => $avatarUrl,
             'id' => (int) $user['id'],
-        ]);
+        ];
+        $emailSet = '';
+        if ($newEmail !== null) {
+            $emailSet = 'email = :email, ';
+            $params['email'] = $newEmail;
+        }
+
+        $db->prepare(
+            'UPDATE users SET ' . $emailSet . 'name = :name, phone = :phone, avatar_url = :avatar_url, updated_at = NOW() WHERE id = :id'
+        )->execute($params);
 
         $stmt = $db->prepare(
             'SELECT id, name, email, role, phone, avatar_url, created_at FROM users WHERE id = :id'
@@ -183,14 +213,32 @@ final class AuthController
 
     private function publicUser(array $user): array
     {
+        $email = (string) ($user['email'] ?? '');
+
         return [
             'id' => (int) $user['id'],
             'name' => $user['name'],
-            'email' => $user['email'],
+            'email' => $email,
             'role' => $user['role'],
             'phone' => $user['phone'] ?? null,
             'avatarUrl' => $user['avatar_url'] ?? null,
             'createdAt' => $user['created_at'] ?? null,
+            // Profil incomplet tant que l'email est une adresse sentinelle (compte cree par l'admin
+            // sans email reel). Aucune colonne dediee : calcul purement applicatif.
+            'profileIncomplete' => self::isSentinelEmail($email),
         ];
+    }
+
+    /**
+     * Determine si un email correspond au motif sentinelle utilise lorsqu'un compte lead est
+     * cree par l'admin sans email reel (incomplet.<token>@togosaas.invalid).
+     */
+    public static function isSentinelEmail(string $email): bool
+    {
+        $email = strtolower(trim($email));
+        if ($email === '') {
+            return false;
+        }
+        return str_ends_with($email, '@togosaas.invalid') || str_starts_with($email, 'incomplet.');
     }
 }

@@ -31,6 +31,10 @@ final class AutomationEngine
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 return;
             }
+            // Ne jamais envoyer vers une adresse sentinelle (compte cree sans email reel) : evite les bounces.
+            if (str_ends_with($email, '@togosaas.invalid')) {
+                return;
+            }
 
             $db = Database::connection();
             $stmt = $db->prepare(
@@ -330,7 +334,7 @@ final class AutomationEngine
 
         if ($audience === 'all_leads') {
             $rows = $db->query(
-                "SELECT id, name, email FROM users WHERE role = 'lead' AND email IS NOT NULL AND email <> '' ORDER BY name ASC"
+                "SELECT id, name, email FROM users WHERE role = 'lead' AND email IS NOT NULL AND email <> '' AND email NOT LIKE '%@togosaas.invalid' ORDER BY name ASC"
             )->fetchAll();
         } elseif ($audience === 'selection') {
             $ids = json_decode((string) ($automation['audience_user_ids'] ?? '[]'), true);
@@ -340,7 +344,7 @@ final class AutomationEngine
             }
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
             $stmt = $db->prepare(
-                "SELECT id, name, email FROM users WHERE role = 'lead' AND email IS NOT NULL AND email <> '' AND id IN ($placeholders)"
+                "SELECT id, name, email FROM users WHERE role = 'lead' AND email IS NOT NULL AND email <> '' AND email NOT LIKE '%@togosaas.invalid' AND id IN ($placeholders)"
             );
             $stmt->execute($ids);
             $rows = $stmt->fetchAll();

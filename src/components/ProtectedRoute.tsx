@@ -2,6 +2,7 @@ import type * as React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { PageLoader } from './ui/Spinner';
+import CompleteProfileGuard from './dashboard/CompleteProfileGuard';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -28,6 +29,11 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
   // Empeche un admin d'utiliser l'espace lead (et inversement).
   if (!requireAdmin && isAdmin && location.pathname.startsWith('/espace-lead')) {
     return <Navigate to="/admin" replace />;
+  }
+
+  // Zone lead : impose la complétion du profil (compte sentinelle) via une modale bloquante.
+  if (!requireAdmin) {
+    return <CompleteProfileGuard>{children}</CompleteProfileGuard>;
   }
 
   return <>{children}</>;

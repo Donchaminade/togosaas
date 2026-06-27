@@ -52,29 +52,70 @@ final class AdminController
     {
         Auth::requireAdmin();
 
-        Validator::make($request->all())->validate([
-            'userId' => 'required|integer',
+        $rawUserId = $request->input('userId');
+        // Mode "lead connu" si un userId exploitable est fourni, sinon mode "lead inconnu".
+        $hasUserId = $rawUserId !== null && $rawUserId !== '' && (int) $rawUserId > 0;
+
+        $rules = [
             'name' => 'required|min:2|max:160',
             'description' => 'required|min:20|max:2000',
             'country' => 'required|max:120',
             'city' => 'max:120',
             'tags' => 'array',
             'leaderName' => 'required|max:160',
-            'leaderEmail' => 'required|email|max:160',
             'leaderPhone' => 'max:40',
             'shortDescription' => 'max:300',
             'publicEmail' => 'email|max:160',
             'status' => 'in:pending,approved,rejected',
-        ])->abortIfFails();
+        ];
+        if ($hasUserId) {
+            // Lead existant : comportement historique inchange.
+            $rules['userId'] = 'required|integer';
+            $rules['leaderEmail'] = 'required|email|max:160';
+        } else {
+            // Lead inconnu : leaderEmail facultatif (un email sentinelle sera genere).
+            $rules['leaderEmail'] = 'email|max:160';
+        }
 
-        $userId = (int) $request->input('userId');
+        Validator::make($request->all())->validate($rules)->abortIfFails();
+
         $db = Database::connection();
 
-        $stmt = $db->prepare("SELECT id, name, email, phone FROM users WHERE id = :id AND role = 'lead'");
-        $stmt->execute(['id' => $userId]);
-        $owner = $stmt->fetch();
-        if (!$owner) {
-            Response::error('Lead introuvable.', 404);
+        // Identifiants temporaires renvoyes a l'admin si un compte sentinelle est cree.
+        $tempCredentials = null;
+        $sentinelEmail = null;
+
+        if ($hasUserId) {
+            $userId = (int) $rawUserId;
+            $stmt = $db->prepare("SELECT id, name, email, phone FROM users WHERE id = :id AND role = 'lead'");
+            $stmt->execute(['id' => $userId]);
+            $owner = $stmt->fetch();
+            if (!$owner) {
+                Response::error('Lead introuvable.', 404);
+            }
+        } else {
+            // Cree un compte lead "sentinelle" : email unique @togosaas.invalid + mot de passe temporaire.
+            $leaderName = trim((string) $request->input('leaderName'));
+            $leaderPhone = $this->nullable($request->input('leaderPhone'));
+
+            $sentinelEmail = $this->generateSentinelEmail($db);
+            $tempPassword = $this->generateTempPassword();
+
+            $db->prepare(
+                'INSERT INTO users (name, email, password_hash, phone, role, created_at)
+                 VALUES (:name, :email, :hash, :phone, :role, NOW())'
+            )->execute([
+                'name' => $leaderName,
+                'email' => $sentinelEmail,
+                'hash' => password_hash($tempPassword, PASSWORD_BCRYPT),
+                'phone' => $leaderPhone,
+                'role' => 'lead',
+            ]);
+
+            $userId = (int) $db->lastInsertId();
+            $owner = ['name' => $leaderName];
+            // Le mot de passe en clair n'est renvoye qu'ici, une seule fois.
+            $tempCredentials = ['email' => $sentinelEmail, 'password' => $tempPassword];
         }
 
         $status = (string) $request->input('status', 'approved');
@@ -85,6 +126,12 @@ final class AdminController
         $cols = CommunityHelper::withSlug(CommunityHelper::columnsFromRequest($request), $db);
         $cols['user_id'] = $userId;
         $cols['status'] = $status;
+
+        // leader_email est NOT NULL : si l'admin n'a pas fourni d'email reel, on retombe
+        // sur l'email sentinelle pour ne pas casser la contrainte.
+        if (($cols['leader_email'] ?? '') === '' && $sentinelEmail !== null) {
+            $cols['leader_email'] = $sentinelEmail;
+        }
 
         $fields = array_keys($cols);
         $placeholders = array_map(static fn($f) => ':' . $f, $fields);
@@ -103,11 +150,42 @@ final class AdminController
         $stmt->execute(['id' => $newId]);
         $row = $stmt->fetch();
 
-        Response::success(
-            ['community' => $this->serializeForAdmin($row)],
-            'Communaute creee pour ' . $owner['name'] . '.',
-            201
-        );
+        $payload = ['community' => $this->serializeForAdmin($row)];
+        $message = 'Communaute creee pour ' . $owner['name'] . '.';
+        if ($tempCredentials !== null) {
+            $payload['tempCredentials'] = $tempCredentials;
+            $message = 'Solution creee. Transmettez les identifiants temporaires au lead.';
+        }
+
+        Response::success($payload, $message, 201);
+    }
+
+    /**
+     * Genere un email sentinelle unique au format incomplet.<token>@togosaas.invalid.
+     * Garantit l'unicite vis-a-vis de la colonne users.email (UNIQUE).
+     */
+    private function generateSentinelEmail(\PDO $db): string
+    {
+        $check = $db->prepare('SELECT id FROM users WHERE email = :email LIMIT 1');
+        do {
+            $email = 'incomplet.' . bin2hex(random_bytes(6)) . '@togosaas.invalid';
+            $check->execute(['email' => $email]);
+        } while ($check->fetch());
+
+        return $email;
+    }
+
+    /** Genere un mot de passe temporaire lisible (12 caracteres, sans caracteres ambigus). */
+    private function generateTempPassword(): string
+    {
+        $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+        $max = strlen($alphabet) - 1;
+        $password = '';
+        for ($i = 0; $i < 12; $i++) {
+            $password .= $alphabet[random_int(0, $max)];
+        }
+
+        return $password;
     }
 
     /** Liste de toutes les communautes (filtrable par statut). */

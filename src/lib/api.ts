@@ -10,6 +10,7 @@ import type {
   LeadSummary,
   LeadDetail,
   CountryData,
+  TempLeadCredentials,
   User,
   UserRole,
   SupportMessage,
@@ -175,6 +176,7 @@ export const api = {
 
   updateProfile: (data: {
     name: string;
+    email?: string;
     phone?: string | null;
     avatarUrl?: string | null;
     currentPassword?: string;
@@ -340,6 +342,20 @@ export const api = {
     request<{ community: Community }>('/admin/communities', {
       method: 'POST',
       body: data,
+      auth: true,
+    }),
+
+  /**
+   * Crée une solution pour un lead dont l'admin ne connaît pas l'email.
+   * Le backend crée un compte « sentinelle » et renvoie les identifiants temporaires
+   * (email sentinelle + mot de passe en clair) à transmettre au lead, une seule fois.
+   */
+  adminCreateCommunityForUnknownLead: (
+    data: Partial<Community> & { status?: string },
+  ) =>
+    request<{ community: Community; tempCredentials?: TempLeadCredentials }>('/admin/communities', {
+      method: 'POST',
+      body: { ...data, userId: undefined },
       auth: true,
     }),
 

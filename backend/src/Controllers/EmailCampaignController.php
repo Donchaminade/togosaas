@@ -45,7 +45,7 @@ final class EmailCampaignController
         Auth::requireAdmin();
 
         $rows = Database::connection()->query(
-            "SELECT id, name, email FROM users WHERE role = 'lead' AND email IS NOT NULL AND email <> '' ORDER BY name ASC"
+            "SELECT id, name, email FROM users WHERE role = 'lead' AND email IS NOT NULL AND email <> '' AND email NOT LIKE '%@togosaas.invalid' ORDER BY name ASC"
         )->fetchAll();
 
         $recipients = array_map(static fn($r) => [
@@ -323,7 +323,7 @@ final class EmailCampaignController
 
         if ($all) {
             $rows = $db->query(
-                "SELECT id, name, email FROM users WHERE role = 'lead' AND email IS NOT NULL AND email <> '' ORDER BY name ASC"
+                "SELECT id, name, email FROM users WHERE role = 'lead' AND email IS NOT NULL AND email <> '' AND email NOT LIKE '%@togosaas.invalid' ORDER BY name ASC"
             )->fetchAll();
         } else {
             if (!is_array($userIds) || $userIds === []) {
@@ -337,7 +337,7 @@ final class EmailCampaignController
 
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
             $stmt = $db->prepare(
-                "SELECT id, name, email FROM users WHERE role = 'lead' AND email IS NOT NULL AND email <> '' AND id IN ($placeholders)"
+                "SELECT id, name, email FROM users WHERE role = 'lead' AND email IS NOT NULL AND email <> '' AND email NOT LIKE '%@togosaas.invalid' AND id IN ($placeholders)"
             );
             $stmt->execute($ids);
             $rows = $stmt->fetchAll();

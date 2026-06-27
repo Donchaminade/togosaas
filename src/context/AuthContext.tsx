@@ -18,6 +18,8 @@ interface AuthContextValue {
   isAdmin: boolean;
   /** Super-administrateur : actions sensibles (gestion du staff, page À propos…). */
   isSuperAdmin: boolean;
+  /** Profil incomplet : compte lead créé par l'admin sans email réel (adresse sentinelle). */
+  profileIncomplete: boolean;
   login: (email: string, password: string) => Promise<User>;
   register: (data: {
     name: string;
@@ -93,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         isAdmin: isStaffRole(user?.role),
         isSuperAdmin: isSuperAdminRole(user?.role),
+        profileIncomplete: !!user?.profileIncomplete,
         login,
         register,
         logout,

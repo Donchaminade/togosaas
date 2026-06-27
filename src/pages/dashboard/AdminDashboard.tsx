@@ -11,6 +11,7 @@ import {
   MapPin,
   Pencil,
   Plus,
+  Trash2,
   Users,
   Users2,
   XCircle,
@@ -31,6 +32,7 @@ import { PageLoader } from '../../components/ui/Spinner';
 import SearchBar from '../../components/ui/SearchBar';
 import SearchEmptyState from '../../components/ui/SearchEmptyState';
 import { useToast } from '../../components/ui/Toast';
+import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { buildAdminNav, adminTabFromSearch, ADMIN_TAB_TITLES } from '../../lib/adminNav';
 import { StaggerReveal } from '../../components/motion/ScrollReveal';
 import { useCountUp, useMounted } from '../../hooks/useCountUp';
@@ -41,10 +43,14 @@ import { mediaUrl } from '../../lib/media';
 import { filterBySearch } from '../../lib/search';
 import type { AdminStats, Community, ContactMessage, LeadSummary } from '../../types';
 
+const LEAD_DELETE_BLOCKED =
+  'Ce lead est responsable d\'au moins une solution SaaS. Supprimez ces solutions SaaS ou réassignez le rôle de responsable à un co-lead avant de supprimer le compte.';
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { notify } = useToast();
+  const { confirmDelete } = useConfirm();
   const { isSuperAdmin } = useAuth();
   const active = adminTabFromSearch(location.search, isSuperAdmin);
   const [loading, setLoading] = useState(true);
@@ -59,6 +65,7 @@ export default function AdminDashboard() {
   const [messageSearch, setMessageSearch] = useState('');
   const [editingLead, setEditingLead] = useState<LeadSummary | null>(null);
   const [creatingLead, setCreatingLead] = useState(false);
+  const [deletingLeadId, setDeletingLeadId] = useState<number | null>(null);
 
   const openCommunity = (c: Community) => {
     if (c.id) navigate(`/admin/communautes/${c.id}`);
@@ -134,6 +141,29 @@ export default function AdminDashboard() {
     } catch (err) {
       if (err instanceof ApiError) notify(err.message, 'error');
       throw err;
+    }
+  };
+
+  const handleLeadDelete = async (lead: LeadSummary) => {
+    if (lead.communitiesCount > 0) {
+      notify(LEAD_DELETE_BLOCKED, 'error');
+      return;
+    }
+
+    const ok = await confirmDelete(
+      `Supprimer définitivement le lead « ${lead.name} » ?\n\nCette action est irréversible.`,
+    );
+    if (!ok) return;
+
+    setDeletingLeadId(lead.id);
+    try {
+      await api.adminDeleteUser(lead.id);
+      notify('Lead supprimé définitivement.', 'success');
+      await refreshAll();
+    } catch (err) {
+      notify(err instanceof ApiError ? err.message : 'Suppression impossible.', 'error');
+    } finally {
+      setDeletingLeadId(null);
     }
   };
 
@@ -488,6 +518,16 @@ export default function AdminDashboard() {
                           >
                             <Eye className="h-4 w-4" />
                           </button>
+                          {isSuperAdmin && (
+                            <button
+                              onClick={() => handleLeadDelete(l)}
+                              disabled={deletingLeadId === l.id || l.communitiesCount > 0}
+                              title={l.communitiesCount > 0 ? LEAD_DELETE_BLOCKED : 'Supprimer définitivement'}
+                              className="grid h-8 w-8 place-items-center rounded-lg bg-rose-100 text-rose-700 transition-colors hover:bg-rose-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40 dark:bg-rose-500/15 dark:text-rose-400"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
                         </div>
                       </StaggerReveal>
                     ))}

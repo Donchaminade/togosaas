@@ -13,6 +13,7 @@ use TCH\Controllers\EngagementController;
 use TCH\Controllers\ContactController;
 use TCH\Controllers\EmailCampaignController;
 use TCH\Controllers\MetaController;
+use TCH\Controllers\PushController;
 use TCH\Controllers\ReportController;
 use TCH\Controllers\ReviewController;
 use TCH\Controllers\SupportController;
@@ -128,6 +129,12 @@ $router->get('/lead/support/unread', [$support, 'leadUnread']);
 // Contact
 $contact = new ContactController();
 $router->post('/contact', [$contact, 'store']);
+
+// Notifications Web Push (abonnement possible meme sans compte)
+$push = new PushController();
+$router->get('/push/config', [$push, 'config']);
+$router->post('/push/subscribe', [$push, 'subscribe']);
+$router->post('/push/unsubscribe', [$push, 'unsubscribe']);
 
 // Signalements anonymes
 $reports = new ReportController();

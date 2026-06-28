@@ -62,6 +62,17 @@ final class AutomationEngine
             }
 
             self::scheduleBackgroundProcessing();
+
+            // Notification push non bloquante au destinataire (si abonne et connu).
+            $targetUserId = isset($context['user_id']) ? (int) $context['user_id'] : 0;
+            if ($targetUserId > 0) {
+                Notifier::push(
+                    $targetUserId,
+                    'TogoSaaS',
+                    'Une nouvelle activite concerne votre compte.',
+                    '/espace-lead'
+                );
+            }
         } catch (\Throwable $e) {
             // Ne jamais propager : l'automatisation est best-effort.
             self::logError('fire', $e);

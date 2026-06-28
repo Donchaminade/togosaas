@@ -8,6 +8,7 @@ use TCH\Auth;
 use TCH\Database;
 use TCH\EmailAttachmentHelper;
 use TCH\Mailer;
+use TCH\Notifier;
 use TCH\RateLimiter;
 use TCH\Request;
 use TCH\Response;
@@ -135,6 +136,20 @@ final class EmailCampaignController
         }
 
         $stats = self::dispatch($campaignId, $recipients, $subject, $bodyHtml, $attachments);
+
+        // Notification push non bloquante aux leads destinataires (diffusion admin).
+        $recipientIds = array_values(array_filter(array_map(
+            static fn($r) => isset($r['id']) ? (int) $r['id'] : 0,
+            $recipients
+        )));
+        if ($recipientIds !== []) {
+            Notifier::push(
+                $recipientIds,
+                $subject !== '' ? $subject : 'Nouveau message de TogoSaaS',
+                'Vous avez recu un nouveau message de TogoSaaS.',
+                '/espace-lead'
+            );
+        }
 
         Response::success(
             ['campaign' => self::serializeCampaign(self::findCampaign($campaignId))],

@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './components/ui/Toast';
 import { ConfirmProvider } from './components/ui/ConfirmDialog';
 import SplashScreen, { shouldShowSplash } from './components/ui/SplashScreen';
+import InstallPrompt from './components/pwa/InstallPrompt';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicLayout from './components/layout/PublicLayout';
 import Home from './pages/Home';
@@ -38,6 +39,7 @@ export default function App() {
         <ToastProvider>
           <ConfirmProvider>
           {!splashDone && <SplashScreen onComplete={() => setSplashDone(true)} />}
+          <InstallPrompt />
           <BrowserRouter>
             <Routes>
               {/* Site vitrine */}

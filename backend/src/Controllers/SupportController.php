@@ -6,6 +6,7 @@ namespace TCH\Controllers;
 
 use TCH\Auth;
 use TCH\Database;
+use TCH\Notifier;
 use TCH\Request;
 use TCH\Response;
 use TCH\Security;
@@ -204,6 +205,15 @@ final class SupportController
         }
 
         $row = self::insertMessage($userId, 'admin', $body, $attachments);
+
+        // Notification push non bloquante au lead destinataire.
+        Notifier::push(
+            $userId,
+            'Nouveau message de TogoSaaS',
+            $body !== '' ? $body : 'Vous avez recu une piece jointe.',
+            '/espace-lead/messages'
+        );
+
         Response::success(['message' => self::serialize($row)], 'Reponse envoyee.', 201);
     }
 
@@ -299,6 +309,9 @@ final class SupportController
         foreach ($targetIds as $uid) {
             self::insertMessage($uid, 'admin', $body, []);
         }
+
+        // Diffusion push non bloquante a tous les leads cibles.
+        Notifier::push($targetIds, 'Message de TogoSaaS', $body, '/espace-lead/messages');
 
         Response::success([
             'sent' => count($targetIds),

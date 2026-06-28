@@ -28,12 +28,13 @@ import { useToast } from '../../components/ui/Toast';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { buildAdminNav } from '../../lib/adminNav';
 import { api } from '../../lib/api';
-import { getActiveSocialLinks } from '../../lib/socialLinks';
+import { getActiveSocialLinks, coLeadLinkSource, leaderLinkSource } from '../../lib/socialLinks';
 import { externalUrl, websiteLabel } from '../../lib/externalUrl';
 import { communityPublicPath } from '../../lib/communityUrl';
 import { formatLocation } from '../../lib/location';
 import { mediaUrl } from '../../lib/media';
-import type { CoLead, Community } from '../../types';
+import TeamMemberModal, { MemberLinkIcons, type TeamMemberView } from '../../components/community/TeamMemberModal';
+import type { Community } from '../../types';
 import EventsCardGrid from '../../components/dashboard/EventsCardGrid';
 import CommunityEventsManager from '../../components/dashboard/CommunityEventsManager';
 import { communityEventPath } from '../../lib/communityUrl';
@@ -47,6 +48,7 @@ export default function AdminCommunityDetail() {
   const [loading, setLoading] = useState(true);
   const [eventsManagerOpen, setEventsManagerOpen] = useState(false);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [memberModal, setMemberModal] = useState<TeamMemberView | null>(null);
 
   const load = async () => {
     if (!id) return;
@@ -110,6 +112,25 @@ export default function AdminCommunityDetail() {
   const coLeads = community.coLeads ?? [];
   const gallery = community.gallery ?? [];
   const events = community.events ?? [];
+  const teamMembers: TeamMemberView[] = [
+    {
+      name: community.leaderName,
+      role: 'Lead / Responsable',
+      badge: 'Lead / Responsable',
+      photoUrl: community.leaderPhotoUrl,
+      bio: community.leaderBio,
+      verified: true,
+      links: leaderLinkSource(community.leaderLinks, community.leaderEmail),
+    },
+    ...coLeads.map((c) => ({
+      name: c.name,
+      role: c.role ?? 'Co-fondateur',
+      badge: c.role ?? 'Co-fondateur',
+      photoUrl: c.photoUrl,
+      bio: c.bio,
+      links: coLeadLinkSource(c),
+    })),
+  ];
 
   return (
     <DashboardLayout
@@ -219,8 +240,9 @@ export default function AdminCommunityDetail() {
           )}
           <Block icon={Users} title="Équipe">
             <div className="grid gap-5 sm:grid-cols-2">
-              <TeamCard name={community.leaderName} role="Lead / Responsable" photoUrl={community.leaderPhotoUrl} bio={community.leaderBio} isLead />
-              {coLeads.map((c, i) => <TeamCard key={i} {...c} />)}
+              {teamMembers.map((m, i) => (
+                <TeamCard key={i} member={m} isLead={i === 0} onOpen={() => setMemberModal(m)} />
+              ))}
             </div>
           </Block>
           {gallery.length > 0 && (
@@ -389,6 +411,8 @@ export default function AdminCommunityDetail() {
           />
         </div>
       )}
+
+      {memberModal && <TeamMemberModal member={memberModal} onClose={() => setMemberModal(null)} />}
     </DashboardLayout>
   );
 }
@@ -407,13 +431,17 @@ function Block({ icon: Icon, title, children }: { icon: any; title: string; chil
   );
 }
 
-function TeamCard({ name, role, photoUrl, bio, linkedinUrl, isLead }: CoLead & { isLead?: boolean }) {
+function TeamCard({ member, isLead, onOpen }: { member: TeamMemberView; isLead?: boolean; onOpen: () => void }) {
+  const { name, role, photoUrl, bio, links } = member;
   return (
-    <div
-      className={`rounded-2xl border p-5 ${
+    <button
+      type="button"
+      onClick={onOpen}
+      title="Voir le profil complet"
+      className={`w-full rounded-2xl border p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-md ${
         isLead
-          ? 'border-togo-green/30 bg-togo-green/5 dark:border-togo-yellow/20 dark:bg-togo-yellow/5'
-          : 'border-slate-200 dark:border-slate-800'
+          ? 'border-togo-green/30 bg-togo-green/5 hover:border-togo-green/60 dark:border-togo-yellow/20 dark:bg-togo-yellow/5'
+          : 'border-slate-200 hover:border-togo-green/40 dark:border-slate-800 dark:hover:border-togo-yellow/30'
       }`}
     >
       <div className="flex items-center gap-4">
@@ -436,21 +464,12 @@ function TeamCard({ name, role, photoUrl, bio, linkedinUrl, isLead }: CoLead & {
         </div>
       </div>
       {bio && (
-        <p className="mt-4 border-t border-slate-100 pt-4 text-sm leading-relaxed text-slate-600 dark:border-slate-800 dark:text-slate-300">
+        <p className="mt-4 line-clamp-3 border-t border-slate-100 pt-4 text-sm leading-relaxed text-slate-600 dark:border-slate-800 dark:text-slate-300">
           {bio}
         </p>
       )}
-      {linkedinUrl && (
-        <a
-          href={linkedinUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-togo-green dark:hover:text-togo-yellow"
-        >
-          LinkedIn
-        </a>
-      )}
-    </div>
+      <MemberLinkIcons links={links} className="mt-4" />
+    </button>
   );
 }
 

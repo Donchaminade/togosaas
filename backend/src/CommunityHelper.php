@@ -47,7 +47,10 @@ final class CommunityHelper
                 'email' => self::nullableString($item['email'] ?? null),
                 'photoUrl' => self::nullableString($item['photoUrl'] ?? null),
                 'bio' => self::nullableString($item['bio'] ?? null),
-                'linkedinUrl' => self::nullableString($item['linkedinUrl'] ?? null),
+                'linkedinUrl' => self::normalizeUrl($item['linkedinUrl'] ?? null),
+                'facebook' => self::normalizeUrl($item['facebook'] ?? null),
+                'github' => self::normalizeUrl($item['github'] ?? null),
+                'portfolio' => self::normalizeUrl($item['portfolio'] ?? null),
             ];
         }, $coLeads), 0, 8));
         $coLeads = array_values(array_filter($coLeads));
@@ -112,7 +115,54 @@ final class CommunityHelper
         $cols['app_url'] = self::nullableString($request->input('appUrl'));
         $cols['demo_url'] = self::nullableString($request->input('demoUrl'));
 
+        // Liens du fondateur (colonne JSON additive `leader_links`).
+        // On n'inclut la colonne QUE si elle existe deja en base : ainsi
+        // l'API ne plante pas tant que la migration n'est pas importee.
+        if (self::communitiesHasColumn('leader_links')) {
+            $cols['leader_links'] = json_encode(
+                self::normalizeLeaderLinks($request->input('leaderLinks')),
+                JSON_UNESCAPED_UNICODE
+            );
+        }
+
         return $cols;
+    }
+
+    /** Normalise l'objet des liens du fondateur. Clés vides => null. */
+    private static function normalizeLeaderLinks($value): array
+    {
+        if (!is_array($value)) {
+            $value = [];
+        }
+        return [
+            'linkedin' => self::normalizeUrl($value['linkedin'] ?? null),
+            'facebook' => self::normalizeUrl($value['facebook'] ?? null),
+            'github' => self::normalizeUrl($value['github'] ?? null),
+            'portfolio' => self::normalizeUrl($value['portfolio'] ?? null),
+            'email' => self::nullableEmail($value['email'] ?? null),
+        ];
+    }
+
+    /** Vérifie (avec cache) si une colonne existe sur `communities`. */
+    private static function communitiesHasColumn(string $column): bool
+    {
+        static $cache = [];
+        if (array_key_exists($column, $cache)) {
+            return $cache[$column];
+        }
+        try {
+            $db = Database::connection();
+            $stmt = $db->prepare(
+                'SELECT 1 FROM information_schema.COLUMNS
+                 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = \'communities\' AND COLUMN_NAME = :col
+                 LIMIT 1'
+            );
+            $stmt->execute(['col' => $column]);
+            $cache[$column] = (bool) $stmt->fetchColumn();
+        } catch (\Throwable $e) {
+            $cache[$column] = false;
+        }
+        return $cache[$column];
     }
 
     /** Ajoute ou met à jour le slug à partir du nom. */
@@ -234,6 +284,11 @@ final class CommunityHelper
         $out['mission'] = $row['mission'] ?? null;
         $out['leaderPhotoUrl'] = $row['leader_photo_url'] ?? null;
         $out['leaderBio'] = $row['leader_bio'] ?? null;
+        // Colonne additive `leader_links` : absente tant que la migration n'est
+        // pas importee => on renvoie null sans planter.
+        $out['leaderLinks'] = (isset($row['leader_links']) && $row['leader_links'] !== '')
+            ? (json_decode($row['leader_links'], true) ?: null)
+            : null;
         $out['coLeads'] = json_decode($row['co_leads'] ?? '[]', true) ?: [];
         $out['gallery'] = json_decode($row['gallery'] ?? '[]', true) ?: [];
         $out['foundedYear'] = isset($row['founded_year']) ? (int) $row['founded_year'] : null;
@@ -267,5 +322,32 @@ final class CommunityHelper
             return null;
         }
         return trim((string) $value);
+    }
+
+    /**
+     * Normalise et valide une URL optionnelle.
+     * Ajoute https:// si le schéma manque ; renvoie null si invalide.
+     */
+    private static function normalizeUrl($value): ?string
+    {
+        $v = self::nullableString($value);
+        if ($v === null) {
+            return null;
+        }
+        if (!preg_match('#^https?://#i', $v)) {
+            $v = 'https://' . $v;
+        }
+        return filter_var($v, FILTER_VALIDATE_URL) ? $v : null;
+    }
+
+    /** Valide un email optionnel (minuscule) ; renvoie null si invalide. */
+    private static function nullableEmail($value): ?string
+    {
+        $v = self::nullableString($value);
+        if ($v === null) {
+            return null;
+        }
+        $v = strtolower($v);
+        return filter_var($v, FILTER_VALIDATE_EMAIL) ? $v : null;
     }
 }

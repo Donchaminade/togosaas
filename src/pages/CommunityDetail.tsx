@@ -8,7 +8,6 @@ import {
   Flag,
   Globe,
   Info,
-  Linkedin,
   Mail,
   MapPin,
   Play,
@@ -27,14 +26,15 @@ import PricingBadge from '../components/ui/PricingBadge';
 import { PageLoader } from '../components/ui/Spinner';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
-import { getActiveSocialLinks } from '../lib/socialLinks';
+import { getActiveSocialLinks, coLeadLinkSource, leaderLinkSource } from '../lib/socialLinks';
+import TeamMemberModal, { MemberLinkIcons, type TeamMemberView } from '../components/community/TeamMemberModal';
 import { externalUrl, websiteLabel } from '../lib/externalUrl';
 import { formatLocation } from '../lib/location';
 import { mediaUrl } from '../lib/media';
 import { communityPublicPath } from '../lib/communityUrl';
 import { solutionAccessUrl } from '../lib/pricing';
 import { SITE_URL, useSeo } from '../lib/seo';
-import type { CoLead, Community } from '../types';
+import type { Community } from '../types';
 
 type DetailTab = 'about' | 'screenshots' | 'team';
 
@@ -53,6 +53,7 @@ export default function CommunityDetail() {
   const [error, setError] = useState(false);
   const [tab, setTab] = useState<DetailTab>('about');
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [memberModal, setMemberModal] = useState<TeamMemberView | null>(null);
 
   useEffect(() => {
     if (!slugOrId) return;
@@ -138,6 +139,25 @@ export default function CommunityDetail() {
   const accessHref = externalUrl(solutionAccessUrl(community));
   const coLeads = community.coLeads ?? [];
   const gallery = community.gallery ?? [];
+  const teamMembers: TeamMemberView[] = [
+    {
+      name: community.leaderName,
+      role: 'Fondateur',
+      badge: 'Fondateur',
+      photoUrl: community.leaderPhotoUrl,
+      bio: community.leaderBio,
+      verified: true,
+      links: leaderLinkSource(community.leaderLinks),
+    },
+    ...coLeads.map((c) => ({
+      name: c.name,
+      role: c.role ?? 'Co-fondateur',
+      badge: c.role ?? 'Co-fondateur',
+      photoUrl: c.photoUrl,
+      bio: c.bio,
+      links: coLeadLinkSource(c),
+    })),
+  ];
 
   return (
     <>
@@ -449,16 +469,8 @@ export default function CommunityDetail() {
               subtitle="Les fondateurs et l'équipe derrière la solution"
             >
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                <OrganizerCard
-                  name={community.leaderName}
-                  role={community.leaderBio ? undefined : 'Fondateur'}
-                  photoUrl={community.leaderPhotoUrl}
-                  bio={community.leaderBio}
-                  badge="Fondateur"
-                  verified
-                />
-                {coLeads.map((c, i) => (
-                  <OrganizerCard key={i} {...c} badge={c.role ?? 'Co-fondateur'} />
+                {teamMembers.map((m, i) => (
+                  <OrganizerCard key={i} member={m} onOpen={() => setMemberModal(m)} />
                 ))}
               </div>
             </PanelCard>
@@ -490,6 +502,8 @@ export default function CommunityDetail() {
           />
         </div>
       )}
+
+      {memberModal && <TeamMemberModal member={memberModal} onClose={() => setMemberModal(null)} />}
     </>
   );
 }
@@ -523,17 +537,15 @@ function PanelCard({
   );
 }
 
-function OrganizerCard({
-  name,
-  role,
-  photoUrl,
-  bio,
-  linkedinUrl,
-  badge,
-  verified,
-}: CoLead & { badge: string; verified?: boolean }) {
+function OrganizerCard({ member, onOpen }: { member: TeamMemberView; onOpen: () => void }) {
+  const { name, role, bio, badge, verified, photoUrl, links } = member;
   return (
-    <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-slate-50/80 p-6 text-center dark:border-slate-700 dark:bg-slate-800/50">
+    <button
+      type="button"
+      onClick={onOpen}
+      title="Voir le profil complet"
+      className="flex flex-col items-center rounded-2xl border border-slate-200 bg-slate-50/80 p-6 text-center transition-all hover:-translate-y-0.5 hover:border-togo-green/40 hover:shadow-md dark:border-slate-700 dark:bg-slate-800/50 dark:hover:border-togo-yellow/30"
+    >
       <div className="h-24 w-24 overflow-hidden rounded-full ring-4 ring-white shadow-md dark:ring-slate-700">
         {photoUrl ? (
           <img src={mediaUrl(photoUrl)} alt={name} className="h-full w-full object-cover" />
@@ -549,25 +561,16 @@ function OrganizerCard({
         {verified && <BadgeCheck className="h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400" />}
       </div>
 
-      {(role || bio) && (
-        <p className="mt-2 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">{bio || role}</p>
+      {bio && <p className="mt-2 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">{bio}</p>}
+
+      {(badge || role) && (
+        <span className="mt-4 rounded-full bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-600 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-600">
+          {badge || role}
+        </span>
       )}
 
-      <span className="mt-4 rounded-full bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-600 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-600">
-        {badge}
-      </span>
-
-      {linkedinUrl && (
-        <a
-          href={linkedinUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-sky-600 dark:hover:text-sky-400"
-        >
-          <Linkedin className="h-3.5 w-3.5" /> LinkedIn
-        </a>
-      )}
-    </div>
+      <MemberLinkIcons links={links} className="mt-4 justify-center" />
+    </button>
   );
 }
 

@@ -31,6 +31,18 @@ export interface CoLead {
   photoUrl?: string | null;
   bio?: string | null;
   linkedinUrl?: string | null;
+  facebook?: string | null;
+  github?: string | null;
+  portfolio?: string | null;
+}
+
+/** Liens sociaux optionnels du fondateur (colonne JSON additive `leader_links`). */
+export interface LeaderLinks {
+  linkedin?: string | null;
+  facebook?: string | null;
+  github?: string | null;
+  portfolio?: string | null;
+  email?: string | null;
 }
 
 export interface CommunityEvent {
@@ -125,6 +137,7 @@ export interface Community {
   leaderPhone?: string | null;
   leaderPhotoUrl?: string | null;
   leaderBio?: string | null;
+  leaderLinks?: LeaderLinks | null;
   coLeads?: CoLead[];
   gallery?: string[];
   foundedYear?: number | null;

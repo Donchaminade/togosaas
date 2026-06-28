@@ -35,6 +35,7 @@ const EMPTY: Partial<Community> = {
   leaderPhone: '',
   leaderPhotoUrl: '',
   leaderBio: '',
+  leaderLinks: {},
   coLeads: [],
   gallery: [],
   foundedYear: undefined,
@@ -84,6 +85,10 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
       list[index] = { ...list[index], [field]: value };
       return { ...f, coLeads: list };
     });
+  };
+
+  const updateLeaderLink = (field: keyof NonNullable<Community['leaderLinks']>, value: string) => {
+    setForm((f) => ({ ...f, leaderLinks: { ...(f.leaderLinks ?? {}), [field]: value } }));
   };
 
   const updateCoLeadPhoto = (index: number, url: string | null) => {
@@ -191,6 +196,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
           <div>
             <Label>Pays {!isCoLead && <span className="text-togo-red">*</span>}</Label>
             <select
+              aria-label="Pays"
               value={form.country ?? DEFAULT_COUNTRY}
               onChange={set('country')}
               required={!isCoLead}
@@ -206,6 +212,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
           <div>
             <Label>Ville (facultatif)</Label>
             <select
+              aria-label="Ville"
               value={form.city ?? ''}
               onChange={set('city')}
               disabled={isCoLead}
@@ -282,6 +289,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
               <div>
                 <Label>Devise</Label>
                 <select
+                  aria-label="Devise"
                   value={form.currency ?? 'XOF'}
                   onChange={set('currency')}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-togo-green dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-800 dark:[&>option]:text-white"
@@ -294,6 +302,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
               <div>
                 <Label>Période de facturation</Label>
                 <select
+                  aria-label="Période de facturation"
                   value={form.billingPeriod ?? ''}
                   onChange={set('billingPeriod')}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-togo-green dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 [&>option]:bg-white [&>option]:text-slate-900 dark:[&>option]:bg-slate-800 dark:[&>option]:text-white"
@@ -366,12 +375,56 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
           <div>
             <Label>Biographie publique</Label>
             <textarea
+              aria-label="Biographie publique du fondateur"
               value={form.leaderBio ?? ''}
               onChange={set('leaderBio')}
               rows={2}
               className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-togo-green dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
               placeholder="Quelques mots sur le/la responsable..."
             />
+          </div>
+          <div>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+              Liens publics du fondateur (optionnels)
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input
+                label="LinkedIn"
+                aria-label="LinkedIn du fondateur"
+                value={form.leaderLinks?.linkedin ?? ''}
+                onChange={(e) => updateLeaderLink('linkedin', e.target.value)}
+                placeholder="https://linkedin.com/in/..."
+              />
+              <Input
+                label="GitHub"
+                aria-label="GitHub du fondateur"
+                value={form.leaderLinks?.github ?? ''}
+                onChange={(e) => updateLeaderLink('github', e.target.value)}
+                placeholder="https://github.com/..."
+              />
+              <Input
+                label="Facebook"
+                aria-label="Facebook du fondateur"
+                value={form.leaderLinks?.facebook ?? ''}
+                onChange={(e) => updateLeaderLink('facebook', e.target.value)}
+                placeholder="https://facebook.com/..."
+              />
+              <Input
+                label="Portfolio / site"
+                aria-label="Portfolio du fondateur"
+                value={form.leaderLinks?.portfolio ?? ''}
+                onChange={(e) => updateLeaderLink('portfolio', e.target.value)}
+                placeholder="https://mon-portfolio.tg"
+              />
+              <Input
+                label="Email public"
+                type="email"
+                aria-label="Email public du fondateur"
+                value={form.leaderLinks?.email ?? ''}
+                onChange={(e) => updateLeaderLink('email', e.target.value)}
+                placeholder="contact@exemple.tg"
+              />
+            </div>
           </div>
         </Section>
       )}
@@ -382,7 +435,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
             <div key={i} className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-xs font-bold uppercase text-slate-400">Membre {i + 1}</span>
-                <button type="button" onClick={() => removeCoLead(i)} className="text-togo-red hover:opacity-80">
+                <button type="button" aria-label={`Supprimer le membre ${i + 1}`} title="Supprimer le membre" onClick={() => removeCoLead(i)} className="text-togo-red hover:opacity-80">
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
@@ -390,7 +443,10 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
                 <Input label="Nom" value={cl.name} onChange={(e) => updateCoLead(i, 'name', e.target.value)} required />
                 <Input label="Rôle" value={cl.role ?? ''} onChange={(e) => updateCoLead(i, 'role', e.target.value)} placeholder="Co-lead, Trésorier..." />
                 <Input label="Email du compte Togosaas" type="email" value={cl.email ?? ''} onChange={(e) => updateCoLead(i, 'email', e.target.value)} placeholder="co-lead@exemple.tg" />
-                <Input label="LinkedIn" value={cl.linkedinUrl ?? ''} onChange={(e) => updateCoLead(i, 'linkedinUrl', e.target.value)} />
+                <Input label="LinkedIn" aria-label={`LinkedIn du membre ${i + 1}`} value={cl.linkedinUrl ?? ''} onChange={(e) => updateCoLead(i, 'linkedinUrl', e.target.value)} placeholder="https://linkedin.com/in/..." />
+                <Input label="GitHub" aria-label={`GitHub du membre ${i + 1}`} value={cl.github ?? ''} onChange={(e) => updateCoLead(i, 'github', e.target.value)} placeholder="https://github.com/..." />
+                <Input label="Facebook" aria-label={`Facebook du membre ${i + 1}`} value={cl.facebook ?? ''} onChange={(e) => updateCoLead(i, 'facebook', e.target.value)} placeholder="https://facebook.com/..." />
+                <Input label="Portfolio / site" aria-label={`Portfolio du membre ${i + 1}`} value={cl.portfolio ?? ''} onChange={(e) => updateCoLead(i, 'portfolio', e.target.value)} placeholder="https://mon-portfolio.tg" />
               </div>
               <div className="mt-3">
                 <ImageUpload
@@ -402,6 +458,7 @@ export default function CommunityForm({ initial, membershipRole = 'owner', onSub
               <div className="mt-3">
                 <Label>Bio</Label>
                 <textarea
+                  aria-label={`Bio du membre ${i + 1}`}
                   value={cl.bio ?? ''}
                   onChange={(e) => updateCoLead(i, 'bio', e.target.value)}
                   rows={2}

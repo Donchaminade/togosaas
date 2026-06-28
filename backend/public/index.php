@@ -14,6 +14,7 @@ use TCH\Controllers\ContactController;
 use TCH\Controllers\EmailCampaignController;
 use TCH\Controllers\MetaController;
 use TCH\Controllers\ReportController;
+use TCH\Controllers\ReviewController;
 use TCH\Controllers\SupportController;
 use TCH\Controllers\UploadController;
 use TCH\Response;
@@ -66,6 +67,7 @@ $router->get('/', fn() => Response::success([
     'version' => '1.0.0',
 ], 'Bienvenue sur l\'API TogoSaaS — Hub SaaS du Togo'));
 $router->get('/health', fn() => Response::success(['status' => 'ok']));
+$router->get('/sitemap.xml', [new \TCH\Controllers\SitemapController(), 'index']);
 $router->get('/meta', [new MetaController(), 'meta']);
 $author = new AuthorController();
 $router->get('/meta/author', [$author, 'show']);
@@ -76,6 +78,8 @@ $router->post('/auth/register', [$auth, 'register']);
 $router->post('/auth/login', [$auth, 'login']);
 $router->get('/auth/me', [$auth, 'me']);
 $router->put('/auth/profile', [$auth, 'updateProfile']);
+$router->get('/auth/verify-email', [$auth, 'verifyEmail']);
+$router->post('/auth/resend-verification', [$auth, 'resendVerification']);
 
 // Upload fichiers (images)
 $upload = new UploadController();
@@ -92,6 +96,10 @@ $engagement = new EngagementController();
 $router->get('/communities/{id}/engagement', [$engagement, 'show']);
 $router->post('/communities/{id}/like', [$engagement, 'toggleLike']);
 $router->post('/communities/{id}/review', [$engagement, 'review']);
+$router->get('/communities/{id}/reviews', [$engagement, 'reviews']);
+$router->post('/communities/{id}/reviews/{reviewId}/flag', [$engagement, 'flagReview']);
+$reviews = new ReviewController();
+$router->post('/lead/communities/{id}/reviews/{reviewId}/reply', [$reviews, 'leadReply']);
 $router->get('/meta/countries', [$communities, 'countries']);
 $router->get('/meta/neighborhoods', [$communities, 'neighborhoods']);
 $router->get('/meta/tags', [$communities, 'tags']);
@@ -182,6 +190,9 @@ $router->post('/admin/automations/{id}/run', [$automations, 'run']);
 $router->delete('/admin/automations/{id}', [$automations, 'destroy']);
 $router->get('/admin/author', [$author, 'adminShow']);
 $router->put('/admin/author', [$author, 'adminUpdate']);
+$router->get('/admin/reviews', [$reviews, 'adminIndex']);
+$router->patch('/admin/reviews/{id}', [$reviews, 'adminUpdate']);
+$router->delete('/admin/reviews/{id}', [$reviews, 'adminDestroy']);
 $router->get('/admin/reports', [$reports, 'adminIndex']);
 $router->get('/admin/reports/{id}', [$reports, 'adminShow']);
 $router->put('/admin/reports/{id}', [$reports, 'adminUpdate']);

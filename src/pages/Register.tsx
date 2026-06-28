@@ -35,7 +35,10 @@ export default function Register() {
     setLoading(true);
     try {
       const user = await register(form);
-      notify(`Compte créé. Bienvenue, ${user.name} !`, 'success');
+      notify(
+        `Compte créé. Un email de confirmation a été envoyé à ${user.email}.`,
+        'success',
+      );
       navigate('/espace-lead', { replace: true });
     } catch (err) {
       if (err instanceof ApiError) {

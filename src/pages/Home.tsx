@@ -17,6 +17,7 @@ import ScrollReveal, { StaggerReveal } from '../components/motion/ScrollReveal';
 import Wave from '../components/ui/Wave';
 import { resolveTogoCity } from '../data/togoData';
 import { api } from '../lib/api';
+import { SITE_URL, useSeo } from '../lib/seo';
 
 import type { Community } from '../types';
 
@@ -53,6 +54,25 @@ const STEPS = [
 export default function Home() {
   const [preview, setPreview] = useState<Community[]>([]);
   const [stats, setStats] = useState({ communities: 0, cities: 0, tags: 0 });
+
+  useSeo({
+    title: 'TogoSaaS — Le hub des solutions SaaS du Togo',
+    description:
+      'La plateforme qui recense, valorise et connecte toutes les solutions SaaS togolaises — gratuites et payantes. Découvrez, comparez et accédez aux meilleurs outils.',
+    path: '/',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'TogoSaaS',
+      url: SITE_URL,
+      description: 'Le hub des solutions SaaS du Togo.',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: `${SITE_URL}/solutions?q={search_term_string}`,
+        'query-input': 'required name=search_term_string',
+      },
+    },
+  });
 
   useEffect(() => {
     api

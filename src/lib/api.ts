@@ -2,10 +2,12 @@ import type {
   AdminStats,
   AdminUserSummary,
   AdminUserDetail,
+  AdminReview,
   Community,
   CommunityEvent,
   CommunityEngagement,
   CommunityReport,
+  CommunityReview,
   ContactMessage,
   LeadSummary,
   LeadDetail,
@@ -174,6 +176,12 @@ export const api = {
 
   me: () => request<{ user: User }>('/auth/me', { auth: true }),
 
+  verifyEmail: (token: string) =>
+    request<{ verified: boolean }>(`/auth/verify-email?token=${encodeURIComponent(token)}`),
+
+  resendVerification: () =>
+    request<null>('/auth/resend-verification', { method: 'POST', auth: true }),
+
   updateProfile: (data: {
     name: string;
     email?: string;
@@ -217,6 +225,38 @@ export const api = {
     request<{ engagement: Pick<CommunityEngagement, 'ratingAvg' | 'reviewsCount' | 'userRating'> }>(
       `/communities/${encodeURIComponent(String(idOrSlug))}/review`,
       { method: 'POST', body: { visitorId, rating } },
+    ),
+
+  /** Avis écrit complet : note + commentaire (+ titre / nom facultatifs). */
+  submitCommunityReview: (
+    idOrSlug: string | number,
+    data: { visitorId: string; rating: number; title?: string; comment: string; authorName?: string },
+  ) =>
+    request<{ engagement: CommunityEngagement }>(
+      `/communities/${encodeURIComponent(String(idOrSlug))}/review`,
+      { method: 'POST', body: data },
+    ),
+
+  listCommunityReviews: (idOrSlug: string | number) =>
+    request<{ reviews: CommunityReview[] }>(
+      `/communities/${encodeURIComponent(String(idOrSlug))}/reviews`,
+    ),
+
+  flagCommunityReview: (
+    idOrSlug: string | number,
+    reviewId: number,
+    visitorId: string,
+    reason?: string,
+  ) =>
+    request<{ flagged: boolean }>(
+      `/communities/${encodeURIComponent(String(idOrSlug))}/reviews/${reviewId}/flag`,
+      { method: 'POST', body: { visitorId, reason } },
+    ),
+
+  leadReplyToReview: (communityId: number, reviewId: number, body: string) =>
+    request<{ replied: boolean }>(
+      `/lead/communities/${communityId}/reviews/${reviewId}/reply`,
+      { method: 'POST', body: { body }, auth: true },
     ),
 
   // Contact
@@ -490,6 +530,23 @@ export const api = {
 
   adminReportEvidenceUrl: (reportId: number, index: number) =>
     `${API_BASE_URL}/admin/reports/${reportId}/evidence/${index}`,
+
+  // Modération des avis écrits
+  adminReviews: (flaggedOnly = false) =>
+    request<{ reviews: AdminReview[] }>(
+      `/admin/reviews${flaggedOnly ? '?flagged=1' : ''}`,
+      { auth: true },
+    ),
+
+  adminUpdateReview: (id: number, status: 'visible' | 'hidden') =>
+    request<{ id: number; status: string }>(`/admin/reviews/${id}`, {
+      method: 'PATCH',
+      body: { status },
+      auth: true,
+    }),
+
+  adminDeleteReview: (id: number) =>
+    request<null>(`/admin/reviews/${id}`, { method: 'DELETE', auth: true }),
 
   // Campagnes email
   adminEmailConfig: () => request<EmailConfig>('/admin/email/config', { auth: true }),

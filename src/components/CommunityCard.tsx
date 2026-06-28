@@ -3,6 +3,7 @@ import { ExternalLink, MapPin } from 'lucide-react';
 import CommunityCoverFrame from './community/CommunityCoverFrame';
 import ShareCommunityButton from './ui/ShareCommunityButton';
 import CommunityEngagementBar from './community/CommunityEngagementBar';
+import CommunityBadges from './ui/CommunityBadges';
 import PricingBadge from './ui/PricingBadge';
 import { formatLocation } from '../lib/location';
 import { communityPublicPath } from '../lib/communityUrl';
@@ -49,6 +50,7 @@ export default function CommunityCard({ community }: CommunityCardProps) {
           <h3 className="line-clamp-2 text-base font-bold leading-snug text-slate-900 dark:text-white">
             {community.name}
           </h3>
+          <CommunityBadges community={community} className="mt-2" />
           <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
             <MapPin className="h-3.5 w-3.5 shrink-0 text-togo-red" />
             {formatLocation(community)}

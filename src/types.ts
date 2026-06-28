@@ -14,6 +14,8 @@ export interface User {
   createdAt?: string | null;
   /** Vrai si le compte a été créé par l'admin sans email réel (adresse sentinelle). */
   profileIncomplete?: boolean;
+  /** Faux uniquement pour un nouveau compte dont l'email n'est pas encore confirmé (non bloquant). */
+  emailVerified?: boolean;
 }
 
 /** Identifiants temporaires renvoyés à l'admin lors de la création d'un compte lead sentinelle. */
@@ -55,6 +57,47 @@ export interface CommunityEngagement {
   reviewsCount: number;
   liked?: boolean;
   userRating?: number | null;
+  userReview?: UserReview | null;
+}
+
+/** Avis écrit (commentaire) du visiteur courant. */
+export interface UserReview {
+  rating: number;
+  title?: string | null;
+  comment: string;
+  status?: 'visible' | 'hidden';
+}
+
+/** Réponse de l'éditeur à un avis. */
+export interface CommunityReviewReply {
+  body: string;
+  createdAt?: string | null;
+}
+
+/** Avis écrit public affiché sur la fiche solution. */
+export interface CommunityReview {
+  id: number;
+  rating: number;
+  title?: string | null;
+  comment: string;
+  authorName: string;
+  createdAt?: string | null;
+  reply?: CommunityReviewReply | null;
+}
+
+/** Avis listé dans la modération admin. */
+export interface AdminReview {
+  id: number;
+  communityId: number;
+  communityName?: string | null;
+  communitySlug?: string | null;
+  rating: number;
+  title?: string | null;
+  comment: string;
+  authorName: string;
+  status: 'visible' | 'hidden';
+  flagsCount: number;
+  createdAt?: string | null;
 }
 
 export interface Community {

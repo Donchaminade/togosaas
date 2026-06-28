@@ -1,20 +1,55 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Frown, Rocket, SlidersHorizontal } from 'lucide-react';
+import { ArrowDownWideNarrow, Frown, Rocket, SlidersHorizontal } from 'lucide-react';
 import CommunitiesExplorer from '../components/CommunitiesExplorer';
 import CommunityCard from '../components/CommunityCard';
 import PageBanner from '../components/ui/PageBanner';
 import Pagination, { paginateSlice, totalPages } from '../components/ui/Pagination';
 import ScrollReveal, { StaggerReveal } from '../components/motion/ScrollReveal';
 import SearchBar from '../components/ui/SearchBar';
-import SearchEmptyState from '../components/ui/SearchEmptyState';
 import { DIAPO } from '../data/heroSlides';
 import { resolveTogoCity } from '../data/togoData';
 import { filterBySearch } from '../lib/search';
+import { useSeo } from '../lib/seo';
 import { api } from '../lib/api';
 import type { Community } from '../types';
 
 const PAGE_SIZE = 6;
+
+type SortKey = 'recent' | 'rating' | 'popular' | 'name';
+
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: 'recent', label: 'Plus récentes' },
+  { key: 'rating', label: 'Mieux notées' },
+  { key: 'popular', label: 'Plus populaires' },
+  { key: 'name', label: 'A → Z' },
+];
+
+function sortCommunities(list: Community[], sortBy: SortKey): Community[] {
+  const sorted = [...list];
+  switch (sortBy) {
+    case 'rating':
+      return sorted.sort(
+        (a, b) =>
+          (b.ratingAvg ?? 0) - (a.ratingAvg ?? 0) ||
+          (b.reviewsCount ?? 0) - (a.reviewsCount ?? 0),
+      );
+    case 'popular':
+      return sorted.sort(
+        (a, b) =>
+          (b.likesCount ?? 0) - (a.likesCount ?? 0) ||
+          (b.reviewsCount ?? 0) - (a.reviewsCount ?? 0),
+      );
+    case 'name':
+      return sorted.sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }));
+    case 'recent':
+    default:
+      return sorted.sort(
+        (a, b) =>
+          new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime(),
+      );
+  }
+}
 
 export default function Communities() {
   const [communities, setCommunities] = useState<Community[]>([]);
@@ -23,8 +58,16 @@ export default function Communities() {
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [pricingFilter, setPricingFilter] = useState<'all' | 'free' | 'paid'>('all');
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<SortKey>('recent');
   const [page, setPage] = useState(1);
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  useSeo({
+    title: 'Catalogue des solutions SaaS du Togo — TogoSaaS',
+    description:
+      'Explorez, filtrez et comparez les solutions SaaS togolaises : recherche par nom, catégorie, ville, tarif, tri par note et popularité.',
+    path: '/solutions',
+  });
 
   useEffect(() => {
     api
@@ -50,7 +93,7 @@ export default function Communities() {
         (pricingFilter === 'paid' && (c.pricingType === 'paid' || c.pricingType === 'freemium'));
       return matchTag && matchCity && matchPricing;
     });
-    return filterBySearch(byFilters, search, (c) => [
+    const matched = filterBySearch(byFilters, search, (c) => [
       c.name,
       c.description,
       c.shortDescription,
@@ -58,7 +101,8 @@ export default function Communities() {
       c.country,
       c.tags,
     ]);
-  }, [communities, search, activeTag, selectedCity, pricingFilter]);
+    return sortCommunities(matched, sortBy);
+  }, [communities, search, activeTag, selectedCity, pricingFilter, sortBy]);
 
   const pages = totalPages(filtered.length, PAGE_SIZE);
   const paginated = useMemo(
@@ -68,7 +112,7 @@ export default function Communities() {
 
   useEffect(() => {
     setPage(1);
-  }, [search, activeTag, selectedCity, pricingFilter]);
+  }, [search, activeTag, selectedCity, pricingFilter, sortBy]);
 
   useEffect(() => {
     if (page > pages) setPage(pages);
@@ -172,15 +216,32 @@ export default function Communities() {
             </ScrollReveal>
           )}
 
-          <div ref={resultsRef} className="mt-10 scroll-mt-28 flex items-center justify-between">
+          <div ref={resultsRef} className="mt-10 scroll-mt-28 flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
               {loading ? 'Chargement...' : `${filtered.length} solution(s) trouvée(s)`}
             </p>
-            {!loading && filtered.length > PAGE_SIZE && (
-              <p className="text-xs font-medium text-slate-400">
-                Page {page} / {pages}
-              </p>
-            )}
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <ArrowDownWideNarrow className="h-4 w-4" />
+                <span className="hidden sm:inline">Trier&nbsp;:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortKey)}
+                  className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-togo-green dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                >
+                  {SORT_OPTIONS.map((opt) => (
+                    <option key={opt.key} value={opt.key}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {!loading && filtered.length > PAGE_SIZE && (
+                <p className="text-xs font-medium text-slate-400">
+                  Page {page} / {pages}
+                </p>
+              )}
+            </div>
           </div>
 
           {loading ? (

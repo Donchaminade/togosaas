@@ -22,6 +22,7 @@ import AdminOverviewCharts from '../../components/dashboard/AdminOverviewCharts'
 import AdminSupportPanel from '../../components/dashboard/AdminSupportPanel';
 import AdminAuthorForm from '../../components/dashboard/AdminAuthorForm';
 import AdminReportsPanel from '../../components/dashboard/AdminReportsPanel';
+import AdminReviewsPanel from '../../components/dashboard/AdminReviewsPanel';
 import AdminUsersPanel from '../../components/dashboard/AdminUsersPanel';
 import AdminProfilePanel from '../../components/dashboard/AdminProfilePanel';
 import AdminEmailingPanel from '../../components/dashboard/AdminEmailingPanel';
@@ -596,6 +597,8 @@ export default function AdminDashboard() {
           {active === 'automations' && <AdminAutomationPanel />}
 
           {active === 'reports' && <AdminReportsPanel />}
+
+          {active === 'reviews' && <AdminReviewsPanel />}
 
           {active === 'author' && isSuperAdmin && (
             <div>

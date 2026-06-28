@@ -5,6 +5,7 @@ import { Home, LogOut, Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import Logo from '../ui/Logo';
 import ThemeToggle from '../ui/ThemeToggle';
 import UserAvatar from '../ui/UserAvatar';
+import EmailVerificationBanner from './EmailVerificationBanner';
 import { useAuth } from '../../context/AuthContext';
 import { ROLE_LABELS } from '../../lib/roles';
 
@@ -295,6 +296,7 @@ export default function DashboardLayout({
         </header>
 
         <main className="min-w-0 max-w-full p-4 sm:p-8">
+          <EmailVerificationBanner />
           {children}
         </main>
       </div>

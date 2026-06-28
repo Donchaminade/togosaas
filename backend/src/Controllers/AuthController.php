@@ -7,6 +7,7 @@ namespace TCH\Controllers;
 use TCH\Auth;
 use TCH\AutomationEngine;
 use TCH\Database;
+use TCH\EmailVerificationHelper;
 use TCH\Jwt;
 use TCH\RateLimiter;
 use TCH\Request;
@@ -59,7 +60,51 @@ final class AuthController
             'user_id' => $id,
         ]);
 
-        $this->respondWithToken($id, 'Compte cree avec succes. Bienvenue !', 201);
+        // Email de confirmation (anti-faute de frappe). Best-effort et NON bloquant :
+        // l'inscription reussit toujours, meme si l'envoi echoue ou si SMTP est absent.
+        EmailVerificationHelper::issueAndSend($id, $email, $name);
+
+        $this->respondWithToken(
+            $id,
+            'Compte cree avec succes. Un email de confirmation vous a ete envoye.',
+            201
+        );
+    }
+
+    /** Valide un lien de confirmation d'email (public, sans authentification). */
+    public function verifyEmail(Request $request): void
+    {
+        $token = (string) ($request->query('token') ?: $request->input('token'));
+        $result = EmailVerificationHelper::verify($token);
+
+        if (!$result['ok']) {
+            Response::error($result['message'], 422);
+        }
+
+        Response::success(['verified' => true], $result['message']);
+    }
+
+    /** Renvoie un email de confirmation a l'utilisateur connecte. */
+    public function resendVerification(Request $request): void
+    {
+        $user = Auth::requireUser();
+        RateLimiter::enforce('resend-verification', 5, 3600);
+
+        $email = (string) ($user['email'] ?? '');
+        if (self::isSentinelEmail($email)) {
+            Response::error('Completez d\'abord votre profil avec une adresse email valide.', 422);
+        }
+        if (EmailVerificationHelper::isVerified((int) $user['id'])) {
+            Response::success(['verified' => true], 'Votre adresse email est deja confirmee.');
+        }
+
+        EmailVerificationHelper::issueAndSend(
+            (int) $user['id'],
+            $email,
+            (string) ($user['name'] ?? '')
+        );
+
+        Response::success(null, 'Un nouvel email de confirmation vous a ete envoye.');
     }
 
     public function login(Request $request): void
@@ -226,6 +271,11 @@ final class AuthController
             // Profil incomplet tant que l'email est une adresse sentinelle (compte cree par l'admin
             // sans email reel). Aucune colonne dediee : calcul purement applicatif.
             'profileIncomplete' => self::isSentinelEmail($email),
+            // Confirmation d'email : les comptes existants (sans ligne) sont consideres
+            // verifies et ne sont jamais bloques. Calcul via table email_verifications.
+            'emailVerified' => self::isSentinelEmail($email)
+                ? true
+                : EmailVerificationHelper::isVerified((int) $user['id']),
         ];
     }
 

@@ -62,7 +62,12 @@ final class Mailer
      * @param list<array{email: string, name?: string|null}> $recipients
      * @param list<array{path: string, name: string, mime: string}> $attachments
      * @param callable|null $progress fonction (string $email, bool $ok, ?string $error)
-     * @return array<string, array{ok: bool, error: ?string}> resultats indexes par email
+     * @return array<string, array{ok: bool, error: ?string, detail: ?string}> resultats indexes par email
+     *
+     * Chaque resultat contient :
+     *   - 'error'  : message PUBLIC (masque les details techniques en prod).
+     *   - 'detail' : vrai message SMTP/technique (a journaliser cote admin, jamais
+     *                expose dans une reponse HTTP publique).
      */
     public function sendBulk(array $recipients, string $subject, string $html, array $attachments = [], ?callable $progress = null): array
     {
@@ -74,9 +79,10 @@ final class Mailer
         } catch (\Throwable $e) {
             // Echec de connexion : tous les destinataires sont marques en echec.
             $error = $this->safeError($e->getMessage());
+            $detail = $this->rawError($e->getMessage());
             foreach ($recipients as $r) {
                 $email = strtolower(trim((string) $r['email']));
-                $results[$email] = ['ok' => false, 'error' => $error];
+                $results[$email] = ['ok' => false, 'error' => $error, 'detail' => $detail];
                 if ($progress) {
                     $progress($email, false, $error);
                 }
@@ -92,7 +98,7 @@ final class Mailer
             $name = isset($r['name']) ? (string) $r['name'] : null;
 
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $results[$email] = ['ok' => false, 'error' => 'Adresse email invalide.'];
+                $results[$email] = ['ok' => false, 'error' => 'Adresse email invalide.', 'detail' => 'Adresse email invalide.'];
                 if ($progress) {
                     $progress($email, false, 'Adresse email invalide.');
                 }
@@ -101,13 +107,13 @@ final class Mailer
 
             try {
                 $this->deliver($email, $name, $subject, $html, $encodedAttachments);
-                $results[$email] = ['ok' => true, 'error' => null];
+                $results[$email] = ['ok' => true, 'error' => null, 'detail' => null];
                 if ($progress) {
                     $progress($email, true, null);
                 }
             } catch (\Throwable $e) {
                 $error = $this->safeError($e->getMessage());
-                $results[$email] = ['ok' => false, 'error' => $error];
+                $results[$email] = ['ok' => false, 'error' => $error, 'detail' => $this->rawError($e->getMessage())];
                 if ($progress) {
                     $progress($email, false, $error);
                 }
@@ -141,7 +147,7 @@ final class Mailer
     public function send(string $email, ?string $name, string $subject, string $html, array $attachments = []): array
     {
         $results = $this->sendBulk([['email' => $email, 'name' => $name]], $subject, $html, $attachments);
-        return $results[strtolower(trim($email))] ?? ['ok' => false, 'error' => 'Erreur inconnue.'];
+        return $results[strtolower(trim($email))] ?? ['ok' => false, 'error' => 'Erreur inconnue.', 'detail' => 'Erreur inconnue.'];
     }
 
     /* --------------------------------------------------------------- */
@@ -490,10 +496,25 @@ final class Mailer
 
     private function safeError(string $message): string
     {
-        // Ne pas divulguer les details techniques en production.
+        // Ne pas divulguer les details techniques en production (reponses HTTP).
         if (TCH_DEBUG) {
             return mb_substr($message, 0, 480);
         }
         return 'Echec de l\'envoi (verifiez la configuration SMTP).';
+    }
+
+    /**
+     * Vrai message technique (SMTP), independamment d'APP_DEBUG.
+     * Destine UNIQUEMENT a la journalisation cote admin (automation_logs.error,
+     * email_campaign_recipients.error) : ne jamais le renvoyer dans une reponse
+     * HTTP publique. Permet de diagnostiquer un email mal saisi / un refus serveur.
+     */
+    private function rawError(string $message): string
+    {
+        $message = trim($message);
+        if ($message === '') {
+            return 'Echec inconnu.';
+        }
+        return mb_substr($message, 0, 480);
     }
 }

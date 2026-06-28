@@ -252,9 +252,11 @@ final class EmailCampaignController
 
         foreach ($recipients as $r) {
             $email = strtolower(trim((string) $r['email']));
-            $result = $results[$email] ?? ['ok' => false, 'error' => 'Non traite.'];
+            $result = $results[$email] ?? ['ok' => false, 'error' => 'Non traite.', 'detail' => 'Non traite.'];
             $status = $result['ok'] ? 'sent' : 'failed';
-            $error = $result['ok'] ? null : mb_substr((string) ($result['error'] ?? ''), 0, 480);
+            // Colonne error reservee au suivi admin : on conserve le vrai detail SMTP
+            // (email mal saisi, refus serveur...) meme quand APP_DEBUG=false.
+            $error = $result['ok'] ? null : mb_substr((string) ($result['detail'] ?? $result['error'] ?? ''), 0, 480);
             $sentAt = $result['ok'] ? date('Y-m-d H:i:s') : null;
 
             if (isset($r['recipientId'])) {

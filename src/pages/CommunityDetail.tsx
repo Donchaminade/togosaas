@@ -19,10 +19,13 @@ import {
   X,
 } from 'lucide-react';
 import CommunityEngagementBar from '../components/community/CommunityEngagementBar';
+import CommunityReviews from '../components/community/CommunityReviews';
 import CommunityShareSidebar from '../components/community/CommunityShareSidebar';
 import ScrollReveal from '../components/motion/ScrollReveal';
+import CommunityBadges from '../components/ui/CommunityBadges';
 import PricingBadge from '../components/ui/PricingBadge';
 import { PageLoader } from '../components/ui/Spinner';
+import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 import { getActiveSocialLinks } from '../lib/socialLinks';
 import { externalUrl, websiteLabel } from '../lib/externalUrl';
@@ -30,6 +33,7 @@ import { formatLocation } from '../lib/location';
 import { mediaUrl } from '../lib/media';
 import { communityPublicPath } from '../lib/communityUrl';
 import { solutionAccessUrl } from '../lib/pricing';
+import { SITE_URL, useSeo } from '../lib/seo';
 import type { CoLead, Community } from '../types';
 
 type DetailTab = 'about' | 'screenshots' | 'team';
@@ -43,6 +47,7 @@ const TABS: { id: DetailTab; label: string; icon: typeof Info }[] = [
 export default function CommunityDetail() {
   const { id: slugOrId } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [community, setCommunity] = useState<Community | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -57,7 +62,7 @@ export default function CommunityDetail() {
       setTab(mapped as DetailTab);
     }
     api
-      .getCommunity(slugOrId)
+      .getCommunity(slugOrId, isAuthenticated)
       .then((res) => {
         const c = res.data.community;
         setCommunity(c);
@@ -68,7 +73,48 @@ export default function CommunityDetail() {
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [slugOrId, navigate]);
+  }, [slugOrId, navigate, isAuthenticated]);
+
+  const seoImage = community?.bannerUrl || community?.logoUrl;
+  const seoDescription = community
+    ? (community.shortDescription || community.description || '').slice(0, 200)
+    : 'Découvrez cette solution SaaS sur TogoSaaS.';
+  useSeo({
+    title: community ? `${community.name} — TogoSaaS` : 'Solution — TogoSaaS',
+    description: seoDescription,
+    path: community ? communityPublicPath(community) : undefined,
+    image: seoImage ? mediaUrl(seoImage) : undefined,
+    type: 'product',
+    jsonLd: community
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'SoftwareApplication',
+          name: community.name,
+          description: seoDescription,
+          applicationCategory: 'BusinessApplication',
+          operatingSystem: 'Web',
+          url: `${SITE_URL}${communityPublicPath(community)}`,
+          ...(seoImage ? { image: mediaUrl(seoImage) } : {}),
+          ...(community.websiteUrl ? { sameAs: [community.websiteUrl] } : {}),
+          offers: {
+            '@type': 'Offer',
+            price: community.priceAmount ?? 0,
+            priceCurrency: community.currency || 'XOF',
+          },
+          ...(community.ratingAvg && (community.reviewsCount ?? 0) > 0
+            ? {
+                aggregateRating: {
+                  '@type': 'AggregateRating',
+                  ratingValue: community.ratingAvg,
+                  reviewCount: community.reviewsCount,
+                  bestRating: 5,
+                  worstRating: 1,
+                },
+              }
+            : {}),
+        }
+      : null,
+  });
 
   if (loading) {
     return <PageLoader label="Chargement de la solution..." />;
@@ -138,6 +184,7 @@ export default function CommunityDetail() {
                     size="md"
                   />
                 </div>
+                <CommunityBadges community={community} className="mt-2" />
                 {community.shortDescription && (
                   <p className="mt-1 max-w-2xl text-sm text-slate-600 sm:text-base dark:text-slate-300">
                     {community.shortDescription}
@@ -276,6 +323,11 @@ export default function CommunityDetail() {
                     </div>
                   )}
                 </PanelCard>
+
+                <CommunityReviews
+                  community={community}
+                  canReply={!!community.membershipRole}
+                />
               </div>
 
               <aside className="space-y-4">

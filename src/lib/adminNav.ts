@@ -3,6 +3,7 @@ import {
   Mail,
   MailPlus,
   MessageCircle,
+  MessagesSquare,
   PenLine,
   ShieldAlert,
   ShieldCheck,
@@ -72,6 +73,12 @@ export function buildAdminNav(stats: AdminNavStats = {}, options: AdminNavOption
       href: '/admin?tab=reports',
       section: 'Modération',
     },
+    {
+      id: 'reviews',
+      label: 'Avis',
+      icon: MessagesSquare,
+      href: '/admin?tab=reviews',
+    },
   );
 
   if (isSuperAdmin) {
@@ -97,7 +104,7 @@ export function buildAdminNav(stats: AdminNavStats = {}, options: AdminNavOption
 
 export function adminTabFromSearch(search: string, isSuperAdmin = false): string {
   const tab = new URLSearchParams(search).get('tab');
-  const valid = ['overview', 'communities', 'leads', 'messages', 'support', 'emailing', 'automations', 'reports', 'profile'];
+  const valid = ['overview', 'communities', 'leads', 'messages', 'support', 'emailing', 'automations', 'reports', 'reviews', 'profile'];
   if (isSuperAdmin) {
     valid.push(...SUPER_ADMIN_TABS);
   }
@@ -114,6 +121,7 @@ export const ADMIN_TAB_TITLES: Record<string, { title: string; subtitle: string 
   emailing: { title: 'Emailing', subtitle: 'Rédigez et envoyez des emails aux leads avec pièces jointes' },
   automations: { title: 'Automatisations', subtitle: 'Modèles de message, déclencheurs et envois automatiques' },
   reports: { title: 'Signalements', subtitle: 'Dysfonctionnements de solutions signalés anonymement par les visiteurs' },
+  reviews: { title: 'Avis', subtitle: 'Modération des avis écrits laissés sur les solutions' },
   author: { title: 'Page À propos', subtitle: 'Profil fondateur & auteur' },
   profile: { title: 'Mon profil', subtitle: 'Vos informations de compte et mot de passe' },
 };

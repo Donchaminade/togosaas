@@ -101,6 +101,8 @@ final class EngagementHelper
             }
         }
 
+        $stats['userReview'] = self::userReview($communityId, $visitorId);
+
         return $stats;
     }
 
@@ -160,6 +162,258 @@ final class EngagementHelper
             'reviewsCount' => (int) $row['cnt'],
             'userRating' => $rating,
         ];
+    }
+
+    /* --------------------------------------------------------------- */
+    /* Avis ecrits (commentaires) + reponses editeur + moderation      */
+    /* --------------------------------------------------------------- */
+
+    private const MAX_TITLE = 160;
+    private const MAX_COMMENT = 2000;
+    private const MAX_AUTHOR = 120;
+
+    /**
+     * Enregistre une note ET un commentaire ecrit pour un visiteur.
+     * Reutilise la table community_reviews pour la note ; le texte vit dans la
+     * table additive community_review_contents (1:1 par review_id).
+     *
+     * @return array{ratingAvg:?float,reviewsCount:int,userRating:int}
+     */
+    public static function submitReview(
+        int $communityId,
+        string $visitorId,
+        int $rating,
+        ?string $title,
+        string $comment,
+        ?string $authorName
+    ): array {
+        $db = Database::connection();
+
+        // 1) Note (logique existante).
+        $stats = self::setReview($communityId, $visitorId, $rating);
+
+        // 2) Identifiant de l'avis (note) du visiteur.
+        $reviewId = self::reviewId($communityId, $visitorId);
+        if ($reviewId === null) {
+            return $stats;
+        }
+
+        // 3) Contenu redige (titre + texte), upsert sur review_id.
+        $title = self::clean($title, self::MAX_TITLE);
+        $comment = (string) self::clean($comment, self::MAX_COMMENT);
+        $authorName = self::clean($authorName, self::MAX_AUTHOR);
+
+        $db->prepare(
+            'INSERT INTO community_review_contents
+                (review_id, community_id, visitor_id, title, comment, author_name, status, created_at, updated_at)
+             VALUES (:rid, :cid, :vid, :title, :comment, :author, \'visible\', NOW(), NOW())
+             ON DUPLICATE KEY UPDATE
+                title = VALUES(title),
+                comment = VALUES(comment),
+                author_name = VALUES(author_name),
+                updated_at = NOW()'
+        )->execute([
+            'rid' => $reviewId,
+            'cid' => $communityId,
+            'vid' => $visitorId,
+            'title' => $title,
+            'comment' => $comment,
+            'author' => $authorName,
+        ]);
+
+        return $stats;
+    }
+
+    /** Liste publique des avis ecrits visibles d'une solution (avec reponse editeur). */
+    public static function listReviews(int $communityId): array
+    {
+        $db = Database::connection();
+        $stmt = $db->prepare(
+            "SELECT c.review_id, c.title, c.comment, c.author_name, c.created_at,
+                    r.rating,
+                    rep.body AS reply_body, rep.created_at AS reply_at
+             FROM community_review_contents c
+             INNER JOIN community_reviews r ON r.id = c.review_id
+             LEFT JOIN community_review_replies rep ON rep.review_id = c.review_id
+             WHERE c.community_id = :cid AND c.status = 'visible'
+             ORDER BY c.created_at DESC"
+        );
+        $stmt->execute(['cid' => $communityId]);
+
+        return array_map(static fn($row) => [
+            'id' => (int) $row['review_id'],
+            'rating' => (int) $row['rating'],
+            'title' => $row['title'] !== null && $row['title'] !== '' ? $row['title'] : null,
+            'comment' => (string) $row['comment'],
+            'authorName' => $row['author_name'] !== null && $row['author_name'] !== '' ? $row['author_name'] : 'Visiteur',
+            'createdAt' => $row['created_at'],
+            'reply' => $row['reply_body'] !== null
+                ? ['body' => (string) $row['reply_body'], 'createdAt' => $row['reply_at']]
+                : null,
+        ], $stmt->fetchAll());
+    }
+
+    /** Avis ecrit du visiteur courant (pour pre-remplir le formulaire). */
+    public static function userReview(int $communityId, ?string $visitorId): ?array
+    {
+        if ($visitorId === null) {
+            return null;
+        }
+        $db = Database::connection();
+        $stmt = $db->prepare(
+            "SELECT c.title, c.comment, c.status, r.rating
+             FROM community_review_contents c
+             INNER JOIN community_reviews r ON r.id = c.review_id
+             WHERE c.community_id = :cid AND c.visitor_id = :vid LIMIT 1"
+        );
+        $stmt->execute(['cid' => $communityId, 'vid' => $visitorId]);
+        $row = $stmt->fetch();
+        if (!$row) {
+            return null;
+        }
+        return [
+            'rating' => (int) $row['rating'],
+            'title' => $row['title'] ?? null,
+            'comment' => (string) $row['comment'],
+            'status' => $row['status'],
+        ];
+    }
+
+    /** Signale un avis (un signalement par visiteur). @return bool true si nouveau. */
+    public static function flagReview(int $reviewId, string $visitorId, ?string $reason): bool
+    {
+        $db = Database::connection();
+
+        // L'avis (contenu) doit exister.
+        $check = $db->prepare('SELECT 1 FROM community_review_contents WHERE review_id = :rid LIMIT 1');
+        $check->execute(['rid' => $reviewId]);
+        if (!$check->fetch()) {
+            return false;
+        }
+
+        $stmt = $db->prepare(
+            'INSERT IGNORE INTO community_review_flags (review_id, visitor_id, reason, created_at)
+             VALUES (:rid, :vid, :reason, NOW())'
+        );
+        $stmt->execute([
+            'rid' => $reviewId,
+            'vid' => $visitorId,
+            'reason' => self::clean($reason, 255),
+        ]);
+
+        if ($stmt->rowCount() > 0) {
+            $db->prepare(
+                'UPDATE community_review_contents SET flags_count = flags_count + 1 WHERE review_id = :rid'
+            )->execute(['rid' => $reviewId]);
+            return true;
+        }
+        return false;
+    }
+
+    /** Reponse de l'editeur a un avis (upsert : une reponse par avis). */
+    public static function replyToReview(int $reviewId, int $communityId, int $userId, string $body): bool
+    {
+        $body = (string) self::clean($body, self::MAX_COMMENT);
+        if ($body === '') {
+            return false;
+        }
+        $db = Database::connection();
+
+        // L'avis doit appartenir a la solution.
+        $check = $db->prepare('SELECT 1 FROM community_reviews WHERE id = :rid AND community_id = :cid LIMIT 1');
+        $check->execute(['rid' => $reviewId, 'cid' => $communityId]);
+        if (!$check->fetch()) {
+            return false;
+        }
+
+        $db->prepare(
+            'INSERT INTO community_review_replies (review_id, community_id, user_id, body, created_at, updated_at)
+             VALUES (:rid, :cid, :uid, :body, NOW(), NOW())
+             ON DUPLICATE KEY UPDATE body = VALUES(body), user_id = VALUES(user_id), updated_at = NOW()'
+        )->execute(['rid' => $reviewId, 'cid' => $communityId, 'uid' => $userId, 'body' => $body]);
+
+        return true;
+    }
+
+    /** Liste des avis pour la moderation admin (tous statuts, signales d'abord). */
+    public static function adminListReviews(bool $onlyFlagged = false): array
+    {
+        $db = Database::connection();
+        $where = $onlyFlagged ? 'WHERE c.flags_count > 0' : '';
+        $stmt = $db->query(
+            "SELECT c.review_id, c.title, c.comment, c.author_name, c.status, c.flags_count,
+                    c.created_at, r.rating, r.community_id,
+                    com.name AS community_name, com.slug AS community_slug
+             FROM community_review_contents c
+             INNER JOIN community_reviews r ON r.id = c.review_id
+             INNER JOIN communities com ON com.id = c.community_id
+             $where
+             ORDER BY (c.flags_count > 0) DESC, c.created_at DESC
+             LIMIT 300"
+        );
+
+        return array_map(static fn($row) => [
+            'id' => (int) $row['review_id'],
+            'communityId' => (int) $row['community_id'],
+            'communityName' => $row['community_name'],
+            'communitySlug' => $row['community_slug'] ?? null,
+            'rating' => (int) $row['rating'],
+            'title' => $row['title'] ?? null,
+            'comment' => (string) $row['comment'],
+            'authorName' => $row['author_name'] ?? 'Visiteur',
+            'status' => $row['status'],
+            'flagsCount' => (int) $row['flags_count'],
+            'createdAt' => $row['created_at'],
+        ], $stmt->fetchAll());
+    }
+
+    /** Admin : masque ou reaffiche un avis ecrit. */
+    public static function setReviewStatus(int $reviewId, string $status): bool
+    {
+        if (!in_array($status, ['visible', 'hidden'], true)) {
+            return false;
+        }
+        $stmt = Database::connection()->prepare(
+            'UPDATE community_review_contents SET status = :status, updated_at = NOW() WHERE review_id = :rid'
+        );
+        $stmt->execute(['status' => $status, 'rid' => $reviewId]);
+        return $stmt->rowCount() >= 0;
+    }
+
+    /** Admin : supprime le commentaire ecrit (la note en etoile est conservee). */
+    public static function deleteReviewContent(int $reviewId): bool
+    {
+        Database::connection()
+            ->prepare('DELETE FROM community_review_contents WHERE review_id = :rid')
+            ->execute(['rid' => $reviewId]);
+        Database::connection()
+            ->prepare('DELETE FROM community_review_replies WHERE review_id = :rid')
+            ->execute(['rid' => $reviewId]);
+        return true;
+    }
+
+    /** Identifiant de la ligne community_reviews d'un visiteur. */
+    private static function reviewId(int $communityId, string $visitorId): ?int
+    {
+        $stmt = Database::connection()->prepare(
+            'SELECT id FROM community_reviews WHERE community_id = :cid AND visitor_id = :vid LIMIT 1'
+        );
+        $stmt->execute(['cid' => $communityId, 'vid' => $visitorId]);
+        $id = $stmt->fetchColumn();
+        return $id !== false ? (int) $id : null;
+    }
+
+    /** Nettoie une chaine libre : retire le HTML, normalise, tronque. */
+    private static function clean(?string $value, int $max): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        $value = trim(strip_tags($value));
+        if ($value === '') {
+            return null;
+        }
+        return mb_substr($value, 0, $max);
     }
 
     public static function mergeStatsIntoCommunity(array $community): array

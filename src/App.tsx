@@ -18,6 +18,7 @@ import Contact from './pages/Contact';
 import MentionsLegales from './pages/MentionsLegales';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import VerifyEmail from './pages/VerifyEmail';
 import LeadDashboard from './pages/dashboard/LeadDashboard';
 import LeadCommunityEdit from './pages/dashboard/LeadCommunityEdit';
 import AdminDashboard from './pages/dashboard/AdminDashboard';
@@ -62,6 +63,7 @@ export default function App() {
               {/* Authentification */}
               <Route path="/connexion" element={<Login />} />
               <Route path="/inscription" element={<Register />} />
+              <Route path="/verifier-email" element={<VerifyEmail />} />
 
               {/* Espace lead */}
               <Route

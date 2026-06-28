@@ -128,6 +128,16 @@ final class AutomationEngine
 
         try {
             $db = Database::connection();
+
+            // Reprise des envois bloques : si un process est mort en laissant des
+            // entrees coincees en 'sending', on les remet en 'pending' apres un
+            // delai de securite (10 min) pour qu'elles soient retraitees.
+            $db->exec(
+                "UPDATE automation_logs
+                 SET status = 'pending'
+                 WHERE status = 'sending' AND created_at < (NOW() - INTERVAL 10 MINUTE)"
+            );
+
             $stmt = $db->prepare(
                 "SELECT id FROM automation_logs WHERE status = 'pending' ORDER BY created_at ASC LIMIT {$limit}"
             );
@@ -209,9 +219,13 @@ final class AutomationEngine
                     $markSent->execute(['subject' => mb_substr($subject, 0, 255), 'id' => $id]);
                     $result['sent']++;
                 } else {
+                    // On journalise le VRAI message SMTP (detail) meme si APP_DEBUG=false :
+                    // indispensable pour diagnostiquer un email mal saisi / un refus serveur.
+                    // Ce champ n'est visible que par l'admin (jamais en reponse publique).
+                    $reason = (string) ($sendResult['detail'] ?? $sendResult['error'] ?? 'Echec inconnu.');
                     $markFailed->execute([
                         'subject' => mb_substr($subject, 0, 255),
-                        'error' => mb_substr((string) ($sendResult['error'] ?? 'Echec inconnu.'), 0, 480),
+                        'error' => mb_substr($reason, 0, 480),
                         'id' => $id,
                     ]);
                     $result['failed']++;

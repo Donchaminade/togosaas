@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Espaces prives (non indexes)
+Disallow: /admin
+Disallow: /espace-lead
+Disallow: /connexion
+Disallow: /inscription
+Disallow: /verifier-email
+
+# Sitemap dynamique genere par l'API (liste les solutions approuvees)
+Sitemap: https://togosaas.grosbit.com/sitemap.xml

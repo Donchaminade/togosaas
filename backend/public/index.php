@@ -162,6 +162,8 @@ $router->put('/admin/users/{id}', [$admin, 'updateUser']);
 $router->delete('/admin/users/{id}', [$admin, 'destroyUser']);
 $router->get('/admin/messages', [$admin, 'messages']);
 $router->patch('/admin/messages/{id}/read', [$admin, 'markMessageRead']);
+$router->get('/admin/messages/{id}/replies', [$contact, 'adminReplies']);
+$router->post('/admin/messages/{id}/replies', [$contact, 'adminReply']);
 $router->get('/admin/support/conversations', [$support, 'adminConversations']);
 $router->get('/admin/support/leads/{userId}/messages', [$support, 'adminThread']);
 $router->post('/admin/support/leads/{userId}/messages', [$support, 'adminSend']);

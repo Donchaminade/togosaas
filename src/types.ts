@@ -175,6 +175,15 @@ export interface ContactMessage {
   message: string;
   isRead: boolean;
   createdAt: string;
+  replied: boolean;
+  repliesCount: number;
+}
+
+export interface ContactReply {
+  id: number;
+  body: string;
+  createdAt: string;
+  emailStatus: string;
 }
 
 export interface LeadSummary {

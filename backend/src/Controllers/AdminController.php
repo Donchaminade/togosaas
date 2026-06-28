@@ -748,18 +748,28 @@ final class AdminController
     {
         Auth::requireAdmin();
         $rows = Database::connection()
-            ->query('SELECT * FROM contact_messages ORDER BY created_at DESC')
+            ->query(
+                'SELECT cm.*,
+                        (SELECT COUNT(*) FROM contact_replies cr WHERE cr.contact_message_id = cm.id) AS replies_count
+                 FROM contact_messages cm
+                 ORDER BY cm.created_at DESC'
+            )
             ->fetchAll();
 
-        $messages = array_map(static fn($r) => [
-            'id' => (int) $r['id'],
-            'name' => $r['name'],
-            'email' => $r['email'],
-            'subject' => $r['subject'],
-            'message' => $r['message'],
-            'isRead' => (bool) $r['is_read'],
-            'createdAt' => $r['created_at'],
-        ], $rows);
+        $messages = array_map(static function ($r) {
+            $repliesCount = (int) ($r['replies_count'] ?? 0);
+            return [
+                'id' => (int) $r['id'],
+                'name' => $r['name'],
+                'email' => $r['email'],
+                'subject' => $r['subject'],
+                'message' => $r['message'],
+                'isRead' => (bool) $r['is_read'],
+                'createdAt' => $r['created_at'],
+                'replied' => $repliesCount > 0,
+                'repliesCount' => $repliesCount,
+            ];
+        }, $rows);
 
         Response::success(['messages' => $messages]);
     }

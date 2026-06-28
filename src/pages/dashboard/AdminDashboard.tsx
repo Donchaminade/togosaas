@@ -29,6 +29,7 @@ import AdminEmailingPanel from '../../components/dashboard/AdminEmailingPanel';
 import AdminAutomationPanel from '../../components/dashboard/AdminAutomationPanel';
 import LeadCreateForm from '../../components/dashboard/LeadCreateForm';
 import LeadEditForm from '../../components/dashboard/LeadEditForm';
+import ContactMessageModal from '../../components/dashboard/ContactMessageModal';
 import { PageLoader } from '../../components/ui/Spinner';
 import SearchBar from '../../components/ui/SearchBar';
 import SearchEmptyState from '../../components/ui/SearchEmptyState';
@@ -67,6 +68,7 @@ export default function AdminDashboard() {
   const [editingLead, setEditingLead] = useState<LeadSummary | null>(null);
   const [creatingLead, setCreatingLead] = useState(false);
   const [deletingLeadId, setDeletingLeadId] = useState<number | null>(null);
+  const [openedMessage, setOpenedMessage] = useState<ContactMessage | null>(null);
 
   const openCommunity = (c: Community) => {
     if (c.id) navigate(`/admin/communautes/${c.id}`);
@@ -118,6 +120,26 @@ export default function AdminDashboard() {
     } catch {
       /* silencieux */
     }
+  };
+
+  const openMessage = (m: ContactMessage) => {
+    setOpenedMessage(m);
+    void markRead(m);
+  };
+
+  const handleMessageReplied = (messageId: number) => {
+    setMessages((prev) =>
+      prev.map((x) =>
+        x.id === messageId
+          ? { ...x, isRead: true, replied: true, repliesCount: x.repliesCount + 1 }
+          : x,
+      ),
+    );
+    setOpenedMessage((prev) =>
+      prev && prev.id === messageId
+        ? { ...prev, isRead: true, replied: true, repliesCount: prev.repliesCount + 1 }
+        : prev,
+    );
   };
 
   const handleLeadEdit = async (data: { name: string; email: string; phone?: string | null }) => {
@@ -566,7 +588,10 @@ export default function AdminDashboard() {
                     variant="fade-up"
                     stagger={50}
                     maxDelay={350}
-                    onClick={() => markRead(m)}
+                    onClick={() => openMessage(m)}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Ouvrir la conversation : ${m.subject || 'Sans objet'}`}
                     className={`cursor-pointer rounded-3xl border p-5 transition-colors ${
                       m.isRead
                         ? 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
@@ -578,11 +603,25 @@ export default function AdminDashboard() {
                         {m.isRead ? <MailOpen className="h-4 w-4 text-slate-400" /> : <Mail className="h-4 w-4 text-togo-green" />}
                         <p className="font-bold text-slate-900 dark:text-white">{m.subject}</p>
                       </div>
-                      <span className="shrink-0 text-xs text-slate-400">{new Date(m.createdAt).toLocaleDateString('fr-FR')}</span>
+                      <div className="flex shrink-0 items-center gap-2">
+                        {m.replied && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">
+                            <CheckCircle2 className="h-3 w-3" /> Répondu
+                          </span>
+                        )}
+                        <span className="text-xs text-slate-400">{new Date(m.createdAt).toLocaleDateString('fr-FR')}</span>
+                      </div>
                     </div>
                     <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{m.message}</p>
                     <p className="mt-3 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                      {m.name} · <a href={`mailto:${m.email}`} className="text-togo-green hover:underline dark:text-togo-yellow">{m.email}</a>
+                      {m.name} ·{' '}
+                      <a
+                        href={`mailto:${m.email}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-togo-green hover:underline dark:text-togo-yellow"
+                      >
+                        {m.email}
+                      </a>
                     </p>
                   </StaggerReveal>
                 ))
@@ -628,6 +667,14 @@ export default function AdminDashboard() {
 
       {creatingLead && (
         <LeadCreateForm onClose={() => setCreatingLead(false)} onSubmit={handleLeadCreate} />
+      )}
+
+      {openedMessage && (
+        <ContactMessageModal
+          message={openedMessage}
+          onClose={() => setOpenedMessage(null)}
+          onReplied={handleMessageReplied}
+        />
       )}
     </DashboardLayout>
   );

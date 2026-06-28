@@ -9,6 +9,7 @@ import type {
   CommunityReport,
   CommunityReview,
   ContactMessage,
+  ContactReply,
   LeadSummary,
   LeadDetail,
   CountryData,
@@ -455,6 +456,19 @@ export const api = {
 
   adminMarkMessageRead: (id: number) =>
     request<null>(`/admin/messages/${id}/read`, { method: 'PATCH', auth: true }),
+
+  adminMessageReplies: (id: number) =>
+    request<{ message: ContactMessage; replies: ContactReply[] }>(
+      `/admin/messages/${id}/replies`,
+      { auth: true },
+    ),
+
+  adminReplyMessage: (id: number, data: { body: string }) =>
+    request<{ reply: ContactReply }>(`/admin/messages/${id}/replies`, {
+      method: 'POST',
+      body: data,
+      auth: true,
+    }),
 
   adminSupportConversations: () =>
     request<{ conversations: SupportConversation[] }>('/admin/support/conversations', { auth: true }),

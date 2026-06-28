@@ -66,6 +66,17 @@ export default defineConfig(({mode}) => {
         },
       }),
     ],
+    build: {
+      // Découpe les grosses dépendances en chunks séparés (meilleur cache + LCP).
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            icons: ['lucide-react'],
+          },
+        },
+      },
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

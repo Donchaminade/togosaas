@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Scale, Shield } from 'lucide-react';
 import ScrollReveal, { StaggerReveal } from '../components/motion/ScrollReveal';
 import Wave from '../components/ui/Wave';
+import { useSeo } from '../lib/seo';
 
 const SECTIONS = [
   {
@@ -172,6 +173,13 @@ const SECTIONS = [
 
 export default function MentionsLegales() {
   const year = new Date().getFullYear();
+
+  useSeo({
+    title: 'Mentions légales — TogoSaaS',
+    description:
+      'Mentions légales de TogoSaaS : éditeur, hébergement, propriété intellectuelle, données personnelles et cadre juridique de la plateforme.',
+    path: '/mentions-legales',
+  });
 
   return (
     <>

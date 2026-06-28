@@ -8,5 +8,7 @@ Disallow: /connexion
 Disallow: /inscription
 Disallow: /verifier-email
 
-# Sitemap dynamique genere par l'API (liste les solutions approuvees)
-Sitemap: https://togosaas.grosbit.com/sitemap.xml
+# Sitemap complet (genere au build, meme hote) : home, catalogue, pages cles
+# et toutes les solutions approuvees. Regenere par scripts/prerender.mjs avec
+# l'URL publique reelle (VITE_SITE_URL) au moment du deploiement.
+Sitemap: https://togosaas.vercel.app/sitemap.xml

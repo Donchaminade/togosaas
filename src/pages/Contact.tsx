@@ -7,9 +7,18 @@ import Spinner from '../components/ui/Spinner';
 import { useToast } from '../components/ui/Toast';
 import { DIAPO } from '../data/heroSlides';
 import { api, ApiError } from '../lib/api';
+import { useSeo } from '../lib/seo';
 
 export default function Contact() {
   const { notify } = useToast();
+
+  useSeo({
+    title: 'Contact — TogoSaaS',
+    description:
+      'Contactez l’équipe TogoSaaS : questions, suggestions, partenariats ou support éditeur. Réponse rapide par email ou via le formulaire de contact.',
+    path: '/contact',
+  });
+
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(false);

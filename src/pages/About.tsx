@@ -19,6 +19,7 @@ import ScrollReveal, { StaggerReveal } from '../components/motion/ScrollReveal';
 import { PageLoader } from '../components/ui/Spinner';
 import { api } from '../lib/api';
 import { mediaUrl } from '../lib/media';
+import { useSeo } from '../lib/seo';
 import type { SiteAuthor } from '../types';
 
 import { DIAPO } from '../data/heroSlides';
@@ -93,6 +94,13 @@ const KEYWORDS = [
 export default function About() {
   const [author, setAuthor] = useState<SiteAuthor | null>(null);
   const [loadingAuthor, setLoadingAuthor] = useState(true);
+
+  useSeo({
+    title: 'À propos — TogoSaaS, le hub des solutions SaaS du Togo',
+    description:
+      'Découvrez TogoSaaS : la première marketplace nationale qui recense, vérifie et valorise les solutions SaaS togolaises. Notre mission, notre vision et notre charte qualité.',
+    path: '/a-propos',
+  });
 
   useEffect(() => {
     api.getAuthor()

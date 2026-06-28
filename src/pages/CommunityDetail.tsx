@@ -89,30 +89,47 @@ export default function CommunityDetail() {
     jsonLd: community
       ? {
           '@context': 'https://schema.org',
-          '@type': 'SoftwareApplication',
-          name: community.name,
-          description: seoDescription,
-          applicationCategory: 'BusinessApplication',
-          operatingSystem: 'Web',
-          url: `${SITE_URL}${communityPublicPath(community)}`,
-          ...(seoImage ? { image: mediaUrl(seoImage) } : {}),
-          ...(community.websiteUrl ? { sameAs: [community.websiteUrl] } : {}),
-          offers: {
-            '@type': 'Offer',
-            price: community.priceAmount ?? 0,
-            priceCurrency: community.currency || 'XOF',
-          },
-          ...(community.ratingAvg && (community.reviewsCount ?? 0) > 0
-            ? {
-                aggregateRating: {
-                  '@type': 'AggregateRating',
-                  ratingValue: community.ratingAvg,
-                  reviewCount: community.reviewsCount,
-                  bestRating: 5,
-                  worstRating: 1,
+          '@graph': [
+            {
+              '@type': 'SoftwareApplication',
+              name: community.name,
+              description: seoDescription,
+              applicationCategory: 'BusinessApplication',
+              operatingSystem: 'Web',
+              url: `${SITE_URL}${communityPublicPath(community)}`,
+              ...(seoImage ? { image: mediaUrl(seoImage) } : {}),
+              ...(community.websiteUrl ? { sameAs: [community.websiteUrl] } : {}),
+              offers: {
+                '@type': 'Offer',
+                price: community.priceAmount ?? 0,
+                priceCurrency: community.currency || 'XOF',
+              },
+              ...(community.ratingAvg && (community.reviewsCount ?? 0) > 0
+                ? {
+                    aggregateRating: {
+                      '@type': 'AggregateRating',
+                      ratingValue: community.ratingAvg,
+                      reviewCount: community.reviewsCount,
+                      bestRating: 5,
+                      worstRating: 1,
+                    },
+                  }
+                : {}),
+            },
+            {
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Accueil', item: `${SITE_URL}/` },
+                { '@type': 'ListItem', position: 2, name: 'Solutions', item: `${SITE_URL}/solutions` },
+                {
+                  '@type': 'ListItem',
+                  position: 3,
+                  name: community.name,
+                  item: `${SITE_URL}${communityPublicPath(community)}`,
                 },
-              }
-            : {}),
+              ],
+            },
+          ],
         }
       : null,
   });

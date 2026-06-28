@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
@@ -8,27 +8,31 @@ import SplashScreen, { shouldShowSplash } from './components/ui/SplashScreen';
 import InstallPrompt from './components/pwa/InstallPrompt';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicLayout from './components/layout/PublicLayout';
+import { PageLoader } from './components/ui/Spinner';
+// Pages publiques principales : chargées d'emblée (SEO + 1re visite rapide).
 import Home from './pages/Home';
 import About from './pages/About';
 import Communities from './pages/Communities';
 import CommunityDetail from './pages/CommunityDetail';
-import CommunityEventDetail from './pages/CommunityEventDetail';
-import ReportCommunity from './pages/ReportCommunity';
-import ReportTrack from './pages/ReportTrack';
 import Contact from './pages/Contact';
 import MentionsLegales from './pages/MentionsLegales';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import VerifyEmail from './pages/VerifyEmail';
-import LeadDashboard from './pages/dashboard/LeadDashboard';
-import LeadCommunityEdit from './pages/dashboard/LeadCommunityEdit';
-import AdminDashboard from './pages/dashboard/AdminDashboard';
-import AdminCommunityCreate from './pages/dashboard/AdminCommunityCreate';
-import AdminCommunityEdit from './pages/dashboard/AdminCommunityEdit';
-import AdminCommunityDetail from './pages/dashboard/AdminCommunityDetail';
-import AdminLeadDetail from './pages/dashboard/AdminLeadDetail';
 import NotFound from './pages/NotFound';
 import { LegacyCommunityEventRedirect, LegacyCommunityRedirect, LegacyCommunityReportRedirect } from './components/LegacyRedirects';
+
+// Pages secondaires / espaces privés : chargées à la demande (code-splitting).
+const CommunityEventDetail = lazy(() => import('./pages/CommunityEventDetail'));
+const ReportCommunity = lazy(() => import('./pages/ReportCommunity'));
+const ReportTrack = lazy(() => import('./pages/ReportTrack'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const LeadDashboard = lazy(() => import('./pages/dashboard/LeadDashboard'));
+const LeadCommunityEdit = lazy(() => import('./pages/dashboard/LeadCommunityEdit'));
+const AdminDashboard = lazy(() => import('./pages/dashboard/AdminDashboard'));
+const AdminCommunityCreate = lazy(() => import('./pages/dashboard/AdminCommunityCreate'));
+const AdminCommunityEdit = lazy(() => import('./pages/dashboard/AdminCommunityEdit'));
+const AdminCommunityDetail = lazy(() => import('./pages/dashboard/AdminCommunityDetail'));
+const AdminLeadDetail = lazy(() => import('./pages/dashboard/AdminLeadDetail'));
 
 export default function App() {
   const [splashDone, setSplashDone] = useState(() => !shouldShowSplash());
@@ -41,6 +45,7 @@ export default function App() {
           {!splashDone && <SplashScreen onComplete={() => setSplashDone(true)} />}
           <InstallPrompt />
           <BrowserRouter>
+            <Suspense fallback={<PageLoader label="Chargement…" />}>
             <Routes>
               {/* Site vitrine */}
               <Route element={<PublicLayout />}>
@@ -145,6 +150,7 @@ export default function App() {
 
               <Route path="/dashboard" element={<Navigate to="/espace-lead" replace />} />
             </Routes>
+            </Suspense>
           </BrowserRouter>
           </ConfirmProvider>
         </ToastProvider>

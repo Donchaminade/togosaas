@@ -62,15 +62,28 @@ export default function Home() {
     path: '/',
     jsonLd: {
       '@context': 'https://schema.org',
-      '@type': 'WebSite',
-      name: 'TogoSaaS',
-      url: SITE_URL,
-      description: 'Le hub des solutions SaaS du Togo.',
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: `${SITE_URL}/solutions?q={search_term_string}`,
-        'query-input': 'required name=search_term_string',
-      },
+      '@graph': [
+        {
+          '@type': 'WebSite',
+          name: 'TogoSaaS',
+          url: SITE_URL,
+          description: 'Le hub des solutions SaaS du Togo.',
+          inLanguage: 'fr',
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: `${SITE_URL}/solutions?q={search_term_string}`,
+            'query-input': 'required name=search_term_string',
+          },
+        },
+        {
+          '@type': 'Organization',
+          name: 'TogoSaaS',
+          url: SITE_URL,
+          logo: `${SITE_URL}/togosaas-icon.png`,
+          description: 'Le hub qui recense, valorise et connecte les solutions SaaS du Togo.',
+          areaServed: 'TG',
+        },
+      ],
     },
   });
 

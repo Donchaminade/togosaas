@@ -77,6 +77,8 @@ export function useSeo(options: SeoOptions): void {
     setMeta('meta[name="twitter:title"]', 'name', 'twitter:title', title);
     setMeta('meta[property="og:type"]', 'property', 'og:type', type);
     setMeta('meta[property="og:url"]', 'property', 'og:url', url);
+    setMeta('meta[property="og:site_name"]', 'property', 'og:site_name', 'TogoSaaS — Hub SaaS du Togo');
+    setMeta('meta[property="og:locale"]', 'property', 'og:locale', 'fr_FR');
     setMeta('meta[property="og:image"]', 'property', 'og:image', image);
     setMeta('meta[name="twitter:image"]', 'name', 'twitter:image', image);
     setMeta('meta[name="twitter:card"]', 'name', 'twitter:card', 'summary_large_image');

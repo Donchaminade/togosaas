@@ -736,14 +736,25 @@ final class AdminController
     public function messages(Request $request): void
     {
         Auth::requireAdmin();
-        $rows = Database::connection()
-            ->query(
+        $db = Database::connection();
+
+        // contact_replies est additive (upgrade-contact-replies.sql). Si la table
+        // n'a pas encore ete importee sur Hostinger, on ne fait pas echouer tout le dashboard.
+        try {
+            $rows = $db->query(
                 'SELECT cm.*,
                         (SELECT COUNT(*) FROM contact_replies cr WHERE cr.contact_message_id = cm.id) AS replies_count
                  FROM contact_messages cm
                  ORDER BY cm.created_at DESC'
-            )
-            ->fetchAll();
+            )->fetchAll();
+        } catch (\PDOException $e) {
+            error_log('AdminController::messages contact_replies unavailable: ' . $e->getMessage());
+            $rows = $db->query(
+                'SELECT cm.*, 0 AS replies_count
+                 FROM contact_messages cm
+                 ORDER BY cm.created_at DESC'
+            )->fetchAll();
+        }
 
         $messages = array_map(static function ($r) {
             $repliesCount = (int) ($r['replies_count'] ?? 0);

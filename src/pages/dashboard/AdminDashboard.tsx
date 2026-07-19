@@ -80,16 +80,28 @@ export default function AdminDashboard() {
 
   const refreshAll = useCallback(async () => {
     try {
-      const [s, c, l, m] = await Promise.all([
+      const [s, c, l, m] = await Promise.allSettled([
         api.adminStats(),
         api.adminCommunities(),
         api.adminLeads(),
         api.adminMessages(),
       ]);
-      setStats(s.data);
-      setCommunities(c.data.communities);
-      setLeads(l.data.leads);
-      setMessages(m.data.messages);
+
+      let failed = 0;
+      if (s.status === 'fulfilled') setStats(s.value.data);
+      else failed += 1;
+      if (c.status === 'fulfilled') setCommunities(c.value.data.communities);
+      else failed += 1;
+      if (l.status === 'fulfilled') setLeads(l.value.data.leads);
+      else failed += 1;
+      if (m.status === 'fulfilled') setMessages(m.value.data.messages);
+      else failed += 1;
+
+      if (failed === 4) {
+        notify('Erreur de chargement des données admin.', 'error');
+      } else if (failed > 0) {
+        notify("Certaines données admin n'ont pas pu être chargées.", 'error');
+      }
     } catch {
       notify('Erreur de chargement des données admin.', 'error');
     } finally {

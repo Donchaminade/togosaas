@@ -52,14 +52,23 @@ final class ContactController
             Response::error('Message introuvable.', 404);
         }
 
-        $stmt = Database::connection()->prepare(
-            'SELECT * FROM contact_replies WHERE contact_message_id = :id ORDER BY created_at ASC, id ASC'
-        );
-        $stmt->execute(['id' => $id]);
+        try {
+            $stmt = Database::connection()->prepare(
+                'SELECT * FROM contact_replies WHERE contact_message_id = :id ORDER BY created_at ASC, id ASC'
+            );
+            $stmt->execute(['id' => $id]);
+            $replies = $stmt->fetchAll();
+        } catch (\PDOException $e) {
+            error_log('ContactController::adminReplies: ' . $e->getMessage());
+            Response::error(
+                'Reponses contact indisponibles. Importez upgrade-contact-replies.sql sur la base.',
+                503
+            );
+        }
 
         Response::success([
             'message' => self::serializeMessage($message),
-            'replies' => array_map([self::class, 'serializeReply'], $stmt->fetchAll()),
+            'replies' => array_map([self::class, 'serializeReply'], $replies),
         ]);
     }
 
@@ -84,15 +93,23 @@ final class ContactController
         $body = trim((string) $request->input('body'));
         $db = Database::connection();
 
-        $db->prepare(
-            'INSERT INTO contact_replies (contact_message_id, admin_id, body, email_status, created_at)
-             VALUES (:mid, :aid, :body, :status, NOW())'
-        )->execute([
-            'mid' => $id,
-            'aid' => (int) ($admin['id'] ?? 0) ?: null,
-            'body' => $body,
-            'status' => 'pending',
-        ]);
+        try {
+            $db->prepare(
+                'INSERT INTO contact_replies (contact_message_id, admin_id, body, email_status, created_at)
+                 VALUES (:mid, :aid, :body, :status, NOW())'
+            )->execute([
+                'mid' => $id,
+                'aid' => (int) ($admin['id'] ?? 0) ?: null,
+                'body' => $body,
+                'status' => 'pending',
+            ]);
+        } catch (\PDOException $e) {
+            error_log('ContactController::adminReply: ' . $e->getMessage());
+            Response::error(
+                'Reponses contact indisponibles. Importez upgrade-contact-replies.sql sur la base.',
+                503
+            );
+        }
         $replyId = (int) $db->lastInsertId();
 
         // Envoi de l'email au visiteur (expediteur du message d'origine).

@@ -249,22 +249,11 @@ final class AdminController
         $labels = ['approved' => 'approuvee', 'rejected' => 'rejetee', 'pending' => 'remise en attente'];
 
         if ($status === 'approved' || $status === 'rejected') {
-            $info = $db->prepare(
-                'SELECT c.name, c.leader_name, c.leader_email, u.name AS owner_name, u.email AS owner_email
-                 FROM communities c LEFT JOIN users u ON u.id = c.user_id WHERE c.id = :id LIMIT 1'
+            AutomationEngine::fireForCommunityOwner(
+                $id,
+                $status === 'approved' ? 'community_approved' : 'community_rejected',
+                ['statut' => $labels[$status]]
             );
-            $info->execute(['id' => $id]);
-            $row = $info->fetch() ?: [];
-            $email = (string) ($row['owner_email'] ?? $row['leader_email'] ?? '');
-            $name = (string) ($row['owner_name'] ?? $row['leader_name'] ?? '');
-
-            AutomationEngine::fire($status === 'approved' ? 'community_approved' : 'community_rejected', [
-                'email' => $email,
-                'name' => $name,
-                'nom' => $name,
-                'solution' => (string) ($row['name'] ?? ''),
-                'statut' => $labels[$status],
-            ]);
         }
 
         Response::success(['id' => $id, 'status' => $status], 'Communaute ' . $labels[$status] . '.');

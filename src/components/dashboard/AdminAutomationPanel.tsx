@@ -20,6 +20,7 @@ import RichTextEditor from '../ui/RichTextEditor';
 import type {
   Automation,
   AutomationAudience,
+  AutomationAudienceMeta,
   AutomationLog,
   AutomationSchedule,
   AutomationTrigger,
@@ -28,6 +29,23 @@ import type {
   MessageTemplate,
   ScheduleMode,
 } from '../../types';
+
+const FALLBACK_AUDIENCES: AutomationAudienceMeta[] = [
+  { key: 'all_leads', label: 'Tous les leads' },
+  { key: 'selection', label: 'Sélection manuelle' },
+  { key: 'leads_no_solution', label: 'Leads sans solution approuvée' },
+  { key: 'leads_inactive', label: 'Leads inactifs (21+ jours)' },
+  { key: 'leads_incomplete_profile', label: 'Profil incomplet' },
+  { key: 'leads_pending_review', label: 'Fiche en attente de validation' },
+  { key: 'leads_with_solution', label: 'Leads avec solution approuvée' },
+  { key: 'leads_dormant_solution', label: 'Solution dormante' },
+  { key: 'leads_stale_profile', label: 'Fiche à actualiser' },
+  { key: 'leads_onboarding_d3', label: 'Onboarding J3' },
+  { key: 'leads_onboarding_d7', label: 'Onboarding J7' },
+  { key: 'leads_recently_approved', label: 'Récemment approuvés' },
+  { key: 'admins', label: 'Administrateurs / sous-admins' },
+  { key: 'category_tag', label: 'Filtre par tag / catégorie' },
+];
 
 type View = 'automations' | 'templates' | 'logs';
 
@@ -47,6 +65,7 @@ export default function AdminAutomationPanel() {
   const [loading, setLoading] = useState(true);
 
   const [triggers, setTriggers] = useState<AutomationTriggerMeta[]>([]);
+  const [audiencesMeta, setAudiencesMeta] = useState<AutomationAudienceMeta[]>(FALLBACK_AUDIENCES);
   const [smtpConfigured, setSmtpConfigured] = useState(true);
   const [templates, setTemplates] = useState<MessageTemplate[]>([]);
   const [automations, setAutomations] = useState<Automation[]>([]);
@@ -66,6 +85,9 @@ export default function AdminAutomationPanel() {
         api.adminEmailRecipients(),
       ]);
       setTriggers(meta.data.triggers);
+      if (meta.data.audiences && meta.data.audiences.length > 0) {
+        setAudiencesMeta(meta.data.audiences as AutomationAudienceMeta[]);
+      }
       setSmtpConfigured(meta.data.smtpConfigured);
       setTemplates(tpl.data.templates);
       setAutomations(autos.data.automations);
@@ -168,6 +190,7 @@ export default function AdminAutomationPanel() {
         <AutomationForm
           automation={automationModal === 'new' ? null : automationModal}
           triggers={triggers}
+          audiencesMeta={audiencesMeta}
           templates={templates}
           recipients={recipients}
           onClose={() => setAutomationModal(null)}
@@ -278,8 +301,10 @@ function AutomationsView({
                   </p>
                   <p className="mt-0.5 text-xs text-slate-400">
                     {a.audience === 'event' && 'Destinataire : la personne concernée par l’évènement'}
-                    {a.audience === 'all_leads' && 'Destinataires : tous les leads'}
                     {a.audience === 'selection' && `Destinataires : ${a.audienceUserIds.length} sélectionné(s)`}
+                    {a.audience !== 'event' && a.audience !== 'selection' && (
+                      <>Audience : {a.audienceLabel ?? a.audience}</>
+                    )}
                     {a.nextRunAt && <> · Prochaine exéc. : {new Date(a.nextRunAt).toLocaleString('fr-FR')}</>}
                   </p>
                 </div>
@@ -507,6 +532,7 @@ function TemplateForm({
 function AutomationForm({
   automation,
   triggers,
+  audiencesMeta,
   templates,
   recipients,
   onClose,
@@ -514,6 +540,7 @@ function AutomationForm({
 }: {
   automation: Automation | null;
   triggers: AutomationTriggerMeta[];
+  audiencesMeta: AutomationAudienceMeta[];
   templates: MessageTemplate[];
   recipients: EmailRecipientOption[];
   onClose: () => void;
@@ -525,12 +552,13 @@ function AutomationForm({
   const [templateId, setTemplateId] = useState<number>(automation?.templateId ?? templates[0]?.id ?? 0);
   const [isActive, setIsActive] = useState<boolean>(automation?.isActive ?? true);
   const [audience, setAudience] = useState<AutomationAudience>(
-    automation?.audience === 'selection' ? 'selection' : 'all_leads',
+    automation?.audience && automation.audience !== 'event' ? automation.audience : 'all_leads',
   );
   const [userIds, setUserIds] = useState<number[]>(automation?.audienceUserIds ?? []);
   const [schedule, setSchedule] = useState<AutomationSchedule>(
     automation?.schedule ?? { mode: 'once', time: '09:00' },
   );
+  const [categoryTag, setCategoryTag] = useState(automation?.schedule?.tag ?? 'fintech');
   const [search, setSearch] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -553,9 +581,25 @@ function AutomationForm({
     if (!isEvent && audience === 'selection' && userIds.length === 0) {
       return notify('Sélectionnez au moins un destinataire.', 'error');
     }
+    if (!isEvent && audience === 'category_tag' && categoryTag.trim() === '') {
+      return notify('Indiquez un tag / catégorie.', 'error');
+    }
 
     setSaving(true);
     try {
+      let schedulePayload: AutomationSchedule | undefined;
+      if (isScheduled) {
+        schedulePayload = {
+          ...schedule,
+          ...(audience === 'category_tag' ? { tag: categoryTag.trim().toLowerCase() } : {}),
+        };
+      } else if (!isEvent && audience === 'category_tag') {
+        schedulePayload = {
+          mode: 'once',
+          tag: categoryTag.trim().toLowerCase(),
+        };
+      }
+
       const payload = {
         name: name.trim(),
         triggerEvent,
@@ -563,7 +607,8 @@ function AutomationForm({
         isActive,
         audience: isEvent ? ('event' as AutomationAudience) : audience,
         userIds: !isEvent && audience === 'selection' ? userIds : undefined,
-        schedule: isScheduled ? schedule : undefined,
+        schedule: schedulePayload,
+        categoryTag: !isEvent && audience === 'category_tag' ? categoryTag.trim().toLowerCase() : undefined,
       };
       if (automation) await api.adminUpdateAutomation(automation.id, payload);
       else await api.adminCreateAutomation(payload);
@@ -616,24 +661,27 @@ function AutomationForm({
           </p>
         ) : (
           <>
-            <Field label="Destinataires">
-              <div className="flex gap-2">
-                {(['all_leads', 'selection'] as AutomationAudience[]).map((a) => (
-                  <button
-                    key={a}
-                    type="button"
-                    onClick={() => setAudience(a)}
-                    className={`flex-1 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors ${
-                      audience === a
-                        ? 'border-togo-green bg-togo-green/10 text-togo-green'
-                        : 'border-slate-200 text-slate-500 dark:border-slate-700'
-                    }`}
-                  >
-                    {a === 'all_leads' ? `Tous les leads (${recipients.length})` : 'Sélection'}
-                  </button>
+            <Field label="Audience">
+              <select
+                title="Audience"
+                value={audience}
+                onChange={(e) => setAudience(e.target.value as AutomationAudience)}
+                className={selectCls}
+              >
+                {audiencesMeta.map((a) => (
+                  <option key={a.key} value={a.key}>
+                    {a.label}
+                    {a.key === 'all_leads' ? ` (${recipients.length})` : ''}
+                  </option>
                 ))}
-              </div>
+              </select>
             </Field>
+
+            {audience === 'category_tag' && (
+              <Field label="Tag / catégorie">
+                <TextInput value={categoryTag} onChange={setCategoryTag} placeholder="Ex. fintech, education…" />
+              </Field>
+            )}
 
             {audience === 'selection' && (
               <div className="space-y-2">

@@ -178,7 +178,8 @@ Le produit est **fonctionnel de bout en bout** : annuaire, inscription lead, mod
 | **Haute** | Sauvegardes MySQL automatiques |
 | **Haute** | Lancer les migrations sur la base de prod (rôle `subadmin` — 019, emailing — 020, automatisations — 021) |
 | **Haute** | Configurer le SMTP (`MAIL_*`) avec une boîte dédiée + **SPF/DKIM** sur le domaine pour l'emailing et les automatisations |
-| **Haute** | Programmer un **cron** (toutes les 5 min) sur `backend/database/automations-worker.php` pour les déclencheurs planifiés |
+| **Haute** | Programmer un **cron** (toutes les 5–15 min) sur `backend/database/automations-worker.php` pour les campagnes planifiées (15 autos email) |
+| **Haute** | Importer `upgrade-automations-campaigns.sql` puis `seed-automations-campaigns.sql` (idempotents) pour les 15 campagnes |
 | **Haute** | Permissions d'écriture sur `backend/storage/email` (pièces jointes des campagnes) |
 | **Moyenne** | Nom de domaine + config SPA (fallback `index.html` pour React Router) |
 | **Moyenne** | ~~Politique de confidentialité / mentions légales~~ → page `/mentions-legales` disponible |

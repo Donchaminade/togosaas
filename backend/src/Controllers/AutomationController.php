@@ -25,16 +25,39 @@ final class AutomationController
         'community_approved',
         'community_rejected',
         'report_status_changed',
+        'review_created',
+        'rating_threshold',
+        'report_filed',
     ];
 
     private const ALL_TRIGGERS = [
-        'lead_register' => "Inscription d'un nouveau lead",
+        'lead_register' => "Inscription d'un nouveau lead (onboarding J0)",
         'community_submitted' => "Soumission d'une solution SaaS",
-        'community_approved' => "Solution approuvee",
-        'community_rejected' => "Solution rejetee",
+        'community_approved' => 'Solution approuvee',
+        'community_rejected' => 'Solution refusee',
         'report_status_changed' => "Changement de statut d'un signalement",
+        'review_created' => 'Nouveau avis ou nouvelle note',
+        'rating_threshold' => 'Seuil Top note atteint',
+        'report_filed' => 'Nouveau signalement sur une solution',
         'scheduled' => 'Planifie (date / recurrence)',
         'manual' => 'Declenchement manuel',
+    ];
+
+    private const AUDIENCES = [
+        'all_leads' => 'Tous les leads',
+        'selection' => 'Selection manuelle',
+        'leads_no_solution' => 'Leads sans solution approuvee',
+        'leads_inactive' => 'Leads inactifs (21+ jours)',
+        'leads_incomplete_profile' => 'Profil incomplet',
+        'leads_pending_review' => 'Fiche en attente de validation',
+        'leads_with_solution' => 'Leads avec solution approuvee',
+        'leads_dormant_solution' => 'Solution dormante (6+ semaines)',
+        'leads_stale_profile' => 'Fiche a actualiser (8-12 semaines)',
+        'leads_onboarding_d3' => 'Onboarding J3',
+        'leads_onboarding_d7' => 'Onboarding J7',
+        'leads_recently_approved' => 'Recemment approuves (reengagement)',
+        'admins' => 'Administrateurs / sous-admins',
+        'category_tag' => 'Filtre par tag / categorie',
     ];
 
     /* ----------------------------- Meta ----------------------------- */
@@ -53,8 +76,14 @@ final class AutomationController
             ];
         }
 
+        $audiences = [];
+        foreach (self::AUDIENCES as $key => $label) {
+            $audiences[] = ['key' => $key, 'label' => $label];
+        }
+
         Response::success([
             'triggers' => $triggers,
+            'audiences' => $audiences,
             'smtpConfigured' => Mailer::isConfigured(),
         ]);
     }
@@ -317,7 +346,7 @@ final class AutomationController
         if (!in_array($trigger, self::EVENT_TRIGGERS, true)) {
             // scheduled ou manual : audience requise.
             $audience = (string) $request->input('audience', 'all_leads');
-            if (!in_array($audience, ['all_leads', 'selection'], true)) {
+            if (!array_key_exists($audience, self::AUDIENCES)) {
                 Response::error('Audience invalide.', 422);
             }
 
@@ -330,11 +359,21 @@ final class AutomationController
                 $idsJson = json_encode($ids);
             }
 
-            if ($trigger === 'scheduled') {
-                $schedule = $request->input('schedule');
-                if (!is_array($schedule)) {
-                    Response::error('Configuration de planification requise.', 422);
+            $schedule = $request->input('schedule');
+            if (!is_array($schedule)) {
+                $schedule = [];
+            }
+
+            // Tag thematique (audience category_tag).
+            $tag = trim((string) ($request->input('categoryTag') ?? $schedule['tag'] ?? ''));
+            if ($audience === 'category_tag') {
+                if ($tag === '') {
+                    Response::error('Indiquez un tag / categorie pour cette audience.', 422);
                 }
+                $schedule['tag'] = $tag;
+            }
+
+            if ($trigger === 'scheduled') {
                 $mode = (string) ($schedule['mode'] ?? 'once');
                 if (!in_array($mode, ['once', 'daily', 'weekly', 'monthly'], true)) {
                     Response::error('Mode de planification invalide.', 422);
@@ -344,6 +383,9 @@ final class AutomationController
                 if ($nextRun === null && $mode === 'once') {
                     Response::error('La date planifiee doit etre dans le futur.', 422);
                 }
+            } elseif ($schedule !== []) {
+                // Manual + extras (tag, cooldown) stockes dans schedule_config.
+                $scheduleJson = json_encode($schedule, JSON_UNESCAPED_UNICODE);
             }
         }
 
@@ -395,6 +437,7 @@ final class AutomationController
             'templateName' => $row['template_name'] ?? null,
             'isActive' => (bool) $row['is_active'],
             'audience' => $row['audience'],
+            'audienceLabel' => self::AUDIENCES[$row['audience']] ?? ($row['audience'] === 'event' ? 'Evenement' : $row['audience']),
             'audienceUserIds' => $row['audience_user_ids'] ? (json_decode((string) $row['audience_user_ids'], true) ?: []) : [],
             'schedule' => $row['schedule_config'] ? (json_decode((string) $row['schedule_config'], true) ?: null) : null,
             'lastRunAt' => $row['last_run_at'] ?? null,

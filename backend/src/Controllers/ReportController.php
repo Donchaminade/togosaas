@@ -62,6 +62,8 @@ final class ReportController
 
         $trackingCode = $this->uniqueTrackingCode($db);
 
+        $category = (string) $request->input('category');
+
         $db->prepare(
             'INSERT INTO community_reports
              (community_id, target_type, category, description, evidence, tracking_code, status, created_at)
@@ -69,10 +71,17 @@ final class ReportController
         )->execute([
             'cid' => $communityId,
             'target' => (string) $request->input('targetType'),
-            'category' => (string) $request->input('category'),
+            'category' => $category,
             'description' => trim((string) $request->input('description')),
             'evidence' => json_encode($evidence, JSON_UNESCAPED_UNICODE),
             'code' => $trackingCode,
+        ]);
+
+        // Notifie le lead proprietaire (sans exposer le signalant).
+        $categoryLabel = ReportHelper::CATEGORIES[$category] ?? $category;
+        AutomationEngine::fireForCommunityOwner($communityId, 'report_filed', [
+            'report_category' => $categoryLabel,
+            'solution' => (string) $community['name'],
         ]);
 
         Response::success([

@@ -385,10 +385,28 @@ export type AutomationTrigger =
   | 'community_approved'
   | 'community_rejected'
   | 'report_status_changed'
+  | 'review_created'
+  | 'rating_threshold'
+  | 'report_filed'
   | 'scheduled'
   | 'manual';
 
-export type AutomationAudience = 'event' | 'all_leads' | 'selection';
+export type AutomationAudience =
+  | 'event'
+  | 'all_leads'
+  | 'selection'
+  | 'leads_no_solution'
+  | 'leads_inactive'
+  | 'leads_incomplete_profile'
+  | 'leads_pending_review'
+  | 'leads_with_solution'
+  | 'leads_dormant_solution'
+  | 'leads_stale_profile'
+  | 'leads_onboarding_d3'
+  | 'leads_onboarding_d7'
+  | 'leads_recently_approved'
+  | 'admins'
+  | 'category_tag';
 
 export type ScheduleMode = 'once' | 'daily' | 'weekly' | 'monthly';
 
@@ -398,6 +416,18 @@ export interface AutomationSchedule {
   time?: string;
   dayOfWeek?: number;
   dayOfMonth?: number;
+  tag?: string;
+  category?: string;
+  cooldown_days?: number;
+  inactive_days?: number;
+  dormant_weeks?: number;
+  stale_weeks?: number;
+  approved_within_days?: number;
+}
+
+export interface AutomationAudienceMeta {
+  key: AutomationAudience;
+  label: string;
 }
 
 export interface Automation {
@@ -409,6 +439,7 @@ export interface Automation {
   templateName?: string | null;
   isActive: boolean;
   audience: AutomationAudience;
+  audienceLabel?: string;
   audienceUserIds: number[];
   schedule?: AutomationSchedule | null;
   lastRunAt?: string | null;

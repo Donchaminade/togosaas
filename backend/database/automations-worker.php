@@ -3,13 +3,15 @@
 declare(strict_types=1);
 
 /**
- * Worker des automatisations planifiees.
+ * Worker des automatisations planifiees (campagnes email).
  *
- * A executer periodiquement via cron (ex. toutes les 5 minutes) :
- *   * /5 * * * * php /chemin/vers/backend/database/automations-worker.php >> /chemin/logs/automations.log 2>&1
+ * Cron Hostinger recommande (toutes les 5 a 15 minutes) :
+ *   toutes les 5 min : php /home/USER/domains/.../backend/database/automations-worker.php
+ *   (exemple crontab : star-slash-5 * * * * php ... >> logs/automations.log 2>&1)
  *
  * Il traite :
- *   - les automatisations planifiees dont l'echeance est atteinte ;
+ *   - les automatisations planifiees dont l'echeance est atteinte
+ *     (hebdo engagement, inactivite, onboarding J3/J7, digests, etc.) ;
  *   - toute entree en attente dans la file (filet de securite).
  *
  * Reserve a l'execution en ligne de commande (CLI) pour des raisons de securite.

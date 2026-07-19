@@ -17,6 +17,7 @@ final class TemplateRenderer
         ['key' => 'email', 'label' => 'Email du destinataire'],
         ['key' => 'date', 'label' => 'Date du jour'],
         ['key' => 'site', 'label' => 'Nom du site'],
+        ['key' => 'frontend_url', 'label' => 'URL du site (frontend)'],
     ];
 
     /** Variables additionnelles par declencheur. */
@@ -25,6 +26,9 @@ final class TemplateRenderer
         'community_approved' => [
             ['key' => 'solution', 'label' => 'Nom de la solution'],
             ['key' => 'statut', 'label' => 'Statut de la solution'],
+            ['key' => 'community_url', 'label' => 'Lien public de la solution'],
+            ['key' => 'share_linkedin', 'label' => 'Lien partage LinkedIn'],
+            ['key' => 'share_whatsapp', 'label' => 'Lien partage WhatsApp'],
         ],
         'community_rejected' => [
             ['key' => 'solution', 'label' => 'Nom de la solution'],
@@ -34,6 +38,45 @@ final class TemplateRenderer
             ['key' => 'solution', 'label' => 'Solution concernee'],
             ['key' => 'statut', 'label' => 'Statut du signalement'],
             ['key' => 'code', 'label' => 'Code de suivi du signalement'],
+        ],
+        'review_created' => [
+            ['key' => 'solution', 'label' => 'Nom de la solution'],
+            ['key' => 'rating', 'label' => 'Note attribuee (1-5)'],
+            ['key' => 'rating_avg', 'label' => 'Note moyenne actuelle'],
+            ['key' => 'reviews_count', 'label' => 'Nombre total d\'avis'],
+        ],
+        'rating_threshold' => [
+            ['key' => 'solution', 'label' => 'Nom de la solution'],
+            ['key' => 'rating_avg', 'label' => 'Note moyenne'],
+            ['key' => 'reviews_count', 'label' => 'Nombre d\'avis'],
+            ['key' => 'badge', 'label' => 'Nom du badge (ex. Top note)'],
+        ],
+        'report_filed' => [
+            ['key' => 'solution', 'label' => 'Solution concernee'],
+            ['key' => 'report_category', 'label' => 'Categorie du signalement'],
+        ],
+        'scheduled' => [
+            ['key' => 'solution', 'label' => 'Nom de la solution (si applicable)'],
+            ['key' => 'profile_pct', 'label' => 'Pourcentage de completude du profil'],
+            ['key' => 'missing_fields', 'label' => 'Champs manquants'],
+            ['key' => 'likes_week', 'label' => 'Likes de la semaine'],
+            ['key' => 'reviews_week', 'label' => 'Avis de la semaine'],
+            ['key' => 'rating_avg', 'label' => 'Note moyenne'],
+            ['key' => 'cta_url', 'label' => 'URL du bouton d\'action'],
+            ['key' => 'new_leads_week', 'label' => 'Nouveaux leads (digest admin)'],
+            ['key' => 'pending_solutions', 'label' => 'Solutions en attente'],
+            ['key' => 'pending_reports', 'label' => 'Signalements en cours'],
+            ['key' => 'flagged_reviews', 'label' => 'Avis signales'],
+            ['key' => 'failed_mails_week', 'label' => 'Emails en echec (7j)'],
+            ['key' => 'category', 'label' => 'Tag / categorie thematique'],
+            ['key' => 'share_linkedin', 'label' => 'Lien partage LinkedIn'],
+            ['key' => 'share_whatsapp', 'label' => 'Lien partage WhatsApp'],
+            ['key' => 'community_url', 'label' => 'Lien public de la solution'],
+        ],
+        'manual' => [
+            ['key' => 'solution', 'label' => 'Nom de la solution (si applicable)'],
+            ['key' => 'category', 'label' => 'Tag / categorie thematique'],
+            ['key' => 'cta_url', 'label' => 'URL du bouton d\'action'],
         ],
     ];
 
@@ -60,12 +103,13 @@ final class TemplateRenderer
         return array_merge(self::COMMON, self::BY_EVENT[$event] ?? []);
     }
 
-    /** Contexte de base toujours disponible (date, site). */
+    /** Contexte de base toujours disponible (date, site, frontend). */
     public static function baseContext(): array
     {
         return [
             'date' => date('d/m/Y'),
             'site' => (string) env('APP_NAME', 'TogoSaaS'),
+            'frontend_url' => AutomationEngine::frontendUrl(),
         ];
     }
 }

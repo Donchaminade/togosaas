@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TCH\Controllers;
 
+use TCH\AutomationEngine;
 use TCH\Database;
 use TCH\EngagementHelper;
 use TCH\Request;
@@ -70,12 +71,40 @@ final class EngagementController
                 $comment,
                 self::nullable($request->input('authorName'))
             );
+            self::notifyOwnerAboutReview($communityId, $rating, $result);
             Response::success(['engagement' => $result], 'Merci pour votre avis !');
         }
 
         // Note seule (clic sur les etoiles).
         $result = EngagementHelper::setReview($communityId, $visitorId, $rating);
+        self::notifyOwnerAboutReview($communityId, $rating, $result);
         Response::success(['engagement' => $result], 'Merci pour votre note !');
+    }
+
+    /**
+     * Notifie le lead proprietaire d'un nouvel avis/note, et du seuil Top note.
+     *
+     * @param array{ratingAvg:?float,reviewsCount:int} $result
+     */
+    private static function notifyOwnerAboutReview(int $communityId, int $rating, array $result): void
+    {
+        $avg = $result['ratingAvg'] ?? null;
+        $count = (int) ($result['reviewsCount'] ?? 0);
+
+        AutomationEngine::fireForCommunityOwner($communityId, 'review_created', [
+            'rating' => (string) $rating,
+            'rating_avg' => $avg !== null ? (string) $avg : '—',
+            'reviews_count' => (string) $count,
+        ]);
+
+        // Seuils alignes sur le badge « Top note » (frontend badges.ts).
+        if ($avg !== null && (float) $avg >= 4.5 && $count >= 3) {
+            AutomationEngine::fireForCommunityOwner($communityId, 'rating_threshold', [
+                'rating_avg' => (string) $avg,
+                'reviews_count' => (string) $count,
+                'badge' => 'Top note',
+            ]);
+        }
     }
 
     /** Liste publique des avis ecrits d'une solution. */

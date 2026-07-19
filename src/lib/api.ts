@@ -603,7 +603,11 @@ export const api = {
 
   // Automatisations
   adminAutomationMeta: () =>
-    request<{ triggers: AutomationTriggerMeta[]; smtpConfigured: boolean }>('/admin/automations/meta', {
+    request<{
+      triggers: AutomationTriggerMeta[];
+      audiences?: { key: string; label: string }[];
+      smtpConfigured: boolean;
+    }>('/admin/automations/meta', {
       auth: true,
     }),
 
@@ -645,6 +649,7 @@ export const api = {
     audience?: AutomationAudience;
     userIds?: number[];
     schedule?: AutomationSchedule;
+    categoryTag?: string;
   }) => request<{ automation: Automation }>('/admin/automations', { method: 'POST', body: data, auth: true }),
 
   adminUpdateAutomation: (
@@ -657,6 +662,7 @@ export const api = {
       audience?: AutomationAudience;
       userIds?: number[];
       schedule?: AutomationSchedule;
+      categoryTag?: string;
     },
   ) => request<{ automation: Automation }>(`/admin/automations/${id}`, { method: 'PUT', body: data, auth: true }),
 

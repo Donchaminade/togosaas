@@ -8,7 +8,7 @@ use PDO;
 
 /**
  * Moteur d'automatisation : met en file et envoie les emails declenches par des
- * evenements (inscription, soumission/validation de solution, signalement),
+ * evenements (inscription, soumission/validation de solution, avis, signalement),
  * par planification (cron) ou manuellement.
  *
  * Conception non bloquante : `fire()` se contente d'inserer des entrees en file
@@ -19,6 +19,95 @@ use PDO;
 final class AutomationEngine
 {
     private static bool $shutdownRegistered = false;
+
+    /** Audiences resolues par le moteur (hors event). */
+    public const SMART_AUDIENCES = [
+        'all_leads',
+        'selection',
+        'leads_no_solution',
+        'leads_inactive',
+        'leads_incomplete_profile',
+        'leads_pending_review',
+        'leads_with_solution',
+        'leads_dormant_solution',
+        'leads_stale_profile',
+        'leads_onboarding_d3',
+        'leads_onboarding_d7',
+        'leads_recently_approved',
+        'admins',
+        'category_tag',
+    ];
+
+    /** Cooldown par defaut (jours) selon audience ou evenement. */
+    private const DEFAULT_COOLDOWNS = [
+        'leads_no_solution' => 14,
+        'leads_inactive' => 21,
+        'leads_incomplete_profile' => 14,
+        'leads_pending_review' => 7,
+        'leads_with_solution' => 6,
+        'leads_dormant_solution' => 42,
+        'leads_stale_profile' => 56,
+        'leads_onboarding_d3' => 365,
+        'leads_onboarding_d7' => 365,
+        'leads_recently_approved' => 30,
+        'admins' => 6,
+        'category_tag' => 30,
+        'all_leads' => 7,
+        'selection' => 0,
+        'review_created' => 1,
+        'rating_threshold' => 365,
+        'report_filed' => 1,
+        'community_approved' => 0,
+        'community_rejected' => 0,
+        'lead_register' => 0,
+        'community_submitted' => 0,
+        'report_status_changed' => 0,
+    ];
+
+    /**
+     * Declenche un evenement pour le proprietaire (lead) d'une solution.
+     * Best-effort : silencieux si owner introuvable ou email sentinelle.
+     *
+     * @param array<string, mixed> $extra
+     */
+    public static function fireForCommunityOwner(int $communityId, string $event, array $extra = []): void
+    {
+        try {
+            $stmt = Database::connection()->prepare(
+                "SELECT c.id, c.name, c.slug, c.leader_name, c.leader_email,
+                        u.id AS owner_id, u.name AS owner_name, u.email AS owner_email
+                 FROM communities c
+                 LEFT JOIN users u ON u.id = c.user_id
+                 WHERE c.id = :id LIMIT 1"
+            );
+            $stmt->execute(['id' => $communityId]);
+            $row = $stmt->fetch();
+            if (!$row) {
+                return;
+            }
+
+            $email = (string) ($row['owner_email'] ?? $row['leader_email'] ?? '');
+            $name = (string) ($row['owner_name'] ?? $row['leader_name'] ?? '');
+            $userId = isset($row['owner_id']) && $row['owner_id'] !== null ? (int) $row['owner_id'] : null;
+            $slug = (string) ($row['slug'] ?? $communityId);
+            $url = self::frontendUrl() . '/solutions/' . rawurlencode($slug !== '' ? $slug : (string) $communityId);
+            $shareText = rawurlencode('Decouvrez ' . (string) $row['name'] . ' sur TogoSaaS : ' . $url);
+
+            self::fire($event, array_merge([
+                'email' => $email,
+                'name' => $name,
+                'nom' => $name,
+                'user_id' => $userId,
+                'solution' => (string) $row['name'],
+                'community_url' => $url,
+                'share_linkedin' => 'https://www.linkedin.com/sharing/share-offsite/?url=' . rawurlencode($url),
+                'share_whatsapp' => 'https://wa.me/?text=' . $shareText,
+                'cta_url' => self::frontendUrl() . '/espace-lead',
+            ], $extra));
+        } catch (\Throwable $e) {
+            self::logError('fireForCommunityOwner', $e);
+        }
+    }
 
     /**
      * Declenche les automatisations evenementielles pour $event.
@@ -31,40 +120,55 @@ final class AutomationEngine
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 return;
             }
-            // Ne jamais envoyer vers une adresse sentinelle (compte cree sans email reel) : evite les bounces.
-            if (str_ends_with($email, '@togosaas.invalid')) {
+            // Ne jamais envoyer vers une adresse sentinelle (compte cree sans email reel).
+            if (self::isSentinelEmail($email)) {
                 return;
             }
 
             $db = Database::connection();
             $stmt = $db->prepare(
-                "SELECT id FROM automations
+                "SELECT id, schedule_config FROM automations
                  WHERE trigger_event = :event AND is_active = 1 AND audience = 'event' AND template_id IS NOT NULL"
             );
             $stmt->execute(['event' => $event]);
-            $automationIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            $automations = $stmt->fetchAll();
 
-            if (!$automationIds) {
+            if (!$automations) {
                 return;
             }
 
             $payload = array_merge(TemplateRenderer::baseContext(), $context);
+            if (!isset($payload['nom']) && isset($context['name'])) {
+                $payload['nom'] = (string) $context['name'];
+            }
+            if (!isset($payload['frontend_url'])) {
+                $payload['frontend_url'] = self::frontendUrl();
+            }
 
-            foreach ($automationIds as $automationId) {
+            $userId = isset($context['user_id']) ? (int) $context['user_id'] : null;
+
+            foreach ($automations as $auto) {
+                $automationId = (int) $auto['id'];
+                $config = json_decode((string) ($auto['schedule_config'] ?? '{}'), true) ?: [];
+                $cooldown = self::resolveCooldown($config, $event);
+
+                if (self::wasRecentlyQueuedOrSent($automationId, $userId, $email, $cooldown)) {
+                    continue;
+                }
+
                 self::enqueueLog(
-                    (int) $automationId,
+                    $automationId,
                     $event,
                     $email,
-                    isset($context['name']) ? (string) $context['name'] : null,
-                    isset($context['user_id']) ? (int) $context['user_id'] : null,
+                    isset($context['name']) ? (string) $context['name'] : (isset($context['nom']) ? (string) $context['nom'] : null),
+                    $userId,
                     $payload
                 );
             }
 
             self::scheduleBackgroundProcessing();
 
-            // Notification push non bloquante au destinataire (si abonne et connu).
-            $targetUserId = isset($context['user_id']) ? (int) $context['user_id'] : 0;
+            $targetUserId = $userId ?? 0;
             if ($targetUserId > 0) {
                 Notifier::push(
                     $targetUserId,
@@ -74,7 +178,6 @@ final class AutomationEngine
                 );
             }
         } catch (\Throwable $e) {
-            // Ne jamais propager : l'automatisation est best-effort.
             self::logError('fire', $e);
         }
     }
@@ -88,6 +191,10 @@ final class AutomationEngine
         ?int $userId,
         array $context
     ): void {
+        if (self::isSentinelEmail($email)) {
+            return;
+        }
+
         Database::connection()->prepare(
             'INSERT INTO automation_logs
                 (automation_id, trigger_event, recipient_email, recipient_name, user_id, status, context, created_at)
@@ -140,9 +247,6 @@ final class AutomationEngine
         try {
             $db = Database::connection();
 
-            // Reprise des envois bloques : si un process est mort en laissant des
-            // entrees coincees en 'sending', on les remet en 'pending' apres un
-            // delai de securite (10 min) pour qu'elles soient retraitees.
             $db->exec(
                 "UPDATE automation_logs
                  SET status = 'pending'
@@ -175,12 +279,19 @@ final class AutomationEngine
                 $id = (int) $rawId;
                 $claim->execute(['id' => $id]);
                 if ($claim->rowCount() !== 1) {
-                    continue; // deja pris par un autre worker
+                    continue;
                 }
                 $result['processed']++;
 
                 $log = self::findLog($id);
                 if ($log === null) {
+                    continue;
+                }
+
+                $recipientEmail = strtolower(trim((string) $log['recipient_email']));
+                if (self::isSentinelEmail($recipientEmail)) {
+                    $markSkipped->execute(['error' => 'Adresse sentinelle exclue.', 'id' => $id]);
+                    $result['skipped']++;
                     continue;
                 }
 
@@ -204,6 +315,9 @@ final class AutomationEngine
                 }
                 if (!isset($context['email'])) {
                     $context['email'] = $log['recipient_email'];
+                }
+                if (!isset($context['frontend_url'])) {
+                    $context['frontend_url'] = self::frontendUrl();
                 }
 
                 $subject = TemplateRenderer::render((string) $template['subject'], $context);
@@ -230,9 +344,6 @@ final class AutomationEngine
                     $markSent->execute(['subject' => mb_substr($subject, 0, 255), 'id' => $id]);
                     $result['sent']++;
                 } else {
-                    // On journalise le VRAI message SMTP (detail) meme si APP_DEBUG=false :
-                    // indispensable pour diagnostiquer un email mal saisi / un refus serveur.
-                    // Ce champ n'est visible que par l'admin (jamais en reponse publique).
                     $reason = (string) ($sendResult['detail'] ?? $sendResult['error'] ?? 'Echec inconnu.');
                     $markFailed->execute([
                         'subject' => mb_substr($subject, 0, 255),
@@ -251,7 +362,6 @@ final class AutomationEngine
 
     /**
      * Execute immediatement une automatisation (declenchement manuel).
-     * Met en file pour son audience puis traite la file de maniere synchrone.
      *
      * @return array{queued: int, sent: int, failed: int, skipped: int}
      */
@@ -277,7 +387,6 @@ final class AutomationEngine
 
     /**
      * Traite les automatisations planifiees dont l'echeance est atteinte.
-     * Appelee par le worker cron.
      *
      * @return array{automations: int, queued: int, sent: int, failed: int}
      */
@@ -301,7 +410,6 @@ final class AutomationEngine
             $next = self::computeNextRun($config, new \DateTimeImmutable('now'));
 
             if ($next === null) {
-                // Mode "une fois" : desactive apres execution.
                 $db->prepare('UPDATE automations SET last_run_at = NOW(), next_run_at = NULL, is_active = 0 WHERE id = :id')
                     ->execute(['id' => (int) $automation['id']]);
             } else {
@@ -325,20 +433,37 @@ final class AutomationEngine
             return 0;
         }
 
+        $config = json_decode((string) ($automation['schedule_config'] ?? '{}'), true) ?: [];
+        $audience = (string) ($automation['audience'] ?? 'event');
+        $cooldown = self::resolveCooldown($config, $audience);
         $base = TemplateRenderer::baseContext();
+        $base['frontend_url'] = self::frontendUrl();
         $count = 0;
+        $automationId = (int) $automation['id'];
+        $trigger = (string) $automation['trigger_event'];
 
         foreach ($recipients as $r) {
-            $context = array_merge($base, [
+            $email = strtolower(trim((string) $r['email']));
+            if ($email === '' || self::isSentinelEmail($email)) {
+                continue;
+            }
+
+            $userId = isset($r['user_id']) ? (int) $r['user_id'] : null;
+            if (self::wasRecentlyQueuedOrSent($automationId, $userId, $email, $cooldown)) {
+                continue;
+            }
+
+            $context = array_merge($base, $r['context'] ?? [], [
                 'nom' => $r['name'] ?? '',
-                'email' => $r['email'],
+                'email' => $email,
             ]);
+
             self::enqueueLog(
-                (int) $automation['id'],
-                (string) $automation['trigger_event'],
-                $r['email'],
+                $automationId,
+                $trigger,
+                $email,
                 $r['name'] ?? null,
-                $r['user_id'] ?? null,
+                $userId,
                 $context
             );
             $count++;
@@ -348,20 +473,21 @@ final class AutomationEngine
     }
 
     /**
-     * Resout les destinataires pour les audiences all_leads / selection.
+     * Resout les destinataires pour les audiences planifiees / manuelles.
      *
-     * @return list<array{email: string, name: ?string, user_id: ?int}>
+     * @return list<array{email: string, name: ?string, user_id: ?int, context?: array}>
      */
     private static function resolveAudienceRecipients(array $automation): array
     {
         $db = Database::connection();
         $audience = (string) ($automation['audience'] ?? 'event');
+        $config = json_decode((string) ($automation['schedule_config'] ?? '{}'), true) ?: [];
 
-        if ($audience === 'all_leads') {
-            $rows = $db->query(
-                "SELECT id, name, email FROM users WHERE role = 'lead' AND email IS NOT NULL AND email <> '' AND email NOT LIKE '%@togosaas.invalid' ORDER BY name ASC"
-            )->fetchAll();
-        } elseif ($audience === 'selection') {
+        if ($audience === 'event') {
+            return [];
+        }
+
+        if ($audience === 'selection') {
             $ids = json_decode((string) ($automation['audience_user_ids'] ?? '[]'), true);
             $ids = is_array($ids) ? array_values(array_unique(array_filter(array_map('intval', $ids)))) : [];
             if ($ids === []) {
@@ -369,19 +495,570 @@ final class AutomationEngine
             }
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
             $stmt = $db->prepare(
-                "SELECT id, name, email FROM users WHERE role = 'lead' AND email IS NOT NULL AND email <> '' AND email NOT LIKE '%@togosaas.invalid' AND id IN ($placeholders)"
+                "SELECT id, name, email FROM users
+                 WHERE role = 'lead' AND email IS NOT NULL AND email <> ''
+                   AND email NOT LIKE '%@togosaas.invalid'
+                   AND id IN ($placeholders)"
             );
             $stmt->execute($ids);
-            $rows = $stmt->fetchAll();
-        } else {
-            return [];
+            return self::mapUserRows($stmt->fetchAll());
+        }
+
+        if ($audience === 'all_leads') {
+            $rows = $db->query(
+                "SELECT id, name, email FROM users
+                 WHERE role = 'lead' AND email IS NOT NULL AND email <> ''
+                   AND email NOT LIKE '%@togosaas.invalid'
+                 ORDER BY name ASC"
+            )->fetchAll();
+            return self::mapUserRows($rows);
+        }
+
+        if ($audience === 'admins') {
+            return self::resolveAdminsDigest($db);
+        }
+
+        if ($audience === 'category_tag') {
+            return self::resolveCategoryTag($db, $config);
+        }
+
+        return match ($audience) {
+            'leads_no_solution' => self::resolveLeadsNoSolution($db),
+            'leads_inactive' => self::resolveLeadsInactive($db, (int) ($config['inactive_days'] ?? 21)),
+            'leads_incomplete_profile' => self::resolveLeadsIncompleteProfile($db),
+            'leads_pending_review' => self::resolveLeadsPendingReview($db),
+            'leads_with_solution' => self::resolveLeadsWithSolution($db, true),
+            'leads_dormant_solution' => self::resolveLeadsDormant($db, (int) ($config['dormant_weeks'] ?? 6)),
+            'leads_stale_profile' => self::resolveLeadsStale($db, (int) ($config['stale_weeks'] ?? 10)),
+            'leads_onboarding_d3' => self::resolveOnboardingDay($db, 3),
+            'leads_onboarding_d7' => self::resolveOnboardingDay($db, 7),
+            'leads_recently_approved' => self::resolveRecentlyApproved($db, (int) ($config['approved_within_days'] ?? 3)),
+            default => [],
+        };
+    }
+
+    /** @param list<array> $rows */
+    private static function mapUserRows(array $rows): array
+    {
+        return array_map(static fn($r) => [
+            'email' => (string) $r['email'],
+            'name' => $r['name'] !== null ? (string) $r['name'] : null,
+            'user_id' => (int) $r['id'],
+            'context' => [],
+        ], $rows);
+    }
+
+    private static function leadBaseSql(): string
+    {
+        return "SELECT u.id, u.name, u.email, u.phone, u.created_at, u.updated_at
+                FROM users u
+                WHERE u.role = 'lead'
+                  AND u.email IS NOT NULL AND u.email <> ''
+                  AND u.email NOT LIKE '%@togosaas.invalid'";
+    }
+
+    private static function resolveLeadsNoSolution(PDO $db): array
+    {
+        $rows = $db->query(
+            self::leadBaseSql() . "
+              AND NOT EXISTS (
+                SELECT 1 FROM communities c
+                WHERE c.user_id = u.id AND c.status = 'approved'
+              )
+            ORDER BY u.name ASC"
+        )->fetchAll();
+
+        $out = [];
+        foreach ($rows as $r) {
+            $out[] = [
+                'email' => (string) $r['email'],
+                'name' => $r['name'] !== null ? (string) $r['name'] : null,
+                'user_id' => (int) $r['id'],
+                'context' => [
+                    'cta_url' => self::frontendUrl() . '/espace-lead/communautes/nouvelle',
+                    'solution' => '',
+                ],
+            ];
+        }
+        return $out;
+    }
+
+    private static function resolveLeadsInactive(PDO $db, int $days): array
+    {
+        $days = max(7, min(90, $days));
+        $rows = $db->query(
+            self::leadBaseSql() . "
+              AND u.created_at <= (NOW() - INTERVAL {$days} DAY)
+              AND GREATEST(
+                    COALESCE(u.updated_at, u.created_at),
+                    COALESCE((
+                        SELECT MAX(COALESCE(c.updated_at, c.created_at))
+                        FROM communities c WHERE c.user_id = u.id
+                    ), u.created_at)
+                 ) <= (NOW() - INTERVAL {$days} DAY)
+            ORDER BY u.name ASC"
+        )->fetchAll();
+
+        return array_map(static fn($r) => [
+            'email' => (string) $r['email'],
+            'name' => $r['name'] !== null ? (string) $r['name'] : null,
+            'user_id' => (int) $r['id'],
+            'context' => [
+                'inactive_days' => (string) $days,
+                'cta_url' => self::frontendUrl() . '/espace-lead',
+            ],
+        ], $rows);
+    }
+
+    private static function resolveLeadsIncompleteProfile(PDO $db): array
+    {
+        $rows = $db->query(
+            self::leadBaseSql() . ' ORDER BY u.name ASC'
+        )->fetchAll();
+
+        $out = [];
+        foreach ($rows as $r) {
+            $profile = self::computeProfileCompleteness($db, $r);
+            if ($profile['pct'] >= 80) {
+                continue;
+            }
+            $out[] = [
+                'email' => (string) $r['email'],
+                'name' => $r['name'] !== null ? (string) $r['name'] : null,
+                'user_id' => (int) $r['id'],
+                'context' => [
+                    'profile_pct' => (string) $profile['pct'],
+                    'missing_fields' => $profile['missing'],
+                    'solution' => $profile['solution'],
+                    'cta_url' => self::frontendUrl() . '/espace-lead',
+                ],
+            ];
+        }
+        return $out;
+    }
+
+    /**
+     * @param array{id: mixed, phone: mixed, email: mixed} $user
+     * @return array{pct: int, missing: string, solution: string}
+     */
+    private static function computeProfileCompleteness(PDO $db, array $user): array
+    {
+        $checks = [];
+        $missing = [];
+
+        $phone = trim((string) ($user['phone'] ?? ''));
+        $checks[] = $phone !== '';
+        if ($phone === '') {
+            $missing[] = 'telephone';
+        }
+
+        $stmt = $db->prepare(
+            "SELECT id, name, gallery, website_url, app_url, whatsapp_url, linkedin_url, telegram_url, twitter_url, logo_url, short_description
+             FROM communities WHERE user_id = :uid ORDER BY FIELD(status, 'approved', 'pending', 'rejected'), updated_at DESC LIMIT 1"
+        );
+        $stmt->execute(['uid' => (int) $user['id']]);
+        $c = $stmt->fetch() ?: null;
+
+        $hasCommunity = $c !== null;
+        $checks[] = $hasCommunity;
+        if (!$hasCommunity) {
+            $missing[] = 'solution publiee';
+        }
+
+        $gallery = $c ? (json_decode((string) ($c['gallery'] ?? '[]'), true) ?: []) : [];
+        $hasGallery = is_array($gallery) && count($gallery) > 0;
+        $checks[] = $hasGallery;
+        if ($hasCommunity && !$hasGallery) {
+            $missing[] = 'galerie';
+        }
+
+        $hasLink = false;
+        if ($c) {
+            foreach (['website_url', 'app_url', 'whatsapp_url', 'linkedin_url', 'telegram_url', 'twitter_url'] as $col) {
+                if (trim((string) ($c[$col] ?? '')) !== '') {
+                    $hasLink = true;
+                    break;
+                }
+            }
+        }
+        $checks[] = $hasLink;
+        if ($hasCommunity && !$hasLink) {
+            $missing[] = 'liens';
+        }
+
+        $hasLogo = $c && trim((string) ($c['logo_url'] ?? '')) !== '';
+        $checks[] = $hasLogo;
+        if ($hasCommunity && !$hasLogo) {
+            $missing[] = 'logo';
+        }
+
+        $done = count(array_filter($checks));
+        $total = max(1, count($checks));
+        $pct = (int) round(($done / $total) * 100);
+
+        return [
+            'pct' => $pct,
+            'missing' => $missing !== [] ? implode(', ', $missing) : 'elements mineurs',
+            'solution' => $c ? (string) $c['name'] : '',
+        ];
+    }
+
+    private static function resolveLeadsPendingReview(PDO $db): array
+    {
+        $rows = $db->query(
+            "SELECT u.id, u.name, u.email, c.name AS solution, c.id AS community_id
+             FROM users u
+             INNER JOIN communities c ON c.user_id = u.id AND c.status = 'pending'
+             WHERE u.role = 'lead'
+               AND u.email IS NOT NULL AND u.email <> ''
+               AND u.email NOT LIKE '%@togosaas.invalid'
+             ORDER BY c.created_at ASC"
+        )->fetchAll();
+
+        $byUser = [];
+        foreach ($rows as $r) {
+            $uid = (int) $r['id'];
+            if (!isset($byUser[$uid])) {
+                $byUser[$uid] = $r;
+            }
         }
 
         return array_map(static fn($r) => [
             'email' => (string) $r['email'],
             'name' => $r['name'] !== null ? (string) $r['name'] : null,
             'user_id' => (int) $r['id'],
+            'context' => [
+                'solution' => (string) $r['solution'],
+                'statut' => 'en attente de validation',
+                'cta_url' => self::frontendUrl() . '/espace-lead',
+            ],
+        ], array_values($byUser));
+    }
+
+    private static function resolveLeadsWithSolution(PDO $db, bool $withEngagement): array
+    {
+        $rows = $db->query(
+            "SELECT u.id, u.name, u.email, c.id AS community_id, c.name AS solution, c.slug
+             FROM users u
+             INNER JOIN communities c ON c.user_id = u.id AND c.status = 'approved'
+             WHERE u.role = 'lead'
+               AND u.email IS NOT NULL AND u.email <> ''
+               AND u.email NOT LIKE '%@togosaas.invalid'
+             ORDER BY u.name ASC"
+        )->fetchAll();
+
+        // Une ligne par lead (solution la plus recente si plusieurs).
+        $byUser = [];
+        foreach ($rows as $r) {
+            $uid = (int) $r['id'];
+            if (!isset($byUser[$uid])) {
+                $byUser[$uid] = $r;
+            }
+        }
+
+        $out = [];
+        foreach ($byUser as $r) {
+            $ctx = [
+                'solution' => (string) $r['solution'],
+                'cta_url' => self::frontendUrl() . '/espace-lead',
+                'community_url' => self::frontendUrl() . '/solutions/' . rawurlencode((string) ($r['slug'] ?? $r['community_id'])),
+            ];
+            if ($withEngagement) {
+                $stats = EngagementHelper::statsForCommunity((int) $r['community_id']);
+                $likesWeek = self::countSince('community_likes', (int) $r['community_id'], 7);
+                $reviewsWeek = self::countSince('community_reviews', (int) $r['community_id'], 7);
+                $ctx['likes_count'] = (string) $stats['likesCount'];
+                $ctx['reviews_count'] = (string) $stats['reviewsCount'];
+                $ctx['rating_avg'] = $stats['ratingAvg'] !== null ? (string) $stats['ratingAvg'] : '—';
+                $ctx['likes_week'] = (string) $likesWeek;
+                $ctx['reviews_week'] = (string) $reviewsWeek;
+            }
+            $out[] = [
+                'email' => (string) $r['email'],
+                'name' => $r['name'] !== null ? (string) $r['name'] : null,
+                'user_id' => (int) $r['id'],
+                'context' => $ctx,
+            ];
+        }
+        return $out;
+    }
+
+    private static function countSince(string $table, int $communityId, int $days): int
+    {
+        if (!in_array($table, ['community_likes', 'community_reviews'], true)) {
+            return 0;
+        }
+        $stmt = Database::connection()->prepare(
+            "SELECT COUNT(*) FROM {$table}
+             WHERE community_id = :cid AND created_at >= (NOW() - INTERVAL {$days} DAY)"
+        );
+        $stmt->execute(['cid' => $communityId]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    private static function resolveLeadsDormant(PDO $db, int $weeks): array
+    {
+        $weeks = max(2, min(26, $weeks));
+        $rows = $db->query(
+            "SELECT u.id, u.name, u.email, c.name AS solution, c.slug, c.id AS community_id
+             FROM users u
+             INNER JOIN communities c ON c.user_id = u.id AND c.status = 'approved'
+             WHERE u.role = 'lead'
+               AND u.email IS NOT NULL AND u.email <> ''
+               AND u.email NOT LIKE '%@togosaas.invalid'
+               AND COALESCE(c.updated_at, c.created_at) <= (NOW() - INTERVAL {$weeks} WEEK)
+             ORDER BY c.updated_at ASC"
+        )->fetchAll();
+
+        $byUser = [];
+        foreach ($rows as $r) {
+            $uid = (int) $r['id'];
+            if (!isset($byUser[$uid])) {
+                $byUser[$uid] = $r;
+            }
+        }
+
+        return array_map(static fn($r) => [
+            'email' => (string) $r['email'],
+            'name' => $r['name'] !== null ? (string) $r['name'] : null,
+            'user_id' => (int) $r['id'],
+            'context' => [
+                'solution' => (string) $r['solution'],
+                'dormant_weeks' => (string) $weeks,
+                'cta_url' => self::frontendUrl() . '/espace-lead',
+            ],
+        ], array_values($byUser));
+    }
+
+    private static function resolveLeadsStale(PDO $db, int $weeks): array
+    {
+        // Reutilise la logique dormante avec seuil plus long (rappel maj fiche).
+        return self::resolveLeadsDormant($db, $weeks);
+    }
+
+    private static function resolveOnboardingDay(PDO $db, int $day): array
+    {
+        $day = max(1, min(30, $day));
+        // Fenetre 24h autour du jour cible (ex. J3 = comptes crees il y a 3 jours).
+        $rows = $db->query(
+            self::leadBaseSql() . "
+              AND DATE(u.created_at) = DATE(NOW() - INTERVAL {$day} DAY)
+            ORDER BY u.id ASC"
+        )->fetchAll();
+
+        return array_map(static fn($r) => [
+            'email' => (string) $r['email'],
+            'name' => $r['name'] !== null ? (string) $r['name'] : null,
+            'user_id' => (int) $r['id'],
+            'context' => [
+                'onboarding_day' => (string) $day,
+                'cta_url' => self::frontendUrl() . ($day <= 3 ? '/espace-lead/communautes/nouvelle' : '/espace-lead'),
+            ],
         ], $rows);
+    }
+
+    private static function resolveRecentlyApproved(PDO $db, int $withinDays): array
+    {
+        $withinDays = max(1, min(14, $withinDays));
+        $rows = $db->query(
+            "SELECT u.id, u.name, u.email, c.name AS solution, c.slug, c.id AS community_id
+             FROM users u
+             INNER JOIN communities c ON c.user_id = u.id AND c.status = 'approved'
+             WHERE u.role = 'lead'
+               AND u.email IS NOT NULL AND u.email <> ''
+               AND u.email NOT LIKE '%@togosaas.invalid'
+               AND COALESCE(c.updated_at, c.created_at) >= (NOW() - INTERVAL {$withinDays} DAY)
+             ORDER BY c.updated_at DESC"
+        )->fetchAll();
+
+        $byUser = [];
+        foreach ($rows as $r) {
+            $uid = (int) $r['id'];
+            if (!isset($byUser[$uid])) {
+                $byUser[$uid] = $r;
+            }
+        }
+
+        $base = self::frontendUrl();
+        return array_map(static function ($r) use ($base) {
+            $slug = (string) ($r['slug'] ?? $r['community_id']);
+            $url = $base . '/solutions/' . rawurlencode($slug);
+            $shareText = rawurlencode('Decouvrez ' . (string) $r['solution'] . ' sur TogoSaaS : ' . $url);
+            return [
+                'email' => (string) $r['email'],
+                'name' => $r['name'] !== null ? (string) $r['name'] : null,
+                'user_id' => (int) $r['id'],
+                'context' => [
+                    'solution' => (string) $r['solution'],
+                    'community_url' => $url,
+                    'share_linkedin' => 'https://www.linkedin.com/sharing/share-offsite/?url=' . rawurlencode($url),
+                    'share_whatsapp' => 'https://wa.me/?text=' . $shareText,
+                    'cta_url' => $url,
+                ],
+            ];
+        }, array_values($byUser));
+    }
+
+    private static function resolveCategoryTag(PDO $db, array $config): array
+    {
+        $tag = strtolower(trim((string) ($config['tag'] ?? $config['category'] ?? '')));
+        if ($tag === '') {
+            return [];
+        }
+
+        $rows = $db->query(
+            "SELECT u.id, u.name, u.email, c.name AS solution, c.tags, c.slug
+             FROM users u
+             INNER JOIN communities c ON c.user_id = u.id AND c.status IN ('approved', 'pending')
+             WHERE u.role = 'lead'
+               AND u.email IS NOT NULL AND u.email <> ''
+               AND u.email NOT LIKE '%@togosaas.invalid'
+             ORDER BY u.name ASC"
+        )->fetchAll();
+
+        $out = [];
+        $seen = [];
+        foreach ($rows as $r) {
+            $uid = (int) $r['id'];
+            if (isset($seen[$uid])) {
+                continue;
+            }
+            $tags = json_decode((string) ($r['tags'] ?? '[]'), true);
+            if (!is_array($tags)) {
+                $tags = [];
+            }
+            $normalized = array_map(static fn($t) => strtolower(trim((string) $t)), $tags);
+            if (!in_array($tag, $normalized, true)) {
+                continue;
+            }
+            $seen[$uid] = true;
+            $out[] = [
+                'email' => (string) $r['email'],
+                'name' => $r['name'] !== null ? (string) $r['name'] : null,
+                'user_id' => $uid,
+                'context' => [
+                    'solution' => (string) $r['solution'],
+                    'category' => $tag,
+                    'cta_url' => self::frontendUrl() . '/espace-lead',
+                ],
+            ];
+        }
+        return $out;
+    }
+
+    private static function resolveAdminsDigest(PDO $db): array
+    {
+        $admins = $db->query(
+            "SELECT id, name, email FROM users
+             WHERE role IN ('admin', 'subadmin')
+               AND email IS NOT NULL AND email <> ''
+               AND email NOT LIKE '%@togosaas.invalid'
+             ORDER BY FIELD(role, 'admin', 'subadmin'), name ASC"
+        )->fetchAll();
+
+        $newLeads = (int) $db->query(
+            "SELECT COUNT(*) FROM users WHERE role = 'lead' AND created_at >= (NOW() - INTERVAL 7 DAY)"
+        )->fetchColumn();
+        $pendingSolutions = (int) $db->query(
+            "SELECT COUNT(*) FROM communities WHERE status = 'pending'"
+        )->fetchColumn();
+        $pendingReports = (int) $db->query(
+            "SELECT COUNT(*) FROM community_reports WHERE status IN ('pending', 'investigating')"
+        )->fetchColumn();
+
+        $flaggedReviews = 0;
+        try {
+            $flaggedReviews = (int) $db->query(
+                "SELECT COUNT(*) FROM community_review_flags WHERE created_at >= (NOW() - INTERVAL 7 DAY)"
+            )->fetchColumn();
+        } catch (\Throwable $e) {
+            try {
+                $flaggedReviews = (int) $db->query(
+                    "SELECT COUNT(*) FROM community_review_contents
+                     WHERE status = 'flagged' AND updated_at >= (NOW() - INTERVAL 7 DAY)"
+                )->fetchColumn();
+            } catch (\Throwable $e2) {
+                $flaggedReviews = 0;
+            }
+        }
+
+        $failedMails = 0;
+        try {
+            $failedMails = (int) $db->query(
+                "SELECT COUNT(*) FROM automation_logs
+                 WHERE status = 'failed' AND created_at >= (NOW() - INTERVAL 7 DAY)"
+            )->fetchColumn();
+        } catch (\Throwable $e) {
+            $failedMails = 0;
+        }
+
+        $ctx = [
+            'new_leads_week' => (string) $newLeads,
+            'pending_solutions' => (string) $pendingSolutions,
+            'pending_reports' => (string) $pendingReports,
+            'flagged_reviews' => (string) $flaggedReviews,
+            'failed_mails_week' => (string) $failedMails,
+            'cta_url' => self::frontendUrl() . '/espace-admin',
+        ];
+
+        return array_map(static fn($r) => [
+            'email' => (string) $r['email'],
+            'name' => $r['name'] !== null ? (string) $r['name'] : null,
+            'user_id' => (int) $r['id'],
+            'context' => $ctx,
+        ], $admins);
+    }
+
+    private static function resolveCooldown(array $config, string $key): int
+    {
+        if (isset($config['cooldown_days'])) {
+            return max(0, (int) $config['cooldown_days']);
+        }
+        return self::DEFAULT_COOLDOWNS[$key] ?? 7;
+    }
+
+    private static function wasRecentlyQueuedOrSent(int $automationId, ?int $userId, string $email, int $cooldownDays): bool
+    {
+        if ($cooldownDays <= 0) {
+            return false;
+        }
+
+        $db = Database::connection();
+        if ($userId !== null && $userId > 0) {
+            $stmt = $db->prepare(
+                "SELECT 1 FROM automation_logs
+                 WHERE automation_id = :aid
+                   AND user_id = :uid
+                   AND status IN ('pending', 'sending', 'sent')
+                   AND created_at >= (NOW() - INTERVAL {$cooldownDays} DAY)
+                 LIMIT 1"
+            );
+            $stmt->execute(['aid' => $automationId, 'uid' => $userId]);
+        } else {
+            $stmt = $db->prepare(
+                "SELECT 1 FROM automation_logs
+                 WHERE automation_id = :aid
+                   AND recipient_email = :email
+                   AND status IN ('pending', 'sending', 'sent')
+                   AND created_at >= (NOW() - INTERVAL {$cooldownDays} DAY)
+                 LIMIT 1"
+            );
+            $stmt->execute(['aid' => $automationId, 'email' => $email]);
+        }
+
+        return (bool) $stmt->fetchColumn();
+    }
+
+    public static function isSentinelEmail(string $email): bool
+    {
+        $email = strtolower(trim($email));
+        return $email === '' || str_ends_with($email, '@togosaas.invalid') || str_starts_with($email, 'incomplet.');
+    }
+
+    public static function frontendUrl(): string
+    {
+        $url = rtrim(trim((string) env('FRONTEND_URL', '')), '/');
+        return $url !== '' ? $url : 'https://togosaas.vercel.app';
     }
 
     /** Calcule la prochaine echeance selon la config de planification. */
@@ -412,7 +1089,7 @@ final class AutomationEngine
         }
 
         if ($mode === 'weekly') {
-            $targetDow = max(1, min(7, (int) ($config['dayOfWeek'] ?? 1))); // 1=lundi ... 7=dimanche
+            $targetDow = max(1, min(7, (int) ($config['dayOfWeek'] ?? 1)));
             $candidate = $from->setTime($h, $m);
             $currentDow = (int) $candidate->format('N');
             $diff = ($targetDow - $currentDow + 7) % 7;

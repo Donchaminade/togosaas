@@ -51,7 +51,9 @@ export default function LeadCommunityEdit() {
         notify('Communauté soumise ! En attente de validation.', 'success');
       } else if (community?.id) {
         await api.updateCommunity(community.id, data);
-        const msg = community.membershipRole === 'co_lead'
+        const keepsStatus =
+          community.membershipRole === 'co_lead' || community.status === 'approved';
+        const msg = keepsStatus
           ? 'Modifications enregistrées.'
           : 'Communauté mise à jour. Elle repasse en validation.';
         notify(msg, 'success');

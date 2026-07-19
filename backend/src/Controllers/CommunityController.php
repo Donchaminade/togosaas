@@ -180,11 +180,18 @@ final class CommunityController
 
         $cols = CommunityHelper::columnsFromRequest($request);
 
+        $currentStatus = (string) ($access['community']['status'] ?? 'pending');
+
         if ($role === 'co_lead') {
             $cols = CommunityAccessHelper::filterColumnsForCoLead($cols);
         } else {
             $cols = CommunityHelper::withSlug($cols, Database::connection(), $id);
-            $cols['status'] = 'pending';
+            // Le statut de modération n'est modifié QUE via l'endpoint de modération
+            // (AdminController::updateStatus). Une solution déjà approuvée ne doit
+            // pas repasser « en attente » à cause d'une simple édition de contenu.
+            if ($currentStatus !== 'approved') {
+                $cols['status'] = 'pending';
+            }
             $coLeads = json_decode($cols['co_leads'] ?? '[]', true) ?: [];
             CommunityAccessHelper::syncCoLeadMembers($id, $coLeads);
         }
@@ -206,7 +213,9 @@ final class CommunityController
         $row = $this->find($id);
         $row['membership_role'] = $role === 'admin' ? 'owner' : $role;
 
-        $message = $role === 'co_lead'
+        // Le message ne promet une nouvelle vérification que si le statut a
+        // réellement été remis en attente (solution non encore approuvée).
+        $message = ($role === 'co_lead' || $currentStatus === 'approved')
             ? 'Modifications enregistrees.'
             : 'Communaute mise a jour. Elle sera de nouveau verifiee par un administrateur.';
 

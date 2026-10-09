@@ -26,6 +26,12 @@ export default function Register() {
     e.preventDefault();
     setErrors({});
 
+    if (form.password.length < 10) {
+      setErrors({ password: ['Le mot de passe doit contenir au moins 10 caractères.'] });
+      notify('Le mot de passe doit contenir au moins 10 caractères.', 'error');
+      return;
+    }
+
     if (form.password !== form.passwordConfirmation) {
       setErrors({ passwordConfirmation: ['Les mots de passe ne correspondent pas.'] });
       notify('Les mots de passe ne correspondent pas.', 'error');
@@ -67,7 +73,8 @@ export default function Register() {
           show={showPass}
           onToggleShow={() => setShowPass((v) => !v)}
           error={errors.password?.[0]}
-          placeholder="6 caractères minimum"
+          placeholder="10 caractères minimum"
+          minLength={10}
           autoComplete="new-password"
         />
 
@@ -130,6 +137,7 @@ function PasswordField({
   onToggleShow,
   error,
   placeholder,
+  minLength,
   autoComplete,
 }: {
   label: string;
@@ -139,6 +147,7 @@ function PasswordField({
   onToggleShow: () => void;
   error?: string;
   placeholder?: string;
+  minLength?: number;
   autoComplete?: string;
 }) {
   return (
@@ -152,6 +161,7 @@ function PasswordField({
           required
           value={value}
           onChange={onChange}
+          minLength={minLength}
           autoComplete={autoComplete}
           className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm text-slate-800 outline-none transition-colors focus:border-togo-green focus:bg-white dark:focus:bg-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           placeholder={placeholder}

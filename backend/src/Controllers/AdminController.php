@@ -327,7 +327,7 @@ final class AdminController
         Validator::make($request->all())->validate([
             'name' => 'required|min:2|max:120',
             'email' => 'required|email|max:160',
-            'password' => 'required|min:6|max:72',
+            'password' => 'required|min:10|max:72',
             'phone' => 'max:40',
         ])->abortIfFails();
 
@@ -514,7 +514,7 @@ final class AdminController
         Validator::make($request->all())->validate([
             'name' => 'required|min:2|max:120',
             'email' => 'required|email|max:160',
-            'password' => 'required|min:6|max:72',
+            'password' => 'required|min:12|max:72',
             'phone' => 'max:40',
             'role' => 'in:admin,subadmin',
         ])->abortIfFails();

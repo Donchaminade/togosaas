@@ -16,7 +16,9 @@ final class Jwt
         $header = ['alg' => 'HS256', 'typ' => 'JWT'];
 
         $now = time();
-        $ttl = (int) env('JWT_TTL', 86400);
+        // 4 h par defaut. Le jeton reste en localStorage cote navigateur :
+        // le passage a un cookie HttpOnly est un chantier separe (ne pas rallonger ce TTL).
+        $ttl = (int) env('JWT_TTL', 14400);
         $payload = array_merge([
             'iss' => (string) env('JWT_ISSUER', 'tch-api'),
             'iat' => $now,

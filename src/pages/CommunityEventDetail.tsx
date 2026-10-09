@@ -14,6 +14,7 @@ import EventPosterFrame from '../components/community/EventPosterFrame';
 import { PageLoader } from '../components/ui/Spinner';
 import { api } from '../lib/api';
 import { communityEventUrl, communityPublicPath } from '../lib/communityUrl';
+import { isHttpUrl } from '../lib/externalUrl';
 import { mediaUrl } from '../lib/media';
 import type { Community, CommunityEvent } from '../types';
 
@@ -177,7 +178,7 @@ export default function CommunityEventDetail() {
               </section>
             )}
 
-            {event.eventUrl && !isPast && (
+            {isHttpUrl(event.eventUrl) && !isPast && (
               <a
                 href={event.eventUrl}
                 target="_blank"
@@ -254,7 +255,7 @@ export default function CommunityEventDetail() {
                   <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                     Rejoignez-nous le {formatEventDate(event.startsAt)}
                   </p>
-                  {event.eventUrl && (
+                  {isHttpUrl(event.eventUrl) && (
                     <a
                       href={event.eventUrl}
                       target="_blank"

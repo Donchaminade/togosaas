@@ -42,6 +42,10 @@ export default function AdminProfilePanel() {
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (newPassword.length < 10) {
+      notify('Le mot de passe doit contenir au moins 10 caractères.', 'error');
+      return;
+    }
     if (newPassword !== confirmPassword) {
       notify('Les deux mots de passe ne correspondent pas.', 'error');
       return;
@@ -160,9 +164,9 @@ export default function AdminProfilePanel() {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
-            minLength={6}
+            minLength={10}
             autoComplete="new-password"
-            placeholder="Minimum 6 caractères"
+            placeholder="Minimum 10 caractères"
             className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
           />
         </div>
@@ -174,7 +178,7 @@ export default function AdminProfilePanel() {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            minLength={6}
+            minLength={10}
             autoComplete="new-password"
             className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
           />

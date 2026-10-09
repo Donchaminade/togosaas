@@ -83,13 +83,32 @@ final class TemplateRenderer
     /**
      * Remplace les {{cle}} de $text par les valeurs de $context.
      * Les cles inconnues sont remplacees par une chaine vide.
+     * N'echappe pas le HTML : reserve au sujet (texte brut) et aux contextes non HTML.
      */
     public static function render(string $text, array $context): string
     {
-        return preg_replace_callback('/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/', static function ($m) use ($context) {
+        return self::replace($text, $context, false);
+    }
+
+    /**
+     * Comme render(), mais echappe chaque variable pour un corps HTML
+     * (les balises du modele restent intactes).
+     */
+    public static function renderHtml(string $text, array $context): string
+    {
+        return self::replace($text, $context, true);
+    }
+
+    private static function replace(string $text, array $context, bool $escapeHtml): string
+    {
+        return preg_replace_callback('/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/', static function ($m) use ($context, $escapeHtml) {
             $key = $m[1];
             $value = $context[$key] ?? '';
-            return is_scalar($value) ? (string) $value : '';
+            $string = is_scalar($value) ? (string) $value : '';
+            if (!$escapeHtml || $string === '') {
+                return $string;
+            }
+            return htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
         }, $text) ?? $text;
     }
 

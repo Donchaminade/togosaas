@@ -96,7 +96,7 @@ APP_DEBUG=false
 
 # Recommandé
 JWT_ISSUER=tch-api
-JWT_TTL=86400
+JWT_TTL=14400
 MIGRATE_TOKEN=<token distinct de JWT_SECRET>
 ```
 
@@ -111,13 +111,13 @@ openssl rand -base64 48
 ## Recommandations restantes (non implémentées)
 
 1. **Rate limiting** — Ajouter une limite par IP sur `/auth/login`, `/auth/register`, `/contact`, `/reports` (Redis, fichier ou middleware Apache/Nginx)
-2. **Supprimer les scripts de migration HTTP** — `public/migrate-once.php` et `public/run-migrations.php` après déploiement ; utiliser SSH/CLI uniquement
+2. **Supprimer les scripts de migration HTTP** — `public/run-migrations.php` après déploiement (token via `X-Migrate-Token` ou POST, plus en query string), faire tourner `MIGRATE_TOKEN`, puis n'utiliser que SSH/CLI
 3. **HSTS** — Configurer `Strict-Transport-Security` au niveau du reverse proxy (Nginx/Apache/Vercel)
-4. **CSP** — Content-Security-Policy si l'API sert du HTML un jour
+4. **CSP API** — Le frontend a une Content-Security-Policy dans `vercel.json`. L'API JSON n'en a pas besoin tant qu'elle ne sert pas de HTML
 5. **Rotation JWT** — Envisager un mécanisme de révocation (blacklist ou refresh tokens) si des comptes sont compromis
 6. **Audit des dépendances** — Pas de Composer lock externe critique actuellement (API sans dépendances tierces)
 7. **Logs structurés** — Centraliser les logs d'auth échouée et tentatives suspectes
-8. **Mot de passe** — Augmenter le minimum à 8+ caractères et ajouter une politique de complexité si souhaité
+8. **Mot de passe** — Minimum porté à 10 caractères (comptes) et 12 (création admin/subadmin). Une politique de complexité reste optionnelle. Le JWT est encore en `localStorage` (TTL par défaut 4 h) : la suite est un cookie `HttpOnly` + `Secure`, sans lecture du jeton par le JavaScript.
 9. **FRONTEND_URLS** — Si plusieurs origines sont nécessaires (preview Vercel), réintroduire une liste explicite contrôlée via env, jamais de wildcard
 
 ---

@@ -1,3 +1,8 @@
+/** Lien affichable dans un href : uniquement http(s), pour bloquer javascript: et data:. */
+export function isHttpUrl(url: string | null | undefined): url is string {
+  return typeof url === 'string' && /^https?:\/\//i.test(url);
+}
+
 /** Normalise une URL saisie (avec ou sans https://) pour les liens externes. */
 export function externalUrl(url: string | null | undefined): string | null {
   const trimmed = url?.trim();

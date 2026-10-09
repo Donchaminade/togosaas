@@ -64,8 +64,10 @@ final class WebPush
             }
 
             $endpoint = (string) ($subscription['endpoint'] ?? '');
-            if ($endpoint === '' || !filter_var($endpoint, FILTER_VALIDATE_URL)) {
-                return $fail('Endpoint invalide.');
+            // Revalide a l'envoi : un endpoint deja stocke ne doit jamais etre contacte
+            // s'il n'est plus (ou n'a jamais ete) un service push autorise.
+            if (!self::isAllowedEndpoint($endpoint)) {
+                return $fail('Endpoint push non autorise.');
             }
 
             $uaPublic = self::b64urlDecode((string) ($subscription['p256dh'] ?? ''));
@@ -236,16 +238,31 @@ final class WebPush
             return ['ok' => false, 'status' => 0, 'expired' => false, 'error' => 'cURL indisponible.'];
         }
 
-        curl_setopt_array($ch, [
+        $curlOpts = [
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $body,
             CURLOPT_HTTPHEADER => $headers,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => 15,
             CURLOPT_CONNECTTIMEOUT => 8,
+            CURLOPT_FOLLOWLOCATION => false,
             CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_SSL_VERIFYHOST => 2,
-        ]);
+        ];
+        // Restreint le protocole a HTTPS, y compris en cas de redirection.
+        if (defined('CURLOPT_PROTOCOLS') && defined('CURLPROTO_HTTPS')) {
+            $curlOpts[CURLOPT_PROTOCOLS] = CURLPROTO_HTTPS;
+        }
+        if (defined('CURLOPT_REDIR_PROTOCOLS') && defined('CURLPROTO_HTTPS')) {
+            $curlOpts[CURLOPT_REDIR_PROTOCOLS] = CURLPROTO_HTTPS;
+        }
+        if (defined('CURLOPT_PROTOCOLS_STR')) {
+            $curlOpts[CURLOPT_PROTOCOLS_STR] = 'https';
+        }
+        if (defined('CURLOPT_REDIR_PROTOCOLS_STR')) {
+            $curlOpts[CURLOPT_REDIR_PROTOCOLS_STR] = 'https';
+        }
+        curl_setopt_array($ch, $curlOpts);
 
         $response = curl_exec($ch);
         $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -401,6 +418,75 @@ final class WebPush
             $txt .= str_repeat('=', 4 - $remainder);
         }
         return base64_decode($txt) ?: '';
+    }
+
+    /* ----------------------------------------------------------------- */
+    /* Allowlist des services push (anti-SSRF)                          */
+    /* ----------------------------------------------------------------- */
+
+    /**
+     * Endpoint Web Push autorise : HTTPS uniquement, hote d'un service push
+     * connu, sans identifiants, port non standard, ni caracteres de controle.
+     */
+    public static function isAllowedEndpoint(string $endpoint): bool
+    {
+        if ($endpoint === '' || strlen($endpoint) > 2000) {
+            return false;
+        }
+        if (preg_match('/[[:cntrl:][:space:]\\\\]/', $endpoint)) {
+            return false;
+        }
+
+        $parts = parse_url($endpoint);
+        if (!is_array($parts) || !isset($parts['scheme'], $parts['host'])) {
+            return false;
+        }
+        if (isset($parts['user']) || isset($parts['pass'])) {
+            return false;
+        }
+        if (strtolower((string) $parts['scheme']) !== 'https') {
+            return false;
+        }
+        if (isset($parts['port']) && (int) $parts['port'] !== 443) {
+            return false;
+        }
+
+        $host = strtolower(rtrim((string) $parts['host'], '.'));
+        if (!preg_match('/\A[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*\z/', $host)) {
+            return false;
+        }
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            return false;
+        }
+
+        return self::isPushServiceHost($host);
+    }
+
+    private static function isPushServiceHost(string $host): bool
+    {
+        $exact = [
+            'fcm.googleapis.com',
+            'updates.push.services.mozilla.com',
+            'web.push.apple.com',
+        ];
+        if (in_array($host, $exact, true)) {
+            return true;
+        }
+
+        return self::isStrictSubdomainOf($host, 'notify.windows.com')
+            || self::isStrictSubdomainOf($host, 'push.apple.com');
+    }
+
+    /** Sous-domaine strict (*.parent), pas le domaine parent lui-meme. */
+    private static function isStrictSubdomainOf(string $host, string $parent): bool
+    {
+        $suffix = '.' . $parent;
+        if (!str_ends_with($host, $suffix)) {
+            return false;
+        }
+        $prefix = substr($host, 0, -strlen($suffix));
+
+        return $prefix !== '' && !str_contains($prefix, '..');
     }
 
     /* ----------------------------------------------------------------- */

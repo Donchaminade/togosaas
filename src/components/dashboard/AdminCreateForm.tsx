@@ -24,9 +24,15 @@ export default function AdminCreateForm({ onClose, onSubmit }: Props) {
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState<StaffRole>('subadmin');
   const [saving, setSaving] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password.length < 12) {
+      setPasswordError('Le mot de passe doit contenir au moins 12 caractères.');
+      return;
+    }
+    setPasswordError('');
     setSaving(true);
     try {
       await onSubmit({
@@ -55,9 +61,10 @@ export default function AdminCreateForm({ onClose, onSubmit }: Props) {
           value={password}
           onChange={setPassword}
           required
-          placeholder="Minimum 6 caractères"
-          minLength={6}
+          placeholder="Minimum 12 caractères"
+          minLength={12}
         />
+        {passwordError && <p className="text-xs font-medium text-togo-red">{passwordError}</p>}
         <Field label="Téléphone" value={phone} onChange={setPhone} placeholder="+22899181626" />
 
         <label className="block">

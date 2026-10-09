@@ -33,7 +33,7 @@ final class EventHelper
             'startsAt' => $startsAt,
             'endsAt' => isset($row['ends_at']) ? self::formatDateTime($row['ends_at']) : null,
             'location' => $row['location'] ?? null,
-            'eventUrl' => $row['event_url'] ?? null,
+            'eventUrl' => CommunityHelper::absoluteHttpUrl($row['event_url'] ?? null),
             'status' => self::statusFromStartsAt($startsAt),
             'createdAt' => $row['created_at'] ?? null,
             'updatedAt' => $row['updated_at'] ?? null,
@@ -48,7 +48,7 @@ final class EventHelper
             'starts_at' => self::normalizeDateTime($request->input('startsAt')),
             'ends_at' => self::nullableDateTime($request->input('endsAt')),
             'location' => self::nullableString($request->input('location')),
-            'event_url' => self::nullableString($request->input('eventUrl')),
+            'event_url' => self::eventUrlFromRequest($request->input('eventUrl')),
             'poster_url' => self::nullableString($request->input('posterUrl')),
         ];
     }
@@ -115,5 +115,18 @@ final class EventHelper
             return null;
         }
         return trim((string) $value);
+    }
+
+    /** Accepte uniquement une URL http(s) absolue (meme regle que CommunityHelper). */
+    private static function eventUrlFromRequest($value): ?string
+    {
+        if ($value === null || trim((string) $value) === '') {
+            return null;
+        }
+        $url = CommunityHelper::absoluteHttpUrl($value);
+        if ($url === null) {
+            Response::error('Le lien de l\'evenement doit etre une URL http:// ou https://.', 422);
+        }
+        return $url;
     }
 }

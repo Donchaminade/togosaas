@@ -107,8 +107,13 @@ final class Notifier
 
         $expiredIds = [];
         foreach ($subscriptions as $sub) {
+            $endpoint = (string) $sub['endpoint'];
+            // Ne jamais POSTer vers un endpoint hors allowlist, meme s'il est deja en base.
+            if (!WebPush::isAllowedEndpoint($endpoint)) {
+                continue;
+            }
             $result = WebPush::send([
-                'endpoint' => (string) $sub['endpoint'],
+                'endpoint' => $endpoint,
                 'p256dh' => (string) $sub['p256dh'],
                 'auth' => (string) $sub['auth'],
             ], $payload);

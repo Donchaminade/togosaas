@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, ExternalLink, MapPin, Pencil, Trash2 } from 'lucide-react';
+import { isHttpUrl } from '../../lib/externalUrl';
 import { mediaUrl } from '../../lib/media';
 import type { CommunityEvent } from '../../types';
 
@@ -190,7 +191,7 @@ export function ManageEventsTable({ events, onEdit, onDelete }: ManageEventsTabl
                       <span className="truncate">{e.location}</span>
                     </span>
                   )}
-                  {e.eventUrl && (
+                  {isHttpUrl(e.eventUrl) && (
                     <a
                       href={e.eventUrl}
                       target="_blank"

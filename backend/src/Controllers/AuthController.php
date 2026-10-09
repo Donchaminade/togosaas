@@ -23,7 +23,7 @@ final class AuthController
         Validator::make($request->all())->validate([
             'name' => 'required|min:2|max:120',
             'email' => 'required|email|max:160',
-            'password' => 'required|min:6|max:72',
+            'password' => 'required|min:10|max:72',
             'passwordConfirmation' => 'required|same:password',
             'phone' => 'max:40',
         ])->abortIfFails();
@@ -180,7 +180,7 @@ final class AuthController
         if ($newPassword !== '') {
             Validator::make($request->all())->validate([
                 'currentPassword' => 'required',
-                'newPassword' => 'required|min:6|max:72',
+                'newPassword' => 'required|min:10|max:72',
                 'newPasswordConfirmation' => 'required|same:newPassword',
             ])->abortIfFails();
 

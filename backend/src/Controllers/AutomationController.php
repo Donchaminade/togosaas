@@ -285,7 +285,7 @@ final class AutomationController
         ]);
 
         $subject = '[TEST] ' . TemplateRenderer::render((string) $template['subject'], $context);
-        $body = TemplateRenderer::render((string) $template['body_html'], $context);
+        $body = TemplateRenderer::renderHtml((string) $template['body_html'], $context);
 
         $res = (new Mailer())->send((string) $admin['email'], (string) ($admin['name'] ?? null), $subject, $body);
         if (!$res['ok']) {

@@ -25,7 +25,13 @@ export default function CommunityCard({ community }: CommunityCardProps) {
   return (
     <div className="motion-hover-lift group relative flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white text-left shadow-sm transition-all hover:border-togo-green/40 hover:shadow-xl hover:shadow-togo-green/10 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-togo-yellow/30 dark:hover:shadow-togo-yellow/5">
       <ShareCommunityButton
-        community={community}
+        community={{
+          id: community.id,
+          slug: community.slug,
+          name: community.name,
+          shortDescription: community.shortDescription,
+          description: community.description,
+        }}
         variant="icon"
         className="absolute right-3 top-3 z-10 rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100 focus:opacity-100 dark:bg-slate-900/90 sm:opacity-100"
       />

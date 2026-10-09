@@ -321,7 +321,7 @@ final class AutomationEngine
                 }
 
                 $subject = TemplateRenderer::render((string) $template['subject'], $context);
-                $body = TemplateRenderer::render((string) $template['body_html'], $context);
+                $body = TemplateRenderer::renderHtml((string) $template['body_html'], $context);
 
                 if (!$mailerConfigured || $mailer === null) {
                     $markFailed->execute([

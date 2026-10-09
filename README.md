@@ -310,7 +310,7 @@ location / {
 |----------|-------------|
 | `DB_*` | Connexion MySQL |
 | `JWT_SECRET` | Clé secrète longue et aléatoire |
-| `JWT_TTL` | Durée du token (défaut 86400 = 24 h) |
+| `JWT_TTL` | Durée du token (défaut 14400 = 4 h). Le JWT est encore en `localStorage` ; passage prévu vers un cookie HttpOnly. |
 | `FRONTEND_URL` | URL du site (CORS) |
 | `APP_DEBUG` | `false` en production |
 | `ADMIN_*` | Compte admin initial (seed) |

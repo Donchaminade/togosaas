@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Calendar, Clock, ExternalLink, MapPin } from 'lucide-react';
 import ScrollReveal from './motion/ScrollReveal';
+import { isHttpUrl } from '../lib/externalUrl';
 import type { CommunityEvent } from '../types';
 
 interface Props {
@@ -119,7 +120,7 @@ function EventCard({ event, past }: { event: CommunityEvent; past?: boolean }) {
             </span>
           )}
         </div>
-        {event.eventUrl && (
+        {isHttpUrl(event.eventUrl) && (
           <a
             href={event.eventUrl}
             target="_blank"

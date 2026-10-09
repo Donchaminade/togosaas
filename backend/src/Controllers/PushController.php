@@ -6,6 +6,7 @@ namespace TCH\Controllers;
 
 use TCH\Auth;
 use TCH\Database;
+use TCH\RateLimiter;
 use TCH\Request;
 use TCH\Response;
 use TCH\WebPush;
@@ -31,6 +32,9 @@ final class PushController
     /** Enregistre (ou met a jour) un abonnement push. */
     public function subscribe(Request $request): void
     {
+        // Endpoint public : limite le flood et les tentatives de SSRF.
+        RateLimiter::enforce('push-subscribe', 10, 600);
+
         $user = Auth::user(); // facultatif : l'abonnement anonyme est autorise.
 
         $subscription = $request->input('subscription');
@@ -44,9 +48,7 @@ final class PushController
         $auth = trim((string) ($keys['auth'] ?? $subscription['auth'] ?? ''));
 
         if (
-            $endpoint === ''
-            || !filter_var($endpoint, FILTER_VALIDATE_URL)
-            || strlen($endpoint) > 2000
+            !WebPush::isAllowedEndpoint($endpoint)
             || $p256dh === ''
             || $auth === ''
             || strlen($p256dh) > 255

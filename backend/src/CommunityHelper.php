@@ -325,8 +325,24 @@ final class CommunityHelper
     }
 
     /**
+     * URL absolue http(s) uniquement. Refuse javascript:, data:, etc.
+     * Contrairement a normalizeUrl, un schema manquant n'est pas prefixe.
+     */
+    public static function absoluteHttpUrl($value): ?string
+    {
+        $v = self::nullableString($value);
+        if ($v === null) {
+            return null;
+        }
+        if (preg_match('/[\s\\\\]/', $v) || !preg_match('#^https?://#i', $v)) {
+            return null;
+        }
+        return filter_var($v, FILTER_VALIDATE_URL) ? $v : null;
+    }
+
+    /**
      * Normalise et valide une URL optionnelle.
-     * Ajoute https:// si le schéma manque ; renvoie null si invalide.
+     * Ajoute https:// si le schema manque ; renvoie null si invalide.
      */
     private static function normalizeUrl($value): ?string
     {

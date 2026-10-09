@@ -7,10 +7,12 @@ declare(strict_types=1);
  *
  * SECURITE :
  *   - Necessite un MIGRATE_TOKEN DEDIE et long dans .env (aucun repli sur JWT_SECRET).
- *   - A SUPPRIMER du serveur immediatement apres la migration.
- *   - Le token transitant en query string, regenerez-le apres usage.
+ *   - Le token n'est PAS accepte en query string (logs d'acces, Referer, historique).
+ *   - A SUPPRIMER du serveur immediatement apres la migration, puis regenerer MIGRATE_TOKEN.
  *
- *   GET /run-migrations.php?token=VOTRE_MIGRATE_TOKEN
+ *   curl -X POST -H "X-Migrate-Token: VOTRE_MIGRATE_TOKEN" https://hote/run-migrations.php
+ *   curl -X POST -d "token=VOTRE_MIGRATE_TOKEN" https://hote/run-migrations.php
+ *   curl -X POST -H "Content-Type: application/json" -d '{"token":"VOTRE_MIGRATE_TOKEN"}' https://hote/run-migrations.php
  */
 
 require_once dirname(__DIR__) . '/src/bootstrap.php';
@@ -21,7 +23,17 @@ use TCH\Response;
 
 header('Content-Type: application/json; charset=utf-8');
 
-$token = (string) ($_GET['token'] ?? '');
+// Refuse meme si un en-tete valide est aussi present : l'URL ne doit plus porter le secret.
+if (isset($_GET['token']) && (string) $_GET['token'] !== '') {
+    http_response_code(403);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Le token en query string n\'est plus accepte. Utilisez l\'en-tete X-Migrate-Token ou un corps POST.',
+    ]);
+    exit;
+}
+
+$token = migrationToken();
 $expected = (string) env('MIGRATE_TOKEN', '');
 
 // Token dedie obligatoire : on refuse tout repli implicite et les tokens trop courts.
@@ -34,7 +46,7 @@ if ($expected === '' || strlen($expected) < 16) {
     exit;
 }
 
-if (!hash_equals($expected, $token)) {
+if ($token === '' || !hash_equals($expected, $token)) {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'Token invalide.']);
     exit;
@@ -109,4 +121,35 @@ try {
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+}
+
+/**
+ * Token via en-tete ou corps POST uniquement. La query string est ignoree.
+ */
+function migrationToken(): string
+{
+    $header = $_SERVER['HTTP_X_MIGRATE_TOKEN'] ?? '';
+    if (is_string($header) && $header !== '') {
+        return $header;
+    }
+
+    if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST') {
+        return '';
+    }
+
+    $posted = $_POST['token'] ?? null;
+    if (is_string($posted) && $posted !== '') {
+        return $posted;
+    }
+
+    $raw = file_get_contents('php://input');
+    if (!is_string($raw) || trim($raw) === '') {
+        return '';
+    }
+    $json = json_decode($raw, true);
+    if (is_array($json) && isset($json['token']) && is_string($json['token']) && $json['token'] !== '') {
+        return $json['token'];
+    }
+
+    return '';
 }
